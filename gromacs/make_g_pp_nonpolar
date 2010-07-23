@@ -1,0 +1,21 @@
+# Generated automatically from Makefile.in by configure.
+#
+#
+# Copy this file to whatever directory you are using for your own
+# software and add more targets like the g_inositol_residue_nonpolar_v2 one below.
+#
+
+# The real make targets - note that most make programs support
+# the shortcut $^ instead of listing all object files a second
+# time, but we cannot count on it...
+
+
+# Variables set by the configuration script:
+LIBS         = -lmd -lgmx  -lnsl -lfftw3f -lm   -lSM -lICE -lX11   
+LDFLAGS      = -L/usr/lib 
+CFLAGS	     = -I/usr/include -I/usr/include/gromacs	
+CC           = c++
+LD           = $(CC)
+
+g_pp_nonpolar:	g_pp_nonpolar.o
+		$(LD) $(LDFLAGS) -o /home/grace/bin/$@ g_pp_nonpolar.o $(LIBS)
