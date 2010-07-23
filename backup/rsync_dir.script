@@ -1,0 +1,1 @@
+rsync -av --existing --dry-run --rsh=ssh --rsync-path=/tools/rsync/2.6.9/bin/rsync . ccb:/projects/pomes/grace/inositol/

@@ -1,0 +1,213 @@
+#!/bin/bash
+LD_LIBRARY_PATH=/usr/lib64/tls:/hpf/tools/n1ge/lib/lx24-amd64:/tools/gcc/4.1.1/lib64:/tools/openmpi/1.2/lib:/tools/local/lib
+PATH=/hpf/tools/n1ge/bin/lx24-amd64:/usr/local/bin:/usr/bin:/usr/X11R6/bin:/bin:/usr/games:/opt/gnome/bin:/tools/local/bin:/home/cneale/exe:/projects/pomes/cneale/exe/gromacs-3.3.1/exec/fftw-3.1.2/bin:.:/tools/openmpi/1.2/bin
+
+### for openmpi LD_LIBRARY_PATH includes /tools/openmpi/1.2b3/lib
+### for lam-mpi LD_LIBRARY_PATH includes /tools/lam/lam-7.1.2/lib
+### for openmpi PATH includes /tools/openmpi/1.2b3/bin
+### for lam-mpi PATH includes /tools/lam/lam-7.1.2/bin
+
+#Directory where your runs are outputted to
+#eg.  MD=/projects/pomes/joe_doe/system/
+#then successful simulation segments will be outputted to 
+#md1_success, md2_success,... directories under ${MD}
+MD=PUT_YOUR_OWN_DIRECTORY_HERE
+cd ${MD}
+
+#change MYMOL, MYSYS
+MYMOL=YOUR_MOLECULE_NAME
+MYSYS=YOUR_SYSTEM_NAME
+
+#Number of processors to use
+MYNP=4
+
+### Upon regular running of this script, must set a file ./finished in order to start right away
+while [ ! -e ./finished ]; do
+  sleep 60
+done
+rm -f ./finished ./gromppfinished
+while [ -e ./finished ]; do sleep 5; done
+while [ -e ./gromppfinished ]; do sleep 5; done
+
+
+#The while loops below will be what drives your run continuation submissions
+#the number of segments will be END-START+1
+#your total simulation time will be (END-START+1)*(ns per segment)
+START = PUT_YOUR_START_SEQ_NUM 
+END =  PUT_YOUR_END_SEQ_NUM
+
+### This is the major loop
+for ((NIN=${START}; NIN<${END}; ++NIN)); do
+  NOUT=$(expr $NIN + 1)
+  IN=md${NIN}
+  OUT=md${NOUT}
+  ### Create the input files for the next job, make executable, and wait for completion
+#sed "s/TINIT/${TINIT}/" ${MYMOL}.mdp > ${MYMOL}_${OUT}.mdp
+  sed "s/_out/_${OUT}/" ${MYSYS}_template_grompp | sed "s/_in/_${IN}/" | sed "s/_mynp/${MYNP}/" > ${MYSYS}_${OUT}_grompp
+  sed "s/_out/_${OUT}/" ${MYSYS}_template_mdrun.sh | sed "s/_in/_${IN}/" | sed "s/_mynp/${MYNP}/" > ${MYSYS}_${OUT}_mdrun.sh
+  while [ ! -s ${MYSYS}_${OUT}_grompp ]; do sleep 5; done
+  while [ ! `tail -1 ${MYSYS}_${OUT}_grompp | awk '{print $1}'` = "###EOF" ]; do sleep 5; done
+  chmod +x ${MYSYS}_${OUT}_grompp
+  while [ ! -s ${MYSYS}_${OUT}_mdrun.sh ]; do sleep 5; done
+  while [ ! `tail -1 ${MYSYS}_${OUT}_mdrun.sh | awk '{print $1}'` = "###EOF" ]; do sleep 5; done
+  chmod +x ${MYSYS}_${OUT}_mdrun.sh
+  while [ ! -x ${MYSYS}_${OUT}_grompp ]; do sleep 5; done
+  while [ ! -x ${MYSYS}_${OUT}_mdrun.sh ]; do sleep 5; done
+#while [ ! -s ${MYMOL}_${OUT}.mdp ]; do sleep 5; done
+#while [ ! `tail -1 ${MYMOL}_${OUT}.mdp | awk '{print $1}'` = ";EOF" ]; do sleep 5; done
+ 
+  ### This appears to be the only way to be sure!
+  sleep 30
+
+  ### Ensure necessary files exist
+  if [ ! -e ${MYMOL}_${IN}.gro ]; then
+    echo "./${MYMOL}_${IN}.gro did not exist!" >> ./ERROR_MESSAGE
+    exit
+  fi
+  if [ ! -e ${MYMOL}_${IN}.trr ]; then
+    echo "./${MYMOL}_${IN}.trr did not exist!" >> ./ERROR_MESSAGE
+    exit
+  fi
+  if [ ! -e ${MYMOL}_${IN}.edr ]; then
+    echo "./${MYMOL}_${IN}.edr did not exist!" >> ./ERROR_MESSAGE
+    exit
+  fi
+  if [ ! -e ${MYMOL}.top ]; then
+    echo "./${MYMOL}.top did not exist!" >> ./ERROR_MESSAGE
+    exit
+  fi
+#if [ ! -e ${MYMOL}.ndx ]; then
+#echo "./${MYMOL}.ndx did not exist!" >> ./ERROR_MESSAGE
+#exit
+#fi
+
+  ### Run the grompp preprocessor and ensure output files exist
+  gottpr=0
+  while [ "$gottpr" = 0 ]; do
+    mydate=`date`
+    #qsub ${MD}/${MYSYS}_${OUT}_grompp
+    #qsub -pe hpf8p 1 ${MD}/${MYSYS}_${OUT}_grompp
+    #qsub -pe ompi8p 1 ${MD}/${MYSYS}_${OUT}_grompp
+    #qsub -pe ompi16p-4-31 1 ${MD}/${MYSYS}_${OUT}_grompp
+    #qsub -pe ompi4p-* 1 ${MD}/${MYSYS}_${OUT}_grompp
+    #echo "executing qsub -pe ompi4p-* 1 ${MD}/${MYSYS}_${OUT}_grompp at ${mydate}" >> ./qsubbed.info
+    qrsh ${MD}/${MYSYS}_${OUT}_grompp & 
+    echo "executing qrsh ${MD}/${MYSYS}_${OUT}_grompp at ${mydate}" >> ./qsubbed.info
+    while [ ! -e ./gromppfinished ]; do
+      sleep 10
+    done
+    rm -f ./gromppfinished
+    while [ -e ./gromppfinished ]; do sleep 5; done
+    k=0  
+    while [ ! -e ./${MYMOL}_${OUT}.tpr ]; do
+      sleep 60
+      k=$(expr $k + 1)
+      if [ "$k" -gt 10 ]; then
+        break
+      fi
+    done
+    if [ -e ./${MYMOL}_${OUT}.tpr ]; then
+      gottpr=1
+    else
+      echo "./${MYMOL}_${OUT}.tpr was not created!" >> ./ERROR_MESSAGE
+    fi
+  done
+  if [ ! -e ./${MYMOL}_${OUT}.tpr ]; then
+    echo "./${MYMOL}_${OUT}.tpr was not created!" >> ./ERROR_MESSAGE
+    exit
+  fi
+
+  mkdir ${IN}_success
+  while [ ! -e ${IN}_success ]; do sleep 5; done
+  mv ${MYMOL}*${IN}* ${MYSYS}_*${IN}* output* deshuffledesort${MYMOL}_${IN}.ndx ${IN}_success
+
+  # The log files are moved by ${MYMOL}*${IN}*
+  #Don't copy the .ndx file, it is too large
+  cp *.top ${IN}_success
+
+  ### Ensure that the finished file does not exits prior to submission
+  if [ -e ./finished ]; then rm -f ./finished; fi
+  while [ -e ./finished ]; do sleep 5; done
+
+  ### Submit the job and recycle
+  mydate=`date`
+  #qsub -pe mpi4p-* 4 ${MD}/${MYSYS}_${OUT}_mdrun.sh
+  #qsub -pe hpf8p 8 ${MD}/${MYSYS}_${OUT}_mdrun.sh
+  #qsub -pe ompi8p 8 ${MD}/${MYSYS}_${OUT}_mdrun.sh
+  #qsub -pe ompi16p-4-31 16 ${MD}/${MYSYS}_${OUT}_mdrun.sh
+  qsub -pe ompi4p-* 4 ${MD}/${MYSYS}_${OUT}_mdrun.sh
+  echo "executing qsub -pe ompi4p-* 4 ${MD}/${MYSYS}_${OUT}_mdrun.sh at ${mydate}" >> ./qsubbed.info
+
+  ### Wait until the last job has completed
+  while [ ! -e ./finished ]; do
+    sleep 60
+  done
+  rm -f ./finished
+  while [ -e ./finished ]; do sleep 5; done
+
+  ### Failure recovery 1
+  if [ ! -e ${MYMOL}_${OUT}.gro ]; then
+    echo "./${MYMOL}_${OUT}.gro did not exist!" >> ./ERROR_MESSAGE
+    echo "There must have been an error in the run, resubmitting first recovery" >> ./ERROR_MESSAGE
+    mkdir ${OUT}_failure1
+    mv ${MYMOL}*${OUT}* *log output* ${OUT}_failure1
+    cp ${MYSYS}_*${OUT}* ${OUT}_failure1
+    cp *.ndx *.top ${OUT}_failure1
+    cp ${OUT}_failure1/${MYMOL}_${OUT}.tpr ./
+    mydate=`date`
+    #qsub -pe mpi4p-* 4 ${MD}/${MYSYS}_${OUT}_mdrun.sh
+    #qsub -pe hpf8p 8 ${MD}/${MYSYS}_${OUT}_mdrun.sh
+    #qsub -pe ompi8p 8 ${MD}/${MYSYS}_${OUT}_mdrun.sh
+    #qsub -pe ompi16p-4-31 16 ${MD}/${MYSYS}_${OUT}_mdrun.sh
+    qsub -pe ompi4p-* 4 ${MD}/${MYSYS}_${OUT}_mdrun.sh
+    echo "executing qsub -pe ompi4p-* 4 ${MD}/${MYSYS}_${OUT}_mdrun.sh (Failure Recovery 1) at ${mydate}" >> ./qsubbed.info
+    while [ ! -e ./finished ]; do
+      sleep 60
+    done
+    rm -f ./finished
+    while [ -e ./finished ]; do sleep 5; done
+  fi
+
+  ### Failure recovery 2
+  if [ ! -e ${MYMOL}_${OUT}.gro ]; then
+    echo "./${MYMOL}_${OUT}.gro did not exist!" >> ./ERROR_MESSAGE
+    echo "There must have been an error in the run, resubmitting second recovery" >> ./ERROR_MESSAGE
+    mkdir ${OUT}_failure2
+    mv ${MYMOL}*${OUT}* *log output* ${OUT}_failure2
+    cp ${MYSYS}_*${OUT}* ${OUT}_failure2
+    cp *.ndx *.top ${OUT}_failure2
+    cp ${OUT}_failure2/${MYMOL}_${OUT}.tpr ./
+    mydate=`date`
+    #qsub -pe mpi4p-* 4 ${MD}/${MYSYS}_${OUT}_mdrun.sh
+    #qsub -pe hpf8p 8 ${MD}/${MYSYS}_${OUT}_mdrun.sh
+    #qsub -pe ompi8p 8 ${MD}/${MYSYS}_${OUT}_mdrun.sh
+    #qsub -pe ompi16p-4-31 16 ${MD}/${MYSYS}_${OUT}_mdrun.sh
+    qsub -pe ompi4p-* 4 ${MD}/${MYSYS}_${OUT}_mdrun.sh
+    echo "executing qsub -pe ompi4p-* 4 ${MD}/${MYSYS}_${OUT}_mdrun.sh (Failure Recovery 2) at ${mydate}" >> ./qsubbed.info
+    while [ ! -e ./finished ]; do
+      sleep 60
+    done
+    rm -f ./finished
+    while [ -e ./finished ]; do sleep 5; done
+  fi
+
+  ### Failure Quit
+  if [ ! -e ${MYMOL}_${OUT}.gro ]; then
+    echo "./${MYMOL}_${OUT}.gro did not exist!" >> ./ERROR_MESSAGE
+    mkdir ${OUT}_failure3
+    mv ${MYMOL}*${OUT}* *log output* ${OUT}_failure3
+    cp ${MYSYS}_*${OUT}* ${OUT}_failure3
+    cp *.ndx *.top ${OUT}_failure3
+    cp ${OUT}_failure3/${MYMOL}_${OUT}.tpr ./
+    echo "There must have been an error in the run, NOT resubmitting third recovery" >> ./ERROR_MESSAGE
+    rm -f ./finished
+    while [ -e ./finished ]; do sleep 5; done
+    exit
+  fi
+
+#   TINIT=`cnadd $TINIT $TJUMP | awk -F "." '{print $1}'`
+  #TINIT=`cnadd $TINIT $TJUMP | awk '{print $1}'`
+
+done 
+
+

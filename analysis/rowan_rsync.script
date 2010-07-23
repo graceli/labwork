@@ -1,0 +1,15 @@
+ rsync --rsh=ssh --rsync-path=/tools/rsync/2.6.9/bin/rsync -avzh --remove-source-files --progress ccb3:/projects/pomes/rhenry/cytoxdrep/n139v/v12f/water12_constrainedDihed/pdb/0.* .
+
+rsync --rsh=ssh --rsync-path=/tools/rsync/2.6.9/bin/rsync  -avzh --remove-source-files --progress ccb3:/projects/pomes/rhenry/cytoxdrep/n139v/v12f/water12_constrainedDihed/pdb/1.* .
+
+rsync --rsh=ssh --rsync-path=/tools/rsync/2.6.9/bin/rsync -avzh --remove-source-files --progress ccb3:/projects/pomes/rhenry/cytoxdrep/n139v/v12f/water12_constrainedDihed/pdb/2.* .
+
+rsync  --rsh=ssh --rsync-path=/tools/rsync/2.6.9/bin/rsync -avzh --remove-source-files --progress ccb3:/projects/pomes/rhenry/cytoxdrep/n139v/v12f/water12_constrainedDihed/pdb/3.* .
+
+rsync --rsh=ssh --rsync-path=/tools/rsync/2.6.9/bin/rsync  -avzh --remove-source-files --progress ccb3:/projects/pomes/rhenry/cytoxdrep/n139v/v12f/water12_constrainedDihed/pdb/4.* .
+
+rsync  --rsh=ssh --rsync-path=/tools/rsync/2.6.9/bin/rsync -avzh --remove-source-files --progress ccb3:/projects/pomes/rhenry/cytoxdrep/n139v/v12f/water12_constrainedDihed/pdb/5.* .
+
+rsync  --rsh=ssh --rsync-path=/tools/rsync/2.6.9/bin/rsync -avzh --remove-source-files --progress
+ccb3:/projects/pomes/rhenry/cytoxdrep/n139v/v12f/water12_constrainedDihed/pdb/*
+.

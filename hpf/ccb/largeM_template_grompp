@@ -1,0 +1,56 @@
+#!/bin/sh
+#$ -v LD_LIBRARY_PATH=/usr/lib64/tls:/hpf/tools/n1ge/lib/lx24-amd64:/tools/gcc/4.1.1/lib64:/tools/openmpi/1.2.1/lib:/tools/local/lib
+#$ -v PATH=/hpf/tools/n1ge/bin/lx24-amd64:/usr/local/bin:/usr/bin:/usr/X11R6/bin:/bin:/usr/games:/opt/gnome/bin:/tools/local/bin:/home/cneale/exe:/projects/pomes/cneale/exe/gromacs-3.3.1/exec/fftw-3.1.2/bin:.:/tools/openmpi/1.2.1/bin
+
+### for lam-mpi LD_LIBRARY_PATH includes /tools/lam/lam-7.1.2/lib
+### for openmpi_v1.2.1 LD_LIBRARY_PATH includes tools/openmpi/1.2.1/lib and /tools/local/lib
+### for lam-mpi PATH includes /tools/lam/lam-7.1.2/bin
+### for openmpi_v1.2.1 PATH includes /tools/openmpi/1.2.1/bin
+
+MYMOL=sys225
+ED=/projects/pomes/cneale/exe/gromacs-3.3.1/exec/fftw-3.1.2/bin
+DD=/projects/pomes/cneale/exe/gromacs-3.3.1/exec/fftw-3.1.2/share/gromacs/template
+
+MD=/projects/pomes/cneale/micelle/2large
+cd ${MD}
+
+in="_in"
+out="_out"
+mynp=_mynp
+
+echo "Starting grompp..."
+
+#Shuffle the .trr input file correctly. Assume that it is not currently shuffled
+${ED}/grompp -np ${mynp} -shuffle -sort -f ${MYMOL}${out}.mdp -c ${MYMOL}${in}_deshuffleddesorted.gro -p ${MYMOL}.top -n ${MYMOL}.ndx -o ${MYMOL}${out}_a.tpr -deshuf deshuffle${out}_a.ndx> output.${MYMOL}_grompp${out}_a 2> output.${MYMOL}_grompp${out}_e_a
+rm -f deshuffle${out}_a.ndx mdout.mdp
+echo System | ${ED}/editconf -f ${MYMOL}${out}_a.tpr -o ${MYMOL}${out}_shuffledsortedInit_a.gro
+
+#g_desort -f original shuffled will unshuffle
+#Assuming that g_desort -f shuffled original will REshuffle
+${DD}/g_desort -f ${MYMOL}${out}_shuffledsortedInit_a.gro ${MYMOL}${in}_deshuffleddesorted.gro -o reshuffleresort${MYMOL}${out}_a.ndx
+${ED}/trjconv -f ${MYMOL}${in}_deshuffleddesorted.trr -o ${MYMOL}${in}_reshuffleresort.trr -n ./reshuffleresort${MYMOL}${out}_a.ndx
+
+#Create the run input file
+${ED}/grompp -np ${mynp} -shuffle -sort -f ${MYMOL}${out}.mdp -c ${MYMOL}${in}_deshuffleddesorted.gro -t ${MYMOL}${in}_reshuffleresort.trr -p ${MYMOL}.top -n ${MYMOL}.ndx -deshuf deshuffle${out}.ndx -e ${MYMOL}${in}.edr -o ${MYMOL}${out}.tpr  > output.${MYMOL}_grompp${out} 2> output.${MYMOL}_grompp${out}_e
+rm -f deshuffle${out}.ndx mdout.mdp
+
+#If a new reshuffle.ndx file differs then the run is invalid.
+echo System | ${ED}/editconf -f ${MYMOL}${out}.tpr -o ${MYMOL}${out}_shuffledsortedInit.gro
+
+${DD}/g_desort -f ${MYMOL}${out}_shuffledsortedInit.gro ${MYMOL}${in}_deshuffleddesorted.gro -o reshuffleresort${MYMOL}${out}.ndx
+look=`diff -q ./reshuffleresort${MYMOL}${out}_a.ndx ./reshuffleresort${MYMOL}${out}.ndx`
+if [ -n "$look" ]; then
+  echo There was a big problem. reshuffleresort${out}_a.ndx reshuffleresort${out}.ndx are different.
+  mv ${MYMOL}${out}.tpr ${MYMOL}${out}_notValid.tpr
+fi
+
+#Create the deshuffle file to properly handle the next run
+${DD}/g_desort -f ${MYMOL}${in}_deshuffleddesorted.gro ${MYMOL}${out}_shuffledsortedInit.gro -o deshuffledesort${MYMOL}${out}.ndx
+
+rm -f ${MYMOL}${out}_a.tpr ${MYMOL}${out}_shuffledsortedInit_a.gro ./reshuffleresort${MYMOL}${out}_a.ndx ${MYMOL}${in}_reshuffleresort.trr ${MYMOL}${out}_shuffledsortedInit.gro ./reshuffleresort${MYMOL}${out}.ndx mdout.mdp
+
+
+echo "grompp finished"
+echo "grompp finished" > ./gromppfinished
+
+###EOF
