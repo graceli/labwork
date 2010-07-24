@@ -181,6 +181,37 @@ void write_txt_int_mat(FILE* fp, int** mat, int nres){
     fprintf(fp, "\n");
 }
 
+int calc_frac_native(int** mdmat_tpr, int** mdmat_contact, int NUM_NATIVE, int nres) {
+	/* this function just does a matrix compare and totals the number of entries in common*/
+	int i,j;
+	int curr_frame_num_native=0;
+
+    /*compare only upper right side of the matrix (matrix is symmetric)*/
+	for(i=0;i<nres; i++){
+		for(j=i+1;j<nres; j++){
+			if((j-i)>1) {
+				if(mdmat_tpr[i][j] > 0 && (mdmat_tpr[i][j] == mdmat_contact[i][j])){
+					curr_frame_num_native++;		
+				}			
+			}
+		}
+	} 
+
+	return curr_frame_num_native;
+}
+
+int sum_mat(int** mat, int nres){
+	int total=0, i,j;
+	for(i=0; i<nres; i++){
+		for(j=i+1;j<nres;j++){
+ 			if((j-i)>1){
+				total+=mat[i][j];
+			}
+		}
+	}
+	return total;
+}
+
 int main(int argc,char *argv[])
 {
   static char *desc[] = {
@@ -201,7 +232,7 @@ int main(int argc,char *argv[])
   static int  nlevels=40;
   static char* distmat_text_file="dist_matrix.txt";
   static char* contactmat_text_file="contact_matrix.txt";
-
+  static char* native_text_file="fraction_native.txt";
   t_pargs pa[] = { 
     { "-t",   FALSE, etREAL, {&truncate},
       "trunc distance" },
@@ -210,7 +241,9 @@ int main(int argc,char *argv[])
     { "-txt-dist", FALSE, etSTR, {&distmat_text_file}, 
       "Write the average distance matrix to a text file"},
 	{ "-txt-contact", FALSE, etSTR, {&contactmat_text_file},
-	  "Write the residue-residue contact matrix to a text file"}
+	  "Write the residue-residue contact matrix to a text file"},
+	{ "-txt-native", FALSE, etSTR, {&native_text_file},
+	  "Outputs the fraction of native contacts; makes sense for Ca-Ca"}
   };
 
   t_filenm   fnm[] = {
@@ -224,6 +257,7 @@ int main(int argc,char *argv[])
 #define NFILE asize(fnm)
 
   FILE       *out=NULL,*fp;
+ 
   t_topology top;
   int        ePBC;
   t_atoms    useatoms;
@@ -231,7 +265,6 @@ int main(int argc,char *argv[])
   atom_id    *index;
   char       *grpname;
   int        *rndx,*natm,prevres,newres;
-  
   int        i,j,status,nres,natoms,nframes,it,trxnat;
   int        nr0;
   bool       bCalcN,bFrames;
@@ -239,14 +272,18 @@ int main(int argc,char *argv[])
   char       title[256],label[234];
   t_rgb      rlo,rhi;
   rvec       *x;
+  rvec       *xtpr;  /* GRACE */
   real       **mdmat,*resnr,**totmdmat;
   int        **mdmat_contact;
   int        **totmdmat_contact;
+  int        **mdmat_tpr;
   int        **nmat,**totnmat;
   real       *mean_n;
   int        *tot_n;
   matrix     box;
-  
+ 
+  int total_native_contacts=0;
+ 
   CopyRight(stderr,argv[0]);
 
   parse_common_args(&argc,argv,PCA_CAN_TIME | PCA_BE_NICE,NFILE,fnm,
@@ -257,12 +294,16 @@ int main(int argc,char *argv[])
   bFrames= opt2bSet("-frames",NFILE,fnm);
   if ( bCalcN ) 
     fprintf(stderr,"Will calculate number of different contacts\n");
-    
-  read_tps_conf(ftp2fn(efTPS,NFILE,fnm),title,&top,&ePBC,&x,NULL,box,FALSE);
+  
+
+  /*GRACE: read in the structure in the tpr file and save it in a separate array*/ 
+  read_tps_conf(ftp2fn(efTPS,NFILE,fnm),title,&top,&ePBC,&xtpr,NULL,box,FALSE);
   
   fprintf(stderr,"Select group for analysis\n");
   get_index(&top.atoms,ftp2fn_null(efNDX,NFILE,fnm),1,&isize,&index,&grpname);
-  
+ 
+  /*  fprintf(stderr, "grpname=%s", grpname); */
+
   natoms=isize;
   snew(useatoms.atom,natoms);
   snew(useatoms.atomname,natoms);
@@ -299,6 +340,7 @@ int main(int argc,char *argv[])
   snew(resnr,nres);
   snew(mdmat,nres);
   snew(mdmat_contact,nres);
+  snew(mdmat_tpr,nres);
   snew(nmat,nres);
   snew(totnmat,nres);
   snew(mean_n,nres);
@@ -306,6 +348,7 @@ int main(int argc,char *argv[])
   for(i=0; (i<nres); i++) {
     snew(mdmat[i],nres);
     snew(mdmat_contact[i],nres);
+    snew(mdmat_tpr[i],nres);
     snew(nmat[i],natoms);
     snew(totnmat[i],natoms);
     resnr[i]=i+1;
@@ -326,15 +369,28 @@ int main(int argc,char *argv[])
   if (bFrames)
     out=opt2FILE("-frames",NFILE,fnm,"w");
 
+
+  /* calculate the contact mat for the tpr file -- assuming that this is the native protein*/
+  calc_mat(nres,natoms,rndx,xtpr,index,truncate,mdmat,mdmat_tpr,nmat,ePBC,box);
+  total_native_contacts=sum_mat(mdmat_tpr,nres);
+
+  FILE* fp_native = fopen(native_text_file, "w");
+  fprintf(fp_native, "# native_frame, total_contacts, total_native_contacts, Q\n");
   do {
     rm_pbc(&top.idef,ePBC,trxnat,box,x,x);
     nframes++;
+
     calc_mat(nres,natoms,rndx,x,index,truncate,mdmat,mdmat_contact,nmat,ePBC,box);
+
+	int total_contact = sum_mat(mdmat_contact,nres);
+    int qnum = calc_frac_native(mdmat_tpr, mdmat_contact, total_native_contacts, nres);
+
+	fprintf(fp_native, "%d %d %d %f\n", qnum, total_contact, total_native_contacts, (double)qnum/total_native_contacts);
 
     for (i=0; (i<nres); i++)
       for (j=0; (j<natoms); j++)
-	if (nmat[i][j]) 
-	  totnmat[i][j]++;
+		if (nmat[i][j]) 
+		  totnmat[i][j]++;
 
     for (i=0; (i<nres); i++){
       for (j=0; (j<nres); j++){
@@ -349,8 +405,11 @@ int main(int argc,char *argv[])
 		nres,nres,resnr,resnr,mdmat,0,truncate,rlo,rhi,&nlevels);
     }
   } while (read_next_x(status,&t,trxnat,x,box));
+
+  fclose(fp_native);
   fprintf(stderr,"\n");
   close_trj(status);
+
   if (bFrames)
     fclose(out);
   
@@ -365,6 +424,13 @@ int main(int argc,char *argv[])
 	    nres,nres,resnr,resnr,totmdmat,0,truncate,rlo,rhi,&nlevels);
  
    /*GRACE: writes out the contact map as a matrix in text format*/
+   FILE* fp_test = fopen("native_contact_map.txt", "w");
+   if(fp_test){
+		write_txt_int_mat(fp_test, mdmat_tpr, nres);
+   }else{
+		printf("GRACE: file open failed");
+   }
+
    FILE* fp_dist_map_text = fopen(distmat_text_file, "w");
    if(fp_dist_map_text){
 		write_txt_real_mat(fp_dist_map_text, totmdmat, nres);
