@@ -1,11 +1,14 @@
 import csv
 import math
+import sys
+
+filename = sys.argv[1]
 
 #constants
 KB = 0.008314277
 KB = KB*4.184
 #r = csv.reader(open('AVGE_values.prn'), delimiter='\t')
-f = open('AVGE_values.prn')
+f = open(filename)
 tempList=[]
 PElist=[]
 for row in f:
@@ -18,8 +21,10 @@ for row in f:
 
 numTemps = len(tempList)
 avalues = [0]*numTemps
-print "#temperature avalues (KJ/mol) avalues(Kcal/mol) averagePE(KJ/mol)"
-print tempList[0], 0, 0, PElist[0]-PElist[0]
+
+sys.stderr.write("#temperature avalues (Kcal/mol)")
+sys.stderr.write("printing the A values in the form of DR script file")
+
 for i in range(1,numTemps):
 	T = tempList[i]
 	Tprev = tempList[i-1]
@@ -27,4 +32,12 @@ for i in range(1,numTemps):
 	beta = 1/(KB*T)
 	
 	avalues[i] = (beta_prev*avalues[i-1] + (beta-beta_prev)*0.5*(PElist[i-1]+PElist[i]))/beta
-	print T, avalues[i], avalues[i]/4.184, PElist[i]-PElist[0]
+	#print T, avalues[i]
+
+l = range(1,numTemps)
+l.reverse()
+for i in l:
+	print "JOB", tempList[i], "5000 3", avalues[i]
+
+print "JOB", tempList[0], "5000 3", 0.000
+
