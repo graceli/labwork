@@ -22,4 +22,5 @@ LD           = $(CC)
 # time, but we cannot count on it...
 
 g_mdmat_g:	g_mdmat_g.o
-		$(LD) $(LDFLAGS) -o $@ g_mdmat_g.o $(LIBS)
+		$(LD) $(LDFLAGS) -o /home/grace/bin/$@ g_mdmat_g.o $(LIBS)
+		rm *.o
