@@ -2,11 +2,12 @@ July 26 2010
 
 Problem:
 - Large number of small trajectories
-- Analysis programs written in C that performs file IO and persists data in unstructured ASCII form
+- Analysis programs written in C that persist data in unstructured ASCII form
+
 - Let analysis output be called "results"
 
 we want:
-- Associate meta-data with results
+- Association of meta-data with results
 - storage and retrieval of columnar data 
 - easily and cleanly execute data aggregation functions on results
 
