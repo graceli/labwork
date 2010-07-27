@@ -1,0 +1,22 @@
+July 26 2010
+
+Problem:
+- Large number of small trajectories
+- Analysis programs written in C that performs file IO and persists data in unstructured ASCII form
+- Let analysis output be called "results"
+
+we want:
+- Associate meta-data with results
+- storage and retrieval of columnar data 
+- easily and cleanly execute data aggregation functions on results
+
+solution:
+- encompass current ad hoc ASCII results using pytables
+	- this allows us to perform queries using python (rather than using grep, awk and random linux tools)
+- can then use the numpy framework to aggregate data - eg distributions, averages
+
+This repo contains some beginner hacky in-progress scripts that works with pytables
+and imports some test data into the tables
+
+
+
