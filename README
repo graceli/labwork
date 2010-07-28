@@ -19,5 +19,6 @@ solution:
 This repo contains some beginner hacky in-progress scripts that works with pytables
 and imports some test data into the tables
 
-
-
+Reference:
+http://www.pytables.org/docs/manual/ch03.html#id328398
+(very helpful in getting started with pytables)
