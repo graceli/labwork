@@ -3,13 +3,10 @@ import csv
 import os
 
 class XVGFile:
-	# def parseFilename(filename):
-	# 		stripped = os.path.basename(filename)
-	# 		parts = stripped.split("_")
-	# 		return [parts[0][4:], parts[1][7:]]
-	# 	
-
-		
+	#This class represents the flat xvg file containing data pertaining to a type of analysis
+	#(an output of a gromacs analysis tool)
+	#The data from the xvg file is represented as an M by N-tuple, where M is the number of rows in the xvg file
+	#and N is the number of columns in the row
 	def parse(self, rowtype, filename):
 		stripped = os.path.basename(filename)
 		parts = stripped.split("_")
@@ -46,14 +43,10 @@ class XVGFile:
 				newrow.append(row[key])
 
 		return newrow
-
 		
 	def getData(self):
 		return self.data
 
-	# def getRunComments(self):
-	# 	print "getRunComments() stub"
-	# 	#raise NotImplementedError, "XVGFile.getRunComments()"
 
 
 if __name__ == "__main__":
