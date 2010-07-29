@@ -2,18 +2,27 @@ import tables
 import csv 
 import os
 
-class RGTable(tables.IsDescription):
-	time = tables.Int32Col()
-	replicanum = tables.Int32Col()
-	partnum = tables.Int32Col()
-	rgval = tables.Float32Col()
+#class RGTable(tables.IsDescription):
+#	time = tables.Int32Col()
+#	replicanum = tables.Int32Col()
+#	partnum = tables.Int32Col()
+#	rgval = tables.Float32Col()
 
+
+#class SAS(tables.IsDescription):
+#	time = Int32Col() 
+#	replicanum = Int32Col()
+#	hydrophobic = Float32Col()
+#	hydrophilic = Float32Col()
+#	total = Float32Col()
+
+class AnalysisTable(tables.IsDescription):
+	def __init__(self, **coldatatype):
+		for key in coldatatype:
+			setattr(self, key, coldatatype[key])
 
 def initTable(file, tablename, tabletitle, groupname, grouptitle, TABLETYPE):
-	# assumes that this appends ??
-	# can pass classes?
 	table = file.createTable(file.root._f_getChild(groupname), tablename, TABLETYPE)
-	
 	return table
 
 
@@ -56,16 +65,18 @@ grouptitle= ''
 h5file = tables.openFile(filename, mode="w", title=tabletitle)
 group = h5file.createGroup("/", groupname, grouptitle)	
 
-dirList = os.listdir('rg')
-tableList = []
-for d in dirList:
-	path = os.path.join('rg', d)
-	filesList = os.listdir(path)
-	table = initTable(h5file, "Rg_"+d, "rg data", "Protein", "global properties", RGTable)
-	for filename in filesList:
-		partnum,replicanum = parseFilename(filename)
-		loadIntoTable(table, partnum, replicanum, os.path.join(path,filename))
-		tableList.append(table)
+table = initTable(h5file, "Rg", "rg data", "Protein", "global properties", AnalysisTable(time="tables.Int32Col()", partnum="tables.Int32Col()", replicanum="tables.Int32Col()", rgval="tables.Float32Col()"))
+
+#dirList = os.listdir('rg')
+#tableList = []
+#for d in dirList:
+#	path = os.path.join('rg', d)
+#	filesList = os.listdir(path)
+#	table = initTable(h5file, "Rg_"+d, "rg data", "Protein", "global properties", RGTable)
+#	for filename in filesList:
+#		partnum,replicanum = parseFilename(filename)
+#		loadIntoTable(table, partnum, replicanum, os.path.join(path,filename))
+#		tableList.append(table)
 		
 h5file.close()
 
