@@ -12,15 +12,21 @@ class Loader:
 		self._result = result.Result()
 
 	def load(self, analysisName, TableStructure, analysisRoot):
+		
+		print "your analysisRoot is", analysisRoot
+
 		dirList = os.listdir(analysisRoot)
-		assert len(dirList) > 0, "%s does not have any subdirs" % analysisRoot 
-		print dirList	
+		#dironly = filter(os.path.isdir, dirList)
+
+		# note I don't like assertions errors
+		#assert len(dironly) > 0, "%s does not have any subdirs" % analysisRoot 
+
 		for dir in dirList:
 			filesList = os.listdir(os.path.join(analysisRoot,dir))
-			print filesList
+			#print filesList
 			for file in filesList:
 				path = os.path.join(analysisRoot, os.path.join(dir,file))
-				print path
+				#print path
 				data = self._xvgfile.parse(TableStructure,path)
 				table = self._result.addToTable(data, group='Protein', tableName=analysisName, tableStruct=TableStructure)
 		return table

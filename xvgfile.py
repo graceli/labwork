@@ -16,12 +16,17 @@ class XVGFile:
 		
 		#read in the contents from the flat xvg file
 		self.data = []
-		r=csv.DictReader(open(filename), rowtype.keys(), delimiter=' ', skipinitialspace=True)
+		colsDescription = rowtypes.Description(rowtype)
+		colNamesInOrder = colsDescription._v_names	
+	
+		r=csv.DictReader(open(filename), colNamesInOrder, delimiter=' ', skipinitialspace=True)
 		for line in r:
-			if line.values()[0] == "#" or line.values()[0] == "@":
-			#	print "parsed out", line
+			print line
+			if "#" in line.values() or "@" in line.values():
+				print "parsed out", line
 				continue
 			else:			
+				print line
 				newrow = self._converted(rowtype, line)
 				self.data.append(tuple(newrow))
 			#	print "appending", newrow
@@ -51,6 +56,6 @@ class XVGFile:
 
 if __name__ == "__main__":
 	a=XVGFile()
-	data = a.parse(rowtypes.DefaultTable, "part1_replica131.xvg")
+	data = a.parse(rowtypes.DefaultTable, "data/default/part1/part1_replica131.xvg")
 	print data
 	

@@ -5,3 +5,4 @@ agent = Loader()
 
 agent.load('rg', rowtypes.RGTable,'data/rg')
 agent.load('sas',rowtypes.SASTable, 'data/sasa')
+
