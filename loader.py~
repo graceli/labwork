@@ -13,7 +13,6 @@ class Loader:
 
 	def load(self, analysisName, TableStructure, analysisRoot):
 		dirList = os.listdir(analysisRoot)
-		assert len(dirList) > 0, "%s does not have any subdirs" % analysisRoot 
 		print dirList	
 		for dir in dirList:
 			filesList = os.listdir(os.path.join(analysisRoot,dir))

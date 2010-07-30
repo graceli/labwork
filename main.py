@@ -1,6 +1,7 @@
-import loader.py
+# -*- coding: utf-8 -*-
+from loader import *
 
-agent = loader.Loader()
+agent = Loader()
 
-agent.load('rg', 'data/rg')
-agent.load('sas', 'data/sasa')
+agent.load('rg', rowtypes.RGTable,'data/rg')
+agent.load('sas',rowtypes.SASTable, 'data/sasa')
