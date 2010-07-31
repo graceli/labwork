@@ -1,7 +1,0 @@
-# -*- coding: utf-8 -*-
-from loader import *
-
-agent = Loader()
-
-agent.load('rg', 'data/rg')
-agent.load('sas', 'data/sasa')
