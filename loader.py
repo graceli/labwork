@@ -33,5 +33,5 @@ class Loader:
 
 if __name__ == "__main__":
 	a=Loader()
-	table = a.load('default',rowtypes.DefaultTable, 'default')
+	table = a.load('default',rowtypes.RGTable, 'data/rg')
 
