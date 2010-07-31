@@ -28,10 +28,13 @@ class Loader:
 				path = os.path.join(analysisRoot, os.path.join(dir,file))
 				#print path
 				data = self._xvgfile.parse(TableStructure,path)
+
+				print "Data to be added to table:", data
+
 				table = self._result.addToTable(data, group='Protein', tableName=analysisName, tableStruct=TableStructure)
 		return table
 
 if __name__ == "__main__":
 	a=Loader()
-	table = a.load('default',rowtypes.RGTable, 'data/rg')
+	table = a.load('rg',rowtypes.RGTable, 'data/rg')
 

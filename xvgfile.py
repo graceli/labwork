@@ -18,34 +18,46 @@ class XVGFile:
 		self.data = []
 		colsDescription = rowtypes.Description(rowtype)
 		colNamesInOrder = colsDescription._v_names	
+
+		print "colNamesInOrder:", colNamesInOrder
 	
 		r=csv.DictReader(open(filename), colNamesInOrder, delimiter=' ', skipinitialspace=True)
+
 		for line in r:
 			print line
 			if "#" in line.values() or "@" in line.values():
 				print "parsed out", line
 				continue
 			else:			
-				print line
-				newrow = self._converted(rowtype, line)
+				print "inserting", line
+				newrow = self._converted(colsDescription._v_types, colNamesInOrder, line)
 				self.data.append(tuple(newrow))
-			#	print "appending", newrow
+				print "appending", newrow
 				 
 		return self.data
 	
-	def _converted(self,rowtype, row):
-		newrow = []
-		for key in rowtype.keys():
-		#	print key, rowtype[key]
-			if rowtype[key] == rowtypes.Int32Col():
-				newrow.append(int(row[key]))
-			#	print "converted", key, rowtype[key], "to int"
-				
-			elif rowtype[key] == rowtypes.Float32Col():
-				newrow.append(float(row[key]))
-			#	print "converted", key, rowtype[key], "to float"
+	def _converted(self, vtypes, colnames, line):
+		# pre: colnames are assumed to be in order
+		#      vtypes is a dictionary of table column names and their 
+		#	   data types as defined in PyTable
+		# post: newrow is a table row with table columns ordered 
+		#       exactly as provided in colnames
+
+		newrow = [0]*len(colnames)
+		print "initial newrow", newrow
+		for key in vtypes.keys():
+			# find position of the current key (table column name)
+			# in the in order list of column names
+			pos = colnames.index(key) 
+			print key, pos, line[key]
+			if vtypes[key] == 'int32':
+				newrow[pos] = int(line[key])
+			elif vtypes[key]== 'float32':
+				newrow[pos] = float(line[key])
 			else:
-				newrow.append(row[key])
+				# note inserting value of unknown type
+				# might cause an error
+				newrow[pos] = line[key]
 
 		return newrow
 		
@@ -56,6 +68,9 @@ class XVGFile:
 
 if __name__ == "__main__":
 	a=XVGFile()
-	data = a.parse(rowtypes.DefaultTable, "data/default/part1/part1_replica131.xvg")
+	#data = a.parse(rowtypes.DefaultTable, "data/default/part1/part1_replica131.xvg")
+	#print data
+
+	data = a.parse(rowtypes.RGTable, "data/rg/part1/part1_replica131.xvg")
 	print data
 	

@@ -33,11 +33,14 @@ if __name__ == "__main__":
 	d = Description(DefaultTable)
 	print d	
 	print d._v_names
+	print d._v_types
 
 	r = Description(RGTable)
 	print r
 	print r._v_names
+	print r._v_types
 
 	s = Description(SASTable)
 	print s
 	print s._v_names
+	print s._v_types
