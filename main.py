@@ -7,6 +7,12 @@ import glob
 import subprocess
 import shlex
 
+def interactive():
+	answer= raw_input("would you liked to continue?[y/n]")
+	if answer == "n":
+		sys.exit(0)
+
+
 def main():
 	"""docstring for main"""
 
@@ -25,9 +31,10 @@ def main():
 	
 	for tarfile in tarfileslist:
 		print "inflating", tarfile
-		answer= raw_input("would you liked to continue?[y/n]")		
-		if answer == "n":
-			sys.exit(0)
+	
+		if sys.argv[1] == "-i":
+			interactive()
+	
 	
 		command = "tar xvf %(tarfile)s" % vars() 
 		args = shlex.split(command)
@@ -45,32 +52,30 @@ def main():
 		xtcList = os.listdir(xtcpath)
 		print "these are the xtcs to be analyzed", xtcList
 		
-		answer= raw_input("would you liked to continue?[y/n]")
-		if answer == "n":
-			sys.exit(0)
 
-
+		if sys.argv[1] == "-i":
+			interactive()
+			
 		# analyze xtc files
 		for xtcfile in xtcList:
 			traj = xtc.Xtc(current, path, xtcfile, 'sh3.tpr')
-			rgpath = traj.rg()
-			aloader.load('rg', rowtypes.RGTable, 3)
+
+			base, ext = os.path.splitext(xtcfile)
+			
+			#rgpath = traj.rg()
+			#aloader.load('rg', rowtypes.RGTable, 3)
 	
-			#sasapath = xtc.sasa()
-			#aloader.load('sas', rowtypes.SASTable, 4)
-		
-			#aloader.load('sas', rowtypes.SASTable, replicaMeta)
+			sasapath = traj.sasa()
+			aloader.load(base+'.xvg', 'sas', rowtypes.SASTable, 3)
+
 			#aloader.load('eed', rowtypes.EEDTable, replicaMeta)
 			#aloader.load('dihedral', rowtypes.DihedralTable, replicaMeta)
 			#aloader.load('energy', rowtypes.EnergyTable, replicaMeta)
-			answer= raw_input("would you liked to continue?[y/n]")
-			if answer == "n":
-				sys.exit(0)
+
+			if sys.argv[1] == "-i":
+				interactive()
 			
-			
-		
-	
-	
 
 if __name__ == '__main__':
 	main()
+

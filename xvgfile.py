@@ -7,6 +7,12 @@ class XVGFile:
 	#(an output of a gromacs analysis tool)
 	#The data from the xvg file is represented as an M by N-tuple, where M is the number of rows in the xvg file
 	#and N is the number of columns in the row
+	def __init__(self):
+		self.data = []
+
+	def __del__(self):
+		del self.data
+
 	def parse(self, rowtype, fixed, filename):
 		stripped = os.path.basename(filename)
 		print stripped
@@ -14,7 +20,10 @@ class XVGFile:
 		self.replicanum, self.seqnum, self.temp,garb = stripped[2:].split(".")
 		
 		#read in the contents from the flat xvg file
-		self.data = []
+		data = []
+
+		print data
+
 		colsDescription = rowtypes.Description(rowtype)
 		colNamesInOrder = colsDescription._v_names[fixed:]	
 
@@ -42,20 +51,21 @@ class XVGFile:
 				rowdict['replicanum'] = int(self.replicanum)
 #				rowdict['partnum'] = int(self.partnum)
 				rowdict['seqnum'] = int(self.seqnum)
-
+				
 				newrow = [ rowdict['temp'], rowdict['replicanum'], rowdict['seqnum'] ]
 				#print "inserting line as dict", rowdict	
 				readinrow = self._converted(colsDescription._v_types, colNamesInOrder, rowdict)
 				newrow.extend(readinrow)	
-				#print newrow
 				print "appending new row (as a tuple)", newrow
 				print "size",len(newrow)
 				numappended+=1
-				self.data.append(tuple(newrow))
+				data.append(tuple(newrow))
+				print "data so far is", data
+
 
 		print "total number of lines appended=", numappended 
 
-		return self.data
+		return data
 
 	def _find(self, str, list):
 		for item in list:

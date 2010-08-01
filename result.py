@@ -33,7 +33,7 @@ class Result:
 
 	def __del__(self):
 		self._h5file.close()	
-		os.system("cp %(self.templocation)s %(self.location)s" % vars())
+		os.system("mv %s %s" % (self.templocation, self.location))
 		print "the file", self._filename,"has been copied to", self.location
 		
 	def addToTable(self, data, **tableinitparams):

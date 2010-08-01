@@ -26,6 +26,12 @@ class Xtc(object):
 
 	def meta():
 		return {'replicanum':self.replicanum, 'seqnum':self.seqnum,'temp':self.temp}	
+	
+	def _createOutput(self, analysisName):
+		output = os.path.join(self.root, analysisName)
+		if not os.path.exists(output):
+			os.mkdir(os.path.join(self.root, analysisName))
+		return output
 
 	def rg(self):
 		#current dir/
@@ -34,40 +40,38 @@ class Xtc(object):
 		#    xtc/
 		#    edr/
 		#    system.tpr
-
-		output = os.path.join(self.root, 'rg')
-		if not os.path.exists(output):
-			os.mkdir(os.path.join(self.root, 'rg'))		
+		
+		output = self._createOutput('rg')
+		rgpath = output	
+		indexfile = os.path.join(self.root, 'rg.ndx')
+		selection = {'group1' : 'Protein'}
+		
+		group = selection['group1']
+		command = "g_gyrate -f %s -s %s -n %s -o %s" % (self.xtcname,self.tprname,indexfile,os.path.join(rgpath,self.basename))
 
 		print "outputting in", output
 		print output, "created"
-		rgpath = output	
-		indexfile = os.path.join(self.path, 'rg.ndx')
-		selection = {'group1' : 'Protein'}
-		
-		print "checking in", self.path
+		print "checking in", self.root
 		print "checking for", indexfile
 		print "checking for", selection['group1']
-	
-		group = selection['group1']
-			
-		command = "g_gyrate -f %s -s %s -n %s -o %s" % (self.xtcname,self.tprname,indexfile,os.path.join(rgpath,self.basename))
-
 		print "running ", command
+
 		code = subprocess.Popen(shlex.split(command), stdin=subprocess.PIPE).communicate(selection['group1'])
 
-		#print code	
-				
 		return rgpath
 		
-	def sasa(**selection):
-		indexfile = os.path.join(self.path, 'sasa.ndx')
+	def sasa(self):
+		output = self._createOutput('sas')
+		saspath = output
+		indexfile = os.path.join(self.root, 'sas.ndx')
 		selection = {'group1':'Protein', 'group2':'Protein'}
-		path = os.path.join(path, 'sas')
-		
-		os.system("echo %(selection['group1']) %(selection['group2']) | g_sas -f %(xtcname) -s %(tprname) -n %(indexfile) -o %(path)/%(basename)_sas")
 
-		return path
+		group1 = selection['group1']
+		group2 = selection['group2']
+		command = "g_sas -f %s -s %s -n %s -o %s" % (self.xtcname,self.tprname,indexfile,os.path.join(saspath,self.basename))
+		code = subprocess.Popen(shlex.split(command),  stdin=subprocess.PIPE).communicate("%s %s" % (selection['group1'], selection['group2']))	
+
+		return saspath
 		
 	#def dihedral(**selection):
 		#mkdir dihedral
