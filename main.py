@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from loader import *
 import xtc
 import sys
@@ -10,7 +12,7 @@ def main():
 
 	current = os.getcwd()	
 	target = '/dev/shm'
-	aloader = Loader(current, target)
+	aloader = Loader(current)
 	
 	#list tar filse
 	tarfileslist = glob.glob("*.tar") #glob.glob(os.path.join(current, '*.tar'))
@@ -22,7 +24,11 @@ def main():
 	fnull = open(os.devnull, 'w')
 	
 	for tarfile in tarfileslist:
-		print "processing", tarfile
+		print "inflating", tarfile
+		answer= raw_input("would you liked to continue?[y/n]")		
+		if answer == "n":
+			sys.exit(0)
+	
 		command = "tar xvf %(tarfile)s" % vars() 
 		args = shlex.split(command)
 		code = subprocess.call(args)
@@ -37,12 +43,18 @@ def main():
 		
 		xtcpath = os.path.join(path, 'xtcs')
 		xtcList = os.listdir(xtcpath)
-		print xtcList
+		print "these are the xtcs to be analyzed", xtcList
+		
+		answer= raw_input("would you liked to continue?[y/n]")
+		if answer == "n":
+			sys.exit(0)
+
+
 		# analyze xtc files
 		for xtcfile in xtcList:
-			traj = xtc.Xtc(path, xtcfile, 'sh3.tpr')
+			traj = xtc.Xtc(current, path, xtcfile, 'sh3.tpr')
 			rgpath = traj.rg()
-			#aloader.load('rg', rowtypes.RGTable, 4)
+			aloader.load('rg', rowtypes.RGTable, 3)
 	
 			#sasapath = xtc.sasa()
 			#aloader.load('sas', rowtypes.SASTable, 4)
@@ -51,6 +63,11 @@ def main():
 			#aloader.load('eed', rowtypes.EEDTable, replicaMeta)
 			#aloader.load('dihedral', rowtypes.DihedralTable, replicaMeta)
 			#aloader.load('energy', rowtypes.EnergyTable, replicaMeta)
+			answer= raw_input("would you liked to continue?[y/n]")
+			if answer == "n":
+				sys.exit(0)
+			
+			
 		
 	
 	

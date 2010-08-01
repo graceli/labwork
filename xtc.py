@@ -4,9 +4,9 @@ import shlex
 
 class Xtc(object):
 	"""docstring for XTC"""
-	def __init__(self, path, xtcfile, tprfile):		
+	def __init__(self, root, path, xtcfile, tprfile):		
 		prefix = 'ST'
-		
+		self.root = root	
 		basename = xtcfile[0:len(xtcfile)-4]
 		self.basename = basename
 		noprebasename = xtcfile[len(prefix):len(xtcfile)-4]
@@ -16,14 +16,17 @@ class Xtc(object):
 		edr = basename + '.edr'
 		xtc = basename + '.xtc'
 				
-		self.tprname = os.path.join(path, tprfile)
+		self.tprname = os.path.join(self.root, tprfile)
 		self.xtcname = os.path.join(os.path.join(path, 'xtcs'), xtc)
 		self.edrname = os.path.join(os.path.join(path, 'edr'), edr) 
 
 		print "initialized for analysis"
 		print self.tprname, self.xtcname, self.edrname, self.path		
 		#mkdir basename
-		
+
+	def meta():
+		return {'replicanum':self.replicanum, 'seqnum':self.seqnum,'temp':self.temp}	
+
 	def rg(self):
 		#current dir/
 		#    rg.ndx
@@ -31,17 +34,17 @@ class Xtc(object):
 		#    xtc/
 		#    edr/
 		#    system.tpr
-		output = os.path.join(self.path, 'rg')
+
+		output = os.path.join(self.root, 'rg')
 		if not os.path.exists(output):
-			os.mkdir(os.path.join(self.path, 'rg'))		
+			os.mkdir(os.path.join(self.root, 'rg'))		
 
 		print "outputting in", output
 		print output, "created"
-	
+		rgpath = output	
 		indexfile = os.path.join(self.path, 'rg.ndx')
 		selection = {'group1' : 'Protein'}
-		rgpath = os.path.join(self.path, 'rg')
-
+		
 		print "checking in", self.path
 		print "checking for", indexfile
 		print "checking for", selection['group1']
