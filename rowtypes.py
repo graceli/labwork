@@ -3,21 +3,26 @@
 from tables import *
 
 SASTable = {
-	'time' : Int32Col(pos=0),
-	'replicanum' : Int32Col(pos=1),
-	'seqnum' : Int32Col(pos=2),
-	'temp' : Int32Col(pos=3),
-	'hydrophobic' : Float32Col(pos=4),
-	'hydrophilic' : Float32Col(pos=5),
-	'total' : Float32Col(pos=6)
+	'temp' : Int32Col(dflt=0, pos=0),
+	'replicanum' : Int32Col(dflt=0, pos=1),
+	'seqnum' : Int32Col(dflt=0, pos=2),
+	'partnum' : Int32Col(dflt=0, pos=3),
+	'time' : Int32Col(dflt=0, pos=4),
+	'hydrophobic' : Float32Col(dflt=0.0, pos=5),
+	'hydrophilic' : Float32Col(dflt=0.0, pos=6),
+	'total' : Float32Col(dflt=0.0, pos=7)
 }
 
 RGTable = {
-	'time' : Int32Col(pos=0),
-	'replicanum' : Int32Col(pos=1),
-	'seqnum' : Int32Col(pos=2),
-	'temp' : Int32Col(pos=3),
-	'Rg' : Float32Col(pos=4)
+	'temp' : Int32Col(dflt=0, pos=0),
+	'replicanum' : Int32Col(dflt=0, pos=1),
+	'seqnum' : Int32Col(dflt=0, pos=2),
+	'partnum' : Int32Col(dflt=0, pos=3),
+	'time' : Int32Col(dflt=0, pos=4),
+	'Rg' : Float32Col(dflt=0.0, pos=5),
+	'Rgx' : Float32Col(dflt=0.0, pos=6),
+	'Rgy' : Float32Col(dflt=0.0, pos=7),
+	'Rgz' : Float32Col(dflt=0.0, pos=8)
 }
 
 

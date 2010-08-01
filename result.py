@@ -54,7 +54,7 @@ class Result:
 		table.append(data)
 		table.flush()
 
-		print "the data", data, "has been inserted into table", options['tableName']
+		print "the data has been inserted into table", options['tableName']
 
 		return table
 		
