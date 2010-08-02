@@ -24,6 +24,8 @@ class XVGFile:
 		colsDescription = rowtypes.Description(rowtype)
 		colNamesInOrder = colsDescription._v_names[fixed:]	
 
+		print colNamesInOrder
+
 		#r=csv.DictReader(open(filename), colNamesInOrder, delimiter=' ', skipinitialspace=True)
 		r = csv.reader(open(filename), delimiter=' ', skipinitialspace=True)
 
@@ -32,10 +34,12 @@ class XVGFile:
 			if self._find('#', line) or self._find('@', line):
 				continue
 			else:			
+				print line
 				#print "inserting", line
 				#reconstruct dictionary for row
 				rowdict = {}
 				for i in range(0, len(colNamesInOrder)):
+					print i
 					key = colNamesInOrder[i]
 					rowdict[key] = line[i]
   				

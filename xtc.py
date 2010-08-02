@@ -72,7 +72,27 @@ class Xtc(object):
 		code = subprocess.Popen(shlex.split(command),  stdin=subprocess.PIPE).communicate("%s %s" % (selection['group1'], selection['group2']))	
 
 		return saspath
+
+
+	def eed(self):
+		eedpath = self._createOutput('eed')
+		indexfile = os.path.join(self.root, 'eed.ndx')
+		selection = {'group1' : 0, 'group2' : 1}
+		group1 = selection['group1']
+		group2 = selection['group2']
+		command = "g_eed -f %s -s %s -n %s -o %s" % (self.xtcname,self.tprname,indexfile,os.path.join(eedpath,self.basename))
+		code = subprocess.Popen(shlex.split(command),  stdin=subprocess.PIPE).communicate("%s %s" % (selection['group1'], selection['group2']))	
+
+		return eedpath	
 	
+	def rama(self):
+		ramapath = self._createOutput('rama')
+		indexfile = os.path.join(self.root, 'rama.ndx')
+		command = "g_rama -f %s -s %s -o %s" % (self.xtcname,self.tprname,os.path.join(ramapath,self.basename))
+		code = subprocess.Popen(shlex.split(command), stdout=open(os.devnull, 'w'), stderr=open(os.devnull,'w'))
+		return ramapath  		
+		
+
 	# add an analysis call here	
 	#def dihedral(**selection):
 		#mkdir dihedral

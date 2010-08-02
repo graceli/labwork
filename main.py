@@ -76,11 +76,16 @@ def main():
 
 			base, ext = os.path.splitext(os.path.basename(xtcfile))
 			
+
+			ramapath = traj.rama()
 			rgpath = traj.rg()
-			aloader.load(base + '.xvg', 'rg', rowtypes.RGTable, 3)
-	
 			sasapath = traj.sasa()
+			eedpath = traj.eed()
+
+			aloader.load(base + '.xvg', 'rg', rowtypes.RGTable, 3)
 			aloader.load(base + '.xvg', 'sas', rowtypes.SASTable, 3)
+			aloader.load(base + '.xvg', 'eed', rowtypes.EETable, 3)
+			aloader.load(base + '.xvg', 'rama', rowtypes.RamaTable, 3)
 
 			#aloader.load('eed', rowtypes.EEDTable, replicaMeta)
 			#aloader.load('dihedral', rowtypes.DihedralTable, replicaMeta)
@@ -92,14 +97,17 @@ def main():
 		### need to clean up /dev/shm here after each tar is processed ###	
 
 		# run a bash scriptlet
-		os.system("cd /dev/shm; mkdir preserve; mv sh3.tpr *.ndx preserve; rm -rf STDR_running*; mkdir STDR_running_analyzed_%(numprocessed)s; mv rg* sas* STDR_running_analyzed_%(numprocessed)s; cp preserve/* .; tar cvf STDR_running_analyzed_%(numprocessed)s.tar STDR_running_analyzed_%(numprocessed)s; gzip STDR_running_analyzed_%(numprocessed)s.tar; cp STDR_running_analyzed_%(numprocessed)s.tar.gz %(disklocation)s; rm -rf STDR_running*; rm -r preserve; cd %(disklocation)s" % vars())
+		# add additional analysis to scriptlet
+		os.system("cd /dev/shm; mkdir preserve; mv sh3.tpr *.ndx preserve; rm -rf STDR_running*; mkdir STDR_running_analyzed_%(numprocessed)s; mv rama* rg* sas* eed* STDR_running_analyzed_%(numprocessed)s; cp preserve/* .; tar cvf STDR_running_analyzed_%(numprocessed)s.tar STDR_running_analyzed_%(numprocessed)s; gzip STDR_running_analyzed_%(numprocessed)s.tar; cp STDR_running_analyzed_%(numprocessed)s.tar.gz %(disklocation)s; rm -rf STDR_running*; rm -r preserve; cd %(disklocation)s" % vars())
 
 		numprocessed += 1
+
+	#end of the tar loop
+	#os.system("cp /dev/shm/*.h5 %(disklocation)s" % vars())
 
 
 
 if __name__ == '__main__':
 	main()
-	os.system("cp /dev/shm/*.h5 %(disklocation)s" % vars())
-	os.system("rm -rf /dev/shm/*")
+	#os.system("rm -rf /dev/shm/*")
 

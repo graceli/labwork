@@ -23,6 +23,23 @@ RGTable = {
 	'Rgz' : Float32Col(dflt=0.0, pos=7)
 }
 
+EETable = {
+	'temp' : Int32Col(dflt=0, pos=0),
+	'replicanum' : Int32Col(dflt=0, pos=1),
+	'seqnum' : Int32Col(dflt=0, pos=2),
+	'time' : Float32Col(dflt=0, pos=3),
+	'eed' : Float32Col(dflt=0.0, pos=4)
+}
+
+RamaTable = {
+	'temp' : Int32Col(dflt=0, pos=0),
+	'replicanum' : Int32Col(dflt=0, pos=1),
+	'seqnum' : Int32Col(dflt=0, pos=2),
+	#'time' : Float32Col(dflt=0, pos=3),
+	'phi' : Float32Col(dflt=0.0, pos=4),
+	'psi' : Float32Col(dflt=0.0, pos=5),
+	'residue' : StringCol(16,pos=6)
+}
 
 DefaultTable = {
 	'time' : Int32Col(pos=0),
