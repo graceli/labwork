@@ -31,7 +31,6 @@ class Xtc(object):
 
 		print "initialized for analysis"
 		print self.tprname, self.xtcname, self.edrname, self.dataroot
-		#mkdir basename
 
 	def meta():
 		return {'replicanum':self.replicanum, 'seqnum':self.seqnum,'temp':self.temp}	
@@ -43,13 +42,6 @@ class Xtc(object):
 		return output
 
 	def rg(self):
-		#current dir/
-		#    rg.ndx
-		#    sasa.ndx
-		#    xtc/
-		#    edr/
-		#    system.tpr
-		
 		output = self._createOutput('rg')
 		rgpath = output	
 		indexfile = os.path.join(self.root, 'rg.ndx')
@@ -66,7 +58,6 @@ class Xtc(object):
 		print "running ", command
 
 		code = subprocess.Popen(shlex.split(command), stdin=subprocess.PIPE).communicate(selection['group1'])
-
 		return rgpath
 		
 	def sasa(self):
@@ -81,7 +72,8 @@ class Xtc(object):
 		code = subprocess.Popen(shlex.split(command),  stdin=subprocess.PIPE).communicate("%s %s" % (selection['group1'], selection['group2']))	
 
 		return saspath
-		
+	
+	# add an analysis call here	
 	#def dihedral(**selection):
 		#mkdir dihedral
 		#class g_rama ..

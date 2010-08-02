@@ -9,33 +9,26 @@ import os
 
 class Loader:
 	def __init__(self, location):
-		print "working in", location
-
+		# location is the execution path of this class
 		self.location = location
 		self._xvgfile = xvgfile.XVGFile()
 		self._result = result.Result(location)
 	
 
 	def load(self, filename, analysisName, TableStructure, fixed):
+		# filename is the name of the analysis file
+		# analysisName is the name of the analysis eg. 'rg'
+		# TableStructure is the rowtype object to be created and inserted into the table
+		# fixed number of fixed data columns in table (ie. info is not read in from 'filename'
+
 		analysisRoot = os.path.join(self.location, analysisName)
-
-		print "your analysisRoot is", analysisRoot
-
 		xvgfilepath = os.path.join(analysisRoot, filename)
 
-		print "parsing file", xvgfilepath
-
 		data = self._xvgfile.parse(TableStructure, fixed, xvgfilepath)
-
-		print data
-		print "adding", len(data), "to table"
-
 		table = self._result.addToTable(data, group='Protein', tableName=analysisName, tableStruct=TableStructure)
 
-# why does it need to return table?
-#		return table
 
-if __name__ == "__main__":
-	a=Loader()
-	table = a.load('rg',rowtypes.RGTable, 4, 'data/rg')
+#if __name__ == "__main__":
+#	a=Loader()
+#	table = a.load('rg',rowtypes.RGTable, 4, 'data/rg')
 

@@ -18,11 +18,9 @@ class Result:
 		}
 		options.update(initparams)
 		
-		#member variable naming conventions?
 		self._filename = options['filename'] 
 		self.targetpath = targetpath
 		self.location = os.path.join(targetpath, self._filename)
-		#self.templocation = os.path.join('/dev/shm', self._filename)
 		self._h5file = tables.openFile(self.location, mode = "a", title=options['tabletitle'])
 		
 		if not self._h5file.root.__contains__(options['groupName']):
@@ -33,11 +31,8 @@ class Result:
 
 	def __del__(self):
 		self._h5file.close()	
-		#os.system("mv %s %s" % (self.templocation, self.location))
-		#print "the file", self._filename,"has been copied to", self.location
 		
 	def addToTable(self, data, **tableinitparams):
-		#dictionary embedded within a dictionary?
 		options = {
 				'groupName' : 'Protein',
 				'tableName' : 'defaultname',
@@ -76,8 +71,8 @@ class Result:
 		
 		return self._h5file.createGroup(_h5file.root, option['groupName'], option['groupDesc'])
 
-if __name__ == "__main__":
-	aresult = Result()		
-	dummyrows = [(0,1,1000,300),(1,1,1001,320)]
-	aresult.addToTable([(0,1,1000,300)])
-	aresult.addToTable(dummyrows)
+#if __name__ == "__main__":
+#	aresult = Result()		
+#	dummyrows = [(0,1,1000,300),(1,1,1001,320)]
+#	aresult.addToTable([(0,1,1000,300)])
+#	aresult.addToTable(dummyrows)

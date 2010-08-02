@@ -14,34 +14,26 @@ class XVGFile:
 		del self.data
 
 	def parse(self, rowtype, fixed, filename):
+		#parse out information from file name for the 'fixed' columns
 		stripped = os.path.basename(filename)
-		print stripped
-		# remove prefix
 		self.replicanum, self.seqnum, self.temp,garb = stripped[2:].split(".")
 		
 		#read in the contents from the flat xvg file
 		data = []
 
-		print data
-
 		colsDescription = rowtypes.Description(rowtype)
 		colNamesInOrder = colsDescription._v_names[fixed:]	
 
-		#print "colNamesInOrder:", colNamesInOrder
-	
 		#r=csv.DictReader(open(filename), colNamesInOrder, delimiter=' ', skipinitialspace=True)
 		r = csv.reader(open(filename), delimiter=' ', skipinitialspace=True)
-		#r = open(filename, 'r')
 
 		numappended = 0
 		for line in r:
-			#print "line=", line
 			if self._find('#', line) or self._find('@', line):
-				#print "parsed out", line
 				continue
 			else:			
 				#print "inserting", line
-				#reconstructo dictionary for row
+				#reconstruct dictionary for row
 				rowdict = {}
 				for i in range(0, len(colNamesInOrder)):
 					key = colNamesInOrder[i]
@@ -53,7 +45,6 @@ class XVGFile:
 				rowdict['seqnum'] = int(self.seqnum)
 				
 				newrow = [ rowdict['temp'], rowdict['replicanum'], rowdict['seqnum'] ]
-				#print "inserting line as dict", rowdict	
 				readinrow = self._converted(colsDescription._v_types, colNamesInOrder, rowdict)
 				newrow.extend(readinrow)	
 				print "appending new row (as a tuple)", newrow
@@ -107,13 +98,3 @@ class XVGFile:
 	def getData(self):
 		return self.data
 
-
-
-if __name__ == "__main__":
-	a=XVGFile()
-	#data = a.parse(rowtypes.DefaultTable, "data/default/part1/part1_replica131.xvg")
-	#print data
-
-	data = a.parse(rowtypes.RGTable, 4, "data/rg/part1/part1_replica131_rg.xvg")
-	#print data
-	

@@ -18,7 +18,7 @@ def main():
 
 	USE_DEVSHM = True
 
-	disklocation = sys.argv[2] #os.getcwd()	
+	disklocation = sys.argv[2] 
 	
 	if(USE_DEVSHM == True):
 		templocation = '/dev/shm'
@@ -61,10 +61,6 @@ def main():
 		
 		print "the data root is", tmpdataroot
 
-		# look for xtc/ dir and edr dir
-		#command = "ls -l %(templocation)s/STDR_running/xtcs %(templocation)s/STDR_running/edr" % vars()
-		#subprocess.check_call(shlex.split(command), stdout=fnull, stderr=fnull)
-		
 		xtcpath = os.path.join(tmpdataroot, 'xtcs')
 		xtcList = glob.glob(os.path.join(xtcpath,'*.xtc'))
 		print "these are the xtcs to be analyzed", xtcList
