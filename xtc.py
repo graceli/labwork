@@ -5,11 +5,16 @@ import shlex
 class Xtc(object):
 	"""docstring for XTC"""
 	def __init__(self, root, path, xtcfile, tprfile):		
+		print xtcfile
+
 		prefix = 'ST'
 		self.root = root	
 		basename = xtcfile[0:len(xtcfile)-4]
 		self.basename = basename
+
 		noprebasename = xtcfile[len(prefix):len(xtcfile)-4]
+		print noprebasename
+
 		self.replicanum, self.seqnum, self.temp = noprebasename.split('.')
 		self.path = path
 		

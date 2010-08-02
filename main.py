@@ -26,9 +26,8 @@ def main():
 		templocation = current
 
 	aloader = Loader(current)
-	
 	#list tar filse
-	tarfileslist = glob.glob("*.tar") #glob.glob(os.path.join(current, '*.tar'))
+	tarfileslist = glob.glob("*STDR_running*.tar") #glob.glob(os.path.join(current, '*.tar'))
 	assert len(tarfileslist) > 0, "there are no tar files in this directory"
 	
 	print "these are the tar files to be analyzed", tarfileslist
@@ -61,13 +60,13 @@ def main():
 		print "now in", path
 
 		# look for xtc/ dir and edr dir
-		command = "ls -l STDR_running/xtcs STDR_running/edr"
-		code = subprocess.call(shlex.split(command), stdout=fnull, stderr=fnull)
-		assert code == 0, "xtc or edr not found here"
+		#command = "ls -l %(templocation)s/STDR_running/xtcs %(templocation)s/STDR_running/edr" % vars()
+		#subprocess.check_call(shlex.split(command), stdout=fnull, stderr=fnull)
 		
 		xtcpath = os.path.join(path, 'xtcs')
-		xtcList = os.listdir(xtcpath)
+		xtcList = glob.glob(os.path.join(xtcpath,'*.xtc'))
 		print "these are the xtcs to be analyzed", xtcList
+		assert len(xtcList) > 0, "there are no xtcs found"
 		
 
 		if sys.argv[1] == "-i":
@@ -79,11 +78,11 @@ def main():
 
 			base, ext = os.path.splitext(xtcfile)
 			
-			#rgpath = traj.rg()
-			#aloader.load('rg', rowtypes.RGTable, 3)
+			rgpath = traj.rg()
+			aloader.load(base + '.xvg', 'rg', rowtypes.RGTable, 3)
 	
 			sasapath = traj.sasa()
-			aloader.load(base+'.xvg', 'sas', rowtypes.SASTable, 3)
+			aloader.load(base + '.xvg', 'sas', rowtypes.SASTable, 3)
 
 			#aloader.load('eed', rowtypes.EEDTable, replicaMeta)
 			#aloader.load('dihedral', rowtypes.DihedralTable, replicaMeta)
@@ -91,7 +90,28 @@ def main():
 
 			if sys.argv[1] == "-i":
 				interactive()
-			
+		
+		cleanup(tarfile, templocation, current)	
+
+def cleanup(tarfile, temp, disklocation):
+		print "cleaning up ..."
+		command = "rm -rf *STDR_running*"
+		os.system(command)
+
+		command = "mkdir %(tarfile)s_analysis" % vars()
+		subprocess.check_call(shlex.split(command))
+
+		command = "cp %(temp)s/* %(temp)s/%(tarfile)s_analysis" % vars()
+		os.system(command)
+
+		command = "tar cvf %(tarfile)s_analysis.tar %(tarfile)s_analysis" % vars()
+		subprocess.check_call(shlex.split(command))
+
+		command = "rm -rf %(tarfile)s_analysis" % vars()
+		subprocess.check_call(shlex.split(command))
+		
+		command = "cp %(tarfile)s_analysis.tar %(disklocation)" % vars()
+		subprocess.check_call(shlex.split(command))
 
 if __name__ == '__main__':
 	main()
