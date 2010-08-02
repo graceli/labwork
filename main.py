@@ -18,7 +18,7 @@ def main():
 
 	USE_DEVSHM = True
 
-	disklocation = os.getcwd()	
+	disklocation = sys.argv[2] #os.getcwd()	
 	
 	if(USE_DEVSHM == True):
 		templocation = '/dev/shm'
@@ -28,7 +28,7 @@ def main():
 	aloader = Loader(templocation)
 
 	#list tar filse
-	tarfileslist = glob.glob("*STDR_running*.tar") 
+	tarfileslist = glob.glob(os.path.join(disklocation, '*STDR_running*.tar'))
 	assert len(tarfileslist) > 0, "there are no tar files in this directory"
 	
 	print "these are the tar files to be analyzed", tarfileslist
@@ -95,7 +95,8 @@ def main():
 	
 		### need to clean up /dev/shm here after each tar is processed ###	
 		pytablefile =  aloader._result.location
-		os.system("cd /dev/shm; mv %s %s;  rm -rf STDR_running*; mkdir STDR_running_analyzed_%d; mv * STDR_running_analyzed_%d; tar cvf STDR_running_analyzed_%d.tar STDR_running_analyzed_%d/ --remove-files; gzip STDR_running_analyzed_%d.tar; cp STDR_running_analyzed_%d.tar %s; rm -rf /dev/shm/*" % (pytablefile, disklocation, numprocessed, numprocessed, numprocessed, numprocessed, numprocessed, numprocessed, disklocation))
+		os.system("cd /dev/shm; mkdir preserve; mv sh3.tpr *.ndx preserve; mv %s %s/analysis_%d.h5;  rm -rf STDR_running*; mkdir STDR_running_analyzed_%d; mv * STDR_running_analyzed_%d; tar cvf STDR_running_analyzed_%d.tar STDR_running_analyzed_%d/ --remove-files; gzip STDR_running_analyzed_%d.tar; cp STDR_running_analyzed_%d.tar.gz %s; rm -rf /dev/shm/STDR_running*; mv preserve/* .; rm -r preserve" % (pytablefile, disklocation, numprocessed, numprocessed, numprocessed, numprocessed, numprocessed, numprocessed, numprocessed, disklocation))
+
 		numprocessed += 1
 
 
