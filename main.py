@@ -16,8 +16,15 @@ def interactive():
 def main():
 	"""docstring for main"""
 
+	USE_DEVSHM = True
+
 	current = os.getcwd()	
-	target = '/dev/shm'
+	
+	if(USE_DEVSHM == True):
+		templocation = '/dev/shm'
+	else:
+		templocation = current
+
 	aloader = Loader(current)
 	
 	#list tar filse
@@ -28,20 +35,30 @@ def main():
 
 	#copy tar file into /dev/shm and attempt to inflate tar in /dev/shm
 	fnull = open(os.devnull, 'w')
-	
+
 	for tarfile in tarfileslist:
-		print "inflating", tarfile
+		print "inflating", tarfile, "in /dev/shm"
 	
 		if sys.argv[1] == "-i":
 			interactive()
+		
+
+		print "copying tar file to /dev/shm"
 	
-	
-		command = "tar xvf %(tarfile)s" % vars() 
+		command = "cp %(tarfile)s %(templocation)s" % vars()
+		code = subprocess.call(shlex.split(command))
+		
+		tarfile = os.path.join(templocation, tarfile)
+		file, ext = os.path.splitext(tarfile)
+		command = "tar xvf %(tarfile)s -C %(templocation)s" % vars() 
 		args = shlex.split(command)
 		code = subprocess.call(args)
 		assert code == 0, "something bad happened during untarring. Stopping."
+	
+	
+		path = os.path.join(templocation, 'STDR_running')
 		
-		path = os.path.join(current, 'STDR_running')
+		print "now in", path
 
 		# look for xtc/ dir and edr dir
 		command = "ls -l STDR_running/xtcs STDR_running/edr"
@@ -58,7 +75,7 @@ def main():
 			
 		# analyze xtc files
 		for xtcfile in xtcList:
-			traj = xtc.Xtc(current, path, xtcfile, 'sh3.tpr')
+			traj = xtc.Xtc(templocation, path, xtcfile, 'sh3.tpr')
 
 			base, ext = os.path.splitext(xtcfile)
 			

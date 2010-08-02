@@ -14,9 +14,11 @@ class Loader:
 		self.target = target
 		self._xvgfile = xvgfile.XVGFile()
 		self._result = result.Result(target)
+	
+		self.templocation = '/dev/shm'	
 
 	def load(self, file, analysisName, TableStructure, fixed):
-		analysisRoot = os.path.join(self.target, analysisName)
+		analysisRoot = os.path.join(self.templocation, analysisName)
 
 		print "your analysisRoot is", analysisRoot
 
