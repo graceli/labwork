@@ -34,7 +34,8 @@ def main():
 	print "these are the tar files to be analyzed", tarfileslist
 
 	fnull = open(os.devnull, 'w')
-
+	
+	numprocessed = 1
 	for tarfile in tarfileslist:
 		print "inflating", tarfile, "in /dev/shm"
 	
@@ -93,8 +94,9 @@ def main():
 				interactive()
 	
 		### need to clean up /dev/shm here after each tar is processed ###	
-		print "analysis file is here", aloader._result.location
-		os.system("cd /dev/shm; rm -rf STDR_running*; mkdir test; mv * test; tar cvf test.tar test/ --remove-files; cp test.tar %s; rm -rf /dev/shm/*" % disklocation)
+		pytablefile =  aloader._result.location
+		os.system("cd /dev/shm; mv %s %s;  rm -rf STDR_running*; mkdir STDR_running_analyzed_%d; mv * STDR_running_analyzed_%d; tar cvf STDR_running_analyzed_%d.tar STDR_running_analyzed_%d/ --remove-files; gzip STDR_running_analyzed_%d.tar; cp STDR_running_analyzed_%d.tar %s; rm -rf /dev/shm/*" % (pytablefile, disklocation, numprocessed, numprocessed, numprocessed, numprocessed, numprocessed, numprocessed, disklocation))
+		numprocessed += 1
 
 
 if __name__ == '__main__':
