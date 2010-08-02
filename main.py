@@ -94,12 +94,16 @@ def main():
 				interactive()
 	
 		### need to clean up /dev/shm here after each tar is processed ###	
-		pytablefile =  aloader._result.location
-		os.system("cd /dev/shm; mkdir preserve; mv sh3.tpr *.ndx preserve; mv %s %s/analysis_%d.h5;  rm -rf STDR_running*; mkdir STDR_running_analyzed_%d; mv * STDR_running_analyzed_%d; tar cvf STDR_running_analyzed_%d.tar STDR_running_analyzed_%d/ --remove-files; gzip STDR_running_analyzed_%d.tar; cp STDR_running_analyzed_%d.tar.gz %s; rm -rf /dev/shm/STDR_running*; mv preserve/* .; rm -r preserve" % (pytablefile, disklocation, numprocessed, numprocessed, numprocessed, numprocessed, numprocessed, numprocessed, numprocessed, disklocation))
+
+		# run a bash scriptlet
+		os.system("cd /dev/shm; mkdir preserve; mv sh3.tpr *.ndx preserve; rm -rf STDR_running*; mkdir STDR_running_analyzed_%(numprocessed); mv * STDR_running_analyzed_%(numprocessed); cp STDR_running_analyzed_i%(numprocessed)/preserve/* .; tar cvf STDR_running_analyzed_%(numprocessed).tar STDR_running_analyzed_%(numprocessed)/ --remove-files; gzip STDR_running_analyzed_%(numprocessed).tar; cp STDR_running_analyzed_%(numprocessed).tar.gz %(disklocation); rm -rf /dev/shm/STDR_running*; rm -r preserve; cd %(disklocation)" % vars())
 
 		numprocessed += 1
+
+	os.system("cp /dev/shm/*.h5 %(disklocation)")
 
 
 if __name__ == '__main__':
 	main()
+	os.system("rm -rf /dev/shm/*")
 
