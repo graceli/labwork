@@ -92,14 +92,14 @@ def main():
 		### need to clean up /dev/shm here after each tar is processed ###	
 
 		# run a bash scriptlet
-		os.system("cd /dev/shm; mkdir preserve; mv sh3.tpr *.ndx preserve; rm -rf STDR_running*; mkdir STDR_running_analyzed_%(numprocessed); mv * STDR_running_analyzed_%(numprocessed); cp STDR_running_analyzed_i%(numprocessed)/preserve/* .; tar cvf STDR_running_analyzed_%(numprocessed).tar STDR_running_analyzed_%(numprocessed)/ --remove-files; gzip STDR_running_analyzed_%(numprocessed).tar; cp STDR_running_analyzed_%(numprocessed).tar.gz %(disklocation); rm -rf /dev/shm/STDR_running*; rm -r preserve; cd %(disklocation)" % vars())
+		os.system("cd /dev/shm; mkdir preserve; mv sh3.tpr *.ndx preserve; rm -rf STDR_running*; mkdir STDR_running_analyzed_%(numprocessed)s; mv rg* sas* STDR_running_analyzed_%(numprocessed)s; cp preserve/* .; tar cvf STDR_running_analyzed_%(numprocessed)s.tar STDR_running_analyzed_%(numprocessed)s; gzip STDR_running_analyzed_%(numprocessed)s.tar; cp STDR_running_analyzed_%(numprocessed)s.tar.gz %(disklocation)s; rm -rf STDR_running*; rm -r preserve; cd %(disklocation)s" % vars())
 
 		numprocessed += 1
 
-	os.system("cp /dev/shm/*.h5 %(disklocation)")
 
 
 if __name__ == '__main__':
 	main()
+	os.system("cp /dev/shm/*.h5 %(disklocation)s" % vars())
 	os.system("rm -rf /dev/shm/*")
 
