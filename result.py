@@ -22,19 +22,19 @@ class Result:
 		self._filename = options['filename'] 
 		self.targetpath = targetpath
 		self.location = os.path.join(targetpath, self._filename)
-		self.templocation = os.path.join('/dev/shm', self._filename)
-		self._h5file = tables.openFile(self.templocation, mode = "a", title=options['tabletitle'])
+		#self.templocation = os.path.join('/dev/shm', self._filename)
+		self._h5file = tables.openFile(self.location, mode = "a", title=options['tabletitle'])
 		
 		if not self._h5file.root.__contains__(options['groupName']):
 			self._h5file.createGroup(self._h5file.root, options['groupName'], options['groupDesc'])
 
-		print "a h5 file", self._filename, "has been created in", self.templocation
+		print "a h5 file", self._filename, "has been created in", self.location
 		print "and a group with name",options['groupName'],"has been added"
 
 	def __del__(self):
 		self._h5file.close()	
-		os.system("mv %s %s" % (self.templocation, self.location))
-		print "the file", self._filename,"has been copied to", self.location
+		#os.system("mv %s %s" % (self.templocation, self.location))
+		#print "the file", self._filename,"has been copied to", self.location
 		
 	def addToTable(self, data, **tableinitparams):
 		#dictionary embedded within a dictionary?

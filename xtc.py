@@ -4,29 +4,33 @@ import shlex
 
 class Xtc(object):
 	"""docstring for XTC"""
-	def __init__(self, root, path, xtcfile, tprfile):		
+	def __init__(self, root, dataroot, xtcfile, tprfile):		
 		print xtcfile
 
 		prefix = 'ST'
 		self.root = root	
-		basename = xtcfile[0:len(xtcfile)-4]
+		
+		#make sure the path parts are chopped off
+		filename = os.path.basename(xtcfile)
+		basename = filename[0:len(filename)-4]
+
 		self.basename = basename
 
-		noprebasename = xtcfile[len(prefix):len(xtcfile)-4]
+		noprebasename = basename[len(prefix):]
 		print noprebasename
 
 		self.replicanum, self.seqnum, self.temp = noprebasename.split('.')
-		self.path = path
+		self.dataroot = dataroot
 		
 		edr = basename + '.edr'
 		xtc = basename + '.xtc'
 				
 		self.tprname = os.path.join(self.root, tprfile)
-		self.xtcname = os.path.join(os.path.join(path, 'xtcs'), xtc)
-		self.edrname = os.path.join(os.path.join(path, 'edr'), edr) 
+		self.xtcname = os.path.join(os.path.join(dataroot, 'xtcs'), xtc)
+		self.edrname = os.path.join(os.path.join(dataroot, 'edr'), edr) 
 
 		print "initialized for analysis"
-		print self.tprname, self.xtcname, self.edrname, self.path		
+		print self.tprname, self.xtcname, self.edrname, self.dataroot
 		#mkdir basename
 
 	def meta():

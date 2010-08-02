@@ -18,21 +18,21 @@ def main():
 
 	USE_DEVSHM = True
 
-	current = os.getcwd()	
+	disklocation = os.getcwd()	
 	
 	if(USE_DEVSHM == True):
 		templocation = '/dev/shm'
 	else:
-		templocation = current
+		templocation = disklocation
 
-	aloader = Loader(current)
+	aloader = Loader(templocation)
+
 	#list tar filse
-	tarfileslist = glob.glob("*STDR_running*.tar") #glob.glob(os.path.join(current, '*.tar'))
+	tarfileslist = glob.glob("*STDR_running*.tar") 
 	assert len(tarfileslist) > 0, "there are no tar files in this directory"
 	
 	print "these are the tar files to be analyzed", tarfileslist
 
-	#copy tar file into /dev/shm and attempt to inflate tar in /dev/shm
 	fnull = open(os.devnull, 'w')
 
 	for tarfile in tarfileslist:
@@ -40,7 +40,6 @@ def main():
 	
 		if sys.argv[1] == "-i":
 			interactive()
-		
 
 		print "copying tar file to /dev/shm"
 	
@@ -48,22 +47,24 @@ def main():
 		code = subprocess.call(shlex.split(command))
 		
 		tarfile = os.path.join(templocation, tarfile)
+
 		file, ext = os.path.splitext(tarfile)
+
 		command = "tar xvf %(tarfile)s -C %(templocation)s" % vars() 
 		args = shlex.split(command)
 		code = subprocess.call(args)
 		assert code == 0, "something bad happened during untarring. Stopping."
 	
 	
-		path = os.path.join(templocation, 'STDR_running')
+		tmpdataroot = os.path.join(templocation, 'STDR_running')
 		
-		print "now in", path
+		print "the data root is", tmpdataroot
 
 		# look for xtc/ dir and edr dir
 		#command = "ls -l %(templocation)s/STDR_running/xtcs %(templocation)s/STDR_running/edr" % vars()
 		#subprocess.check_call(shlex.split(command), stdout=fnull, stderr=fnull)
 		
-		xtcpath = os.path.join(path, 'xtcs')
+		xtcpath = os.path.join(tmpdataroot, 'xtcs')
 		xtcList = glob.glob(os.path.join(xtcpath,'*.xtc'))
 		print "these are the xtcs to be analyzed", xtcList
 		assert len(xtcList) > 0, "there are no xtcs found"
@@ -74,9 +75,9 @@ def main():
 			
 		# analyze xtc files
 		for xtcfile in xtcList:
-			traj = xtc.Xtc(templocation, path, xtcfile, 'sh3.tpr')
+			traj = xtc.Xtc(templocation, tmpdataroot, xtcfile, 'sh3.tpr')
 
-			base, ext = os.path.splitext(xtcfile)
+			base, ext = os.path.splitext(os.path.basename(xtcfile))
 			
 			rgpath = traj.rg()
 			aloader.load(base + '.xvg', 'rg', rowtypes.RGTable, 3)
@@ -90,28 +91,11 @@ def main():
 
 			if sys.argv[1] == "-i":
 				interactive()
-		
-		cleanup(tarfile, templocation, current)	
+	
+		### need to clean up /dev/shm here after each tar is processed ###	
+		print "analysis file is here", aloader._result.location
+		os.system("cd /dev/shm; rm -rf STDR_running*; mkdir test; mv * test; tar cvf test.tar test/ --remove-files; cp test.tar %s; rm -rf /dev/shm/*" % disklocation)
 
-def cleanup(tarfile, temp, disklocation):
-		print "cleaning up ..."
-		command = "rm -rf *STDR_running*"
-		os.system(command)
-
-		command = "mkdir %(tarfile)s_analysis" % vars()
-		subprocess.check_call(shlex.split(command))
-
-		command = "cp %(temp)s/* %(temp)s/%(tarfile)s_analysis" % vars()
-		os.system(command)
-
-		command = "tar cvf %(tarfile)s_analysis.tar %(tarfile)s_analysis" % vars()
-		subprocess.check_call(shlex.split(command))
-
-		command = "rm -rf %(tarfile)s_analysis" % vars()
-		subprocess.check_call(shlex.split(command))
-		
-		command = "cp %(tarfile)s_analysis.tar %(disklocation)" % vars()
-		subprocess.check_call(shlex.split(command))
 
 if __name__ == '__main__':
 	main()

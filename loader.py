@@ -8,25 +8,24 @@ import os
 # does not yet implement /dev/shm
 
 class Loader:
-	def __init__(self, target):
-		print "writing to", target	
+	def __init__(self, location):
+		print "working in", location
 
-		self.target = target
+		self.location = location
 		self._xvgfile = xvgfile.XVGFile()
-		self._result = result.Result(target)
+		self._result = result.Result(location)
 	
-		self.templocation = '/dev/shm'	
 
-	def load(self, file, analysisName, TableStructure, fixed):
-		analysisRoot = os.path.join(self.templocation, analysisName)
+	def load(self, filename, analysisName, TableStructure, fixed):
+		analysisRoot = os.path.join(self.location, analysisName)
 
 		print "your analysisRoot is", analysisRoot
 
-		path = os.path.join(analysisRoot, file)
+		xvgfilepath = os.path.join(analysisRoot, filename)
 
-		print "parsing file", path
+		print "parsing file", xvgfilepath
 
-		data = self._xvgfile.parse(TableStructure, fixed, path)
+		data = self._xvgfile.parse(TableStructure, fixed, xvgfilepath)
 
 		print data
 		print "adding", len(data), "to table"
