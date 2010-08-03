@@ -31,7 +31,7 @@ def main():
 	tarfileslist = glob.glob(os.path.join(disklocation, '*STDR_running*.tar'))
 	assert len(tarfileslist) > 0, "there are no tar files in this directory"
 	
-	print "these are the tar files to be analyzed", tarfileslist
+	#print "these are the tar files to be analyzed", tarfileslist
 
 	fnull = open(os.devnull, 'w')
 	
@@ -63,7 +63,7 @@ def main():
 
 		xtcpath = os.path.join(tmpdataroot, 'xtcs')
 		xtcList = glob.glob(os.path.join(xtcpath,'*.xtc'))
-		print "these are the xtcs to be analyzed", xtcList
+		#print "these are the xtcs to be analyzed", xtcList
 		assert len(xtcList) > 0, "there are no xtcs found"
 		
 
@@ -89,6 +89,7 @@ def main():
 			aloader.load(base + '.xvg', 'rama', rowtypes.RamaTable, 3)
 			aloader.load(base + '.q.txt', 'mdmat.q', rowtypes.QTable, 3)
 			aloader.load(base + '.contact.txt', 'mdmat.contact', rowtypes.ContactMapTable, 3)
+			os.system("rm \#*")
 
 			#aloader.load('eed', rowtypes.EEDTable, replicaMeta)
 			#aloader.load('dihedral', rowtypes.DihedralTable, replicaMeta)
