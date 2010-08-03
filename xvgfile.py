@@ -61,7 +61,7 @@ class XVGFile:
 				#print "data so far is", data
 
 
-		print "total number of lines appended=", numappended 
+#		print "total number of lines appended=", numappended 
 
 		return data
 

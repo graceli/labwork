@@ -26,8 +26,8 @@ class Result:
 		if not self._h5file.root.__contains__(options['groupName']):
 			self._h5file.createGroup(self._h5file.root, options['groupName'], options['groupDesc'])
 
-		print "a h5 file", self._filename, "has been created in", self.location
-		print "and a group with name",options['groupName'],"has been added"
+		#print "a h5 file", self._filename, "has been created in", self.location
+		#print "and a group with name",options['groupName'],"has been added"
 
 	def __del__(self):
 		self._h5file.close()	
@@ -40,7 +40,7 @@ class Result:
 				'tableStruct' : rowtypes.DefaultTable
 		}
 		options.update(tableinitparams)
-		print "group to be added to is", options['groupName']
+		#print "group to be added to is", options['groupName']
 	
 		assert self._h5file.root.__contains__(options['groupName']) == True, "group is not found add the group first"
 			
@@ -48,15 +48,15 @@ class Result:
 
 		if group.__contains__(options['tableName']):
 			table = group._f_getChild(options['tableName'])
-			print "table", options['tableName'], "already exists"
+			#print "table", options['tableName'], "already exists"
 		else:
-			table = self._h5file.createTable(group, options['tableName'], options['tableStruct'], options['tableTitle'])
-			print "table", options['tableName'], "created"
+			table = self._h5file.createTable(group, options['tableName'], options['tableStruct'], options['tableTitle'], expectedrows=200)
+			#print "table", options['tableName'], "created"
 		
 		table.append(data)
 		table.flush()
 
-		print "the data has been inserted into table", options['tableName']
+		#print "the data has been inserted into table", options['tableName']
 
 		return table
 		

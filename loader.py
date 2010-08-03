@@ -29,7 +29,7 @@ class Loader:
 		analysisRoot = os.path.join(self.location, name)
 		xvgfilepath = os.path.join(analysisRoot, filename)
 		
-		print "Loader.load: parsing", xvgfilepath
+		#print "Loader.load: parsing", xvgfilepath
 		
 		data = self._xvgfile.parse(TableStructure, fixed, xvgfilepath)
 		table = self._result.addToTable(data, group='Protein', tableName=analysisName, tableStruct=TableStructure)

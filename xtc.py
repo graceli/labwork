@@ -5,7 +5,7 @@ import shlex
 class Xtc(object):
 	"""docstring for XTC"""
 	def __init__(self, root, dataroot, xtcfile, tprfile):		
-		print xtcfile
+		#print xtcfile
 
 		prefix = 'ST'
 		self.root = root	
@@ -17,7 +17,7 @@ class Xtc(object):
 		self.basename = basename
 
 		noprebasename = basename[len(prefix):]
-		print noprebasename
+		#print noprebasename
 
 		self.replicanum, self.seqnum, self.temp = noprebasename.split('.')
 		self.dataroot = dataroot
@@ -29,8 +29,8 @@ class Xtc(object):
 		self.xtcname = os.path.join(os.path.join(dataroot, 'xtcs'), xtc)
 		self.edrname = os.path.join(os.path.join(dataroot, 'edr'), edr) 
 
-		print "initialized for analysis"
-		print self.tprname, self.xtcname, self.edrname, self.dataroot
+		#print "initialized for analysis"
+		#print self.tprname, self.xtcname, self.edrname, self.dataroot
 
 	def meta():
 		return {'replicanum':self.replicanum, 'seqnum':self.seqnum,'temp':self.temp}	
@@ -50,14 +50,14 @@ class Xtc(object):
 		group = selection['group1']
 		command = "g_gyrate -f %s -s %s -n %s -o %s" % (self.xtcname,self.tprname,indexfile,os.path.join(rgpath,self.basename))
 
-		print "outputting in", output
-		print output, "created"
-		print "checking in", self.root
-		print "checking for", indexfile
-		print "checking for", selection['group1']
-		print "running ", command
+		#print "outputting in", output
+		#print output, "created"
+		#print "checking in", self.root
+		#print "checking for", indexfile
+		#print "checking for", selection['group1']
+		#print "running ", command
 
-		code = subprocess.Popen(shlex.split(command), stdin=subprocess.PIPE).communicate(selection['group1'])
+		code = subprocess.Popen(shlex.split(command), stdout=open(os.devnull, 'w'), stderr=open(os.devnull,'w'), stdin=subprocess.PIPE).communicate(selection['group1'])
 		return rgpath
 		
 	def sasa(self):
@@ -69,7 +69,7 @@ class Xtc(object):
 		group1 = selection['group1']
 		group2 = selection['group2']
 		command = "g_sas -f %s -s %s -n %s -o %s" % (self.xtcname,self.tprname,indexfile,os.path.join(saspath,self.basename))
-		code = subprocess.Popen(shlex.split(command),  stdin=subprocess.PIPE).communicate("%s %s" % (selection['group1'], selection['group2']))	
+		code = subprocess.Popen(shlex.split(command), stdout=open(os.devnull, 'w'), stderr=open(os.devnull,'w'), stdin=subprocess.PIPE).communicate("%s %s" % (selection['group1'], selection['group2']))	
 
 		return saspath
 
@@ -81,7 +81,7 @@ class Xtc(object):
 		group1 = selection['group1']
 		group2 = selection['group2']
 		command = "g_eed -f %s -s %s -n %s -o %s" % (self.xtcname,self.tprname,indexfile,os.path.join(eedpath,self.basename))
-		code = subprocess.Popen(shlex.split(command),  stdin=subprocess.PIPE).communicate("%s %s" % (selection['group1'], selection['group2']))	
+		code = subprocess.Popen(shlex.split(command), stdout=open(os.devnull, 'w'), stderr=open(os.devnull,'w'), stdin=subprocess.PIPE).communicate("%s %s" % (selection['group1'], selection['group2']))	
 
 		return eedpath	
 	
@@ -100,8 +100,10 @@ class Xtc(object):
 	
 		selection = {'group1':'C-alpha'}
 		
-		command = "/home/grace/bin/g_mdmat_g -f %s -s %s -t 0.6 -txt-dist a.txt -txt-contact %s.contact.txt -txt-native %s.q.txt" % (self.xtcname, self.tprname, name, name)
-		code = subprocess.Popen(shlex.split(command), stdin=subprocess.PIPE).communicate("%s" %(selection['group1']))
+		command = "/home/grace/bin/g_mdmat_g -f %s -s %s -t 0.6 -mean %s -txt-dist %s.dist.txt -txt-contact %s.contact.txt -txt-native %s.q.txt" % (self.xtcname, self.tprname, name, name, name, name)
+		code = subprocess.Popen(shlex.split(command),  stdout=open(os.devnull, 'w'), stderr=open(os.devnull,'w'), stdin=subprocess.PIPE).communicate("%s" %(selection['group1']))
+		return mdmatpath
+		
 
 	# add an analysis call here	
 	#def dihedral(**selection):

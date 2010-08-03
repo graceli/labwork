@@ -13,23 +13,25 @@ def interactive():
 	if answer == "n":
 		sys.exit(0)
 
-def start_logging(session, loglevel):
-	logname = 'a.log'
-	logging.basicConfig(filename=session+'.log', level=loglevel,
+def start_logging(logname, loglevel):
+	logging.basicConfig(filename=logname, level=loglevel,
 				     	format='%(asctime)s %(levelname)s %(message)s')	
-	logging.debug("=== starting %(session)s extraction ===" % vars())
 
 
 
 def main():
 	"""docstring for main"""
+
+	if len(sys.argv) < 4:
+		print "usage: main.py [-i | -r] sessionname working-dir"
+		sys.exit(0)
 	
 	option = sys.argv[1]
 	sessionname = sys.argv[2]
 	disklocation = sys.argv[3] 
 	USE_DEVSHM = True
 	
-	start_logging(sessionname, logging.CRITICAL)
+	start_logging(os.path.join(disklocation,sessionname+'.log'), logging.CRITICAL)
 
 	#logging.debug("this is a test")
 
@@ -66,10 +68,11 @@ def main():
 
 		command = "tar xvf %(tarfile)s -C %(templocation)s" % vars() 
 		args = shlex.split(command)
-		code = subprocess.call(args)
-		assert code == 0, "something bad happened during untarring. Stopping."
+		#subprocess.Popen(args, stdout=open(os.devnull), stderr=open(os.devnull))
+		subprocess.call(args, stdout=open(os.devnull), stderr=open(os.devnull))
+		#assert code == 0, "something bad happened during untarring. Stopping."
 	
-	
+			
 		tmpdataroot = os.path.join(templocation, 'STDR_running')
 		
 		logging.debug("the data root is %s", tmpdataroot)
@@ -104,8 +107,6 @@ def main():
 			aloader.load(base + '.contact.txt', 'mdmat.contact', rowtypes.ContactMapTable, 3)
 			os.system("rm \#*")
 
-			#aloader.load('eed', rowtypes.EEDTable, replicaMeta)
-			#aloader.load('dihedral', rowtypes.DihedralTable, replicaMeta)
 			#aloader.load('energy', rowtypes.EnergyTable, replicaMeta)
 
 			if option == "-i":
@@ -115,17 +116,17 @@ def main():
 
 		# run a bash scriptlet
 		# add additional analysis to scriptlet
-		os.system("cd /dev/shm; mkdir preserve; mv sh3.tpr *.ndx preserve; rm -rf STDR_running*; mkdir STDR_running_analyzed_%(numprocessed)s; mv mdmat* rama* rg* sas* eed* STDR_running_analyzed_%(numprocessed)s; cp preserve/* .; tar cvf STDR_running_analyzed_%(numprocessed)s.tar STDR_running_analyzed_%(numprocessed)s; gzip STDR_running_analyzed_%(numprocessed)s.tar; cp STDR_running_analyzed_%(numprocessed)s.tar.gz %(disklocation)s; rm -rf STDR_running*; rm -r preserve; cd %(disklocation)s" % vars())
+#		os.system("cd /dev/shm; mkdir preserve; mv sh3.tpr *.ndx preserve; rm -rf STDR_running*; mkdir STDR_running_analyzed_%(numprocessed)s; mv mdmat* rama* rg* sas* eed* STDR_running_analyzed_%(numprocessed)s; cp preserve/* .; tar cvf STDR_running_analyzed_%(numprocessed)s.tar STDR_running_analyzed_%(numprocessed)s; gzip STDR_running_analyzed_%(numprocessed)s.tar; cp STDR_running_analyzed_%(numprocessed)s.tar.gz %(disklocation)s; rm -rf STDR_running*; rm -r preserve; cd %(disklocation)s" % vars())
 
 		numprocessed += 1
 
 	#end of the tar loop
 	os.system("cp /dev/shm/*.h5 %(disklocation)s" % vars())
-	os.system("rm \#*")
+	os.system("rm /dev/shm/\#*")
 
 
 
 if __name__ == '__main__':
 	main()
-	os.system("rm -rf /dev/shm/*")
+#	os.system("rm -rf /dev/shm/*")
 
