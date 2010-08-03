@@ -20,8 +20,13 @@ class Loader:
 		# analysisName is the name of the analysis eg. 'rg'
 		# TableStructure is the rowtype object to be created and inserted into the table
 		# fixed number of fixed data columns in table (ie. info is not read in from 'filename'
+		
+		if analysisName.find(".") != -1:
+			name,ext=analysisName.split(".")
+		else:
+			name = analysisName
 
-		analysisRoot = os.path.join(self.location, analysisName)
+		analysisRoot = os.path.join(self.location, name)
 		xvgfilepath = os.path.join(analysisRoot, filename)
 		
 		print "Loader.load: parsing", xvgfilepath

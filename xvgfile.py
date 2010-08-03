@@ -16,7 +16,10 @@ class XVGFile:
 	def parse(self, rowtype, fixed, filename):
 		#parse out information from file name for the 'fixed' columns
 		stripped = os.path.basename(filename)
-		self.replicanum, self.seqnum, self.temp,garb = stripped[2:].split(".")
+		parts = stripped[2:].split(".")
+		self.replicanum = parts[0]
+		self.seqnum = parts[1]
+		self.temp = parts[2]
 		
 		#read in the contents from the flat xvg file
 		data = []
@@ -24,23 +27,23 @@ class XVGFile:
 		colsDescription = rowtypes.Description(rowtype)
 		colNamesInOrder = colsDescription._v_names[fixed:]	
 
-		print colNamesInOrder
+		#print colNamesInOrder
 
 		#r=csv.DictReader(open(filename), colNamesInOrder, delimiter=' ', skipinitialspace=True)
 		r = csv.reader(open(filename), delimiter=' ', skipinitialspace=True)
 
 		numappended = 0
 		for line in r:
-			if self._find('#', line) or self._find('@', line):
+			if self._find('#', line) or self._find('@', line) or not line:
 				continue
 			else:			
-				print line
+				#print line
 				#print "inserting", line
 				#reconstruct dictionary for row
 				rowdict = {}
 				for i in range(0, len(colNamesInOrder)):
-					print i
 					key = colNamesInOrder[i]
+					#print i, key
 					rowdict[key] = line[i]
   				
 				rowdict['temp'] = int(self.temp)
@@ -51,11 +54,11 @@ class XVGFile:
 				newrow = [ rowdict['temp'], rowdict['replicanum'], rowdict['seqnum'] ]
 				readinrow = self._converted(colsDescription._v_types, colNamesInOrder, rowdict)
 				newrow.extend(readinrow)	
-				print "appending new row (as a tuple)", newrow
-				print "size",len(newrow)
+				#print "appending new row (as a tuple)", newrow
+				#print "size",len(newrow)
 				numappended+=1
 				data.append(tuple(newrow))
-				print "data so far is", data
+				#print "data so far is", data
 
 
 		print "total number of lines appended=", numappended 

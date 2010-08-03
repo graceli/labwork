@@ -93,6 +93,16 @@ class Xtc(object):
 		return ramapath  		
 		
 
+	def mdmat(self):
+		mdmatpath = self._createOutput('mdmat')
+		indexfile = os.path.join(self.root, 'mdmat.ndx')
+		name = os.path.join(mdmatpath,self.basename)
+	
+		selection = {'group1':'C-alpha'}
+		
+		command = "/home/grace/bin/g_mdmat_g -f %s -s %s -t 0.6 -txt-dist a.txt -txt-contact %s.contact.txt -txt-native %s.q.txt" % (self.xtcname, self.tprname, name, name)
+		code = subprocess.Popen(shlex.split(command), stdin=subprocess.PIPE).communicate("%s" %(selection['group1']))
+
 	# add an analysis call here	
 	#def dihedral(**selection):
 		#mkdir dihedral

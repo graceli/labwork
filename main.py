@@ -81,11 +81,14 @@ def main():
 			rgpath = traj.rg()
 			sasapath = traj.sasa()
 			eedpath = traj.eed()
+			mdmatpath = traj.mdmat()
 
 			aloader.load(base + '.xvg', 'rg', rowtypes.RGTable, 3)
 			aloader.load(base + '.xvg', 'sas', rowtypes.SASTable, 3)
 			aloader.load(base + '.xvg', 'eed', rowtypes.EETable, 3)
 			aloader.load(base + '.xvg', 'rama', rowtypes.RamaTable, 3)
+			aloader.load(base + '.q.txt', 'mdmat.q', rowtypes.QTable, 3)
+			aloader.load(base + '.contact.txt', 'mdmat.contact', rowtypes.ContactMapTable, 3)
 
 			#aloader.load('eed', rowtypes.EEDTable, replicaMeta)
 			#aloader.load('dihedral', rowtypes.DihedralTable, replicaMeta)
@@ -98,16 +101,17 @@ def main():
 
 		# run a bash scriptlet
 		# add additional analysis to scriptlet
-		os.system("cd /dev/shm; mkdir preserve; mv sh3.tpr *.ndx preserve; rm -rf STDR_running*; mkdir STDR_running_analyzed_%(numprocessed)s; mv rama* rg* sas* eed* STDR_running_analyzed_%(numprocessed)s; cp preserve/* .; tar cvf STDR_running_analyzed_%(numprocessed)s.tar STDR_running_analyzed_%(numprocessed)s; gzip STDR_running_analyzed_%(numprocessed)s.tar; cp STDR_running_analyzed_%(numprocessed)s.tar.gz %(disklocation)s; rm -rf STDR_running*; rm -r preserve; cd %(disklocation)s" % vars())
+		os.system("cd /dev/shm; mkdir preserve; mv sh3.tpr *.ndx preserve; rm -rf STDR_running*; mkdir STDR_running_analyzed_%(numprocessed)s; mv mdmat* rama* rg* sas* eed* STDR_running_analyzed_%(numprocessed)s; cp preserve/* .; tar cvf STDR_running_analyzed_%(numprocessed)s.tar STDR_running_analyzed_%(numprocessed)s; gzip STDR_running_analyzed_%(numprocessed)s.tar; cp STDR_running_analyzed_%(numprocessed)s.tar.gz %(disklocation)s; rm -rf STDR_running*; rm -r preserve; cd %(disklocation)s" % vars())
 
 		numprocessed += 1
 
 	#end of the tar loop
-	#os.system("cp /dev/shm/*.h5 %(disklocation)s" % vars())
+	os.system("cp /dev/shm/*.h5 %(disklocation)s" % vars())
+	os.system("rm \#*")
 
 
 
 if __name__ == '__main__':
 	main()
-	#os.system("rm -rf /dev/shm/*")
+	os.system("rm -rf /dev/shm/*")
 
