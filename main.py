@@ -6,20 +6,33 @@ import sys
 import glob
 import subprocess
 import shlex
+import logging
 
 def interactive():
 	answer= raw_input("would you liked to continue?[y/n]")
 	if answer == "n":
 		sys.exit(0)
 
+def start_logging(session, loglevel):
+	logname = 'a.log'
+	logging.basicConfig(filename=session+'.log', level=loglevel,
+				     	format='%(asctime)s %(levelname)s %(message)s')	
+	logging.debug("=== starting %(session)s extraction ===" % vars())
+
+
 
 def main():
 	"""docstring for main"""
-
-	USE_DEVSHM = True
-
-	disklocation = sys.argv[2] 
 	
+	option = sys.argv[1]
+	sessionname = sys.argv[2]
+	disklocation = sys.argv[3] 
+	USE_DEVSHM = True
+	
+	start_logging(sessionname, logging.CRITICAL)
+
+	#logging.debug("this is a test")
+
 	if(USE_DEVSHM == True):
 		templocation = '/dev/shm'
 	else:
@@ -37,12 +50,12 @@ def main():
 	
 	numprocessed = 1
 	for tarfile in tarfileslist:
-		print "inflating", tarfile, "in /dev/shm"
+		logging.debug("inflating", tarfile, "in /dev/shm")
 	
-		if sys.argv[1] == "-i":
+		if option == "-i":
 			interactive()
 
-		print "copying tar file to /dev/shm"
+		logging.debug("copying tar file to /dev/shm")
 	
 		command = "cp %(tarfile)s %(templocation)s" % vars()
 		code = subprocess.call(shlex.split(command))
@@ -59,15 +72,15 @@ def main():
 	
 		tmpdataroot = os.path.join(templocation, 'STDR_running')
 		
-		print "the data root is", tmpdataroot
+		logging.debug("the data root is %s", tmpdataroot)
 
 		xtcpath = os.path.join(tmpdataroot, 'xtcs')
 		xtcList = glob.glob(os.path.join(xtcpath,'*.xtc'))
-		#print "these are the xtcs to be analyzed", xtcList
+		logging.info("these are the xtcs to be analyzed %s", xtcList)
 		assert len(xtcList) > 0, "there are no xtcs found"
 		
 
-		if sys.argv[1] == "-i":
+		if option == "-i":
 			interactive()
 			
 		# analyze xtc files
@@ -95,7 +108,7 @@ def main():
 			#aloader.load('dihedral', rowtypes.DihedralTable, replicaMeta)
 			#aloader.load('energy', rowtypes.EnergyTable, replicaMeta)
 
-			if sys.argv[1] == "-i":
+			if option == "-i":
 				interactive()
 	
 		### need to clean up /dev/shm here after each tar is processed ###	
