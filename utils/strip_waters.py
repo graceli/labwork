@@ -46,10 +46,11 @@ print xtcList
 
 index=0
 for xtcfile in xtcList:
-	selection = '!SOL'
-	command = "trjconv -f %s -s %s -n %s -o %s" % (xtcfile, tprfile, options.outputFilename, str(index)+"_nosol")
-	returnCode = subprocess.Popen(shlex.split(command),
-	stdin=subprocess.PIPE).communicate("%s" % (selection))
-	index += 1
-
+	output=str(index)+"_nosol"
+	if not os.path.exists(output):
+		selection = '!SOL'
+		command = "trjconv -f %s -s %s -n %s -o %s" % (xtcfile, tprfile, options.outputFilename, output)
+		returnCode = subprocess.Popen(shlex.split(command),
+		stdin=subprocess.PIPE).communicate("%s" % (selection))
+		index += 1
 
