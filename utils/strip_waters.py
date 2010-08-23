@@ -38,10 +38,12 @@ command = "make_ndx -f %s -n %s" % (tprfile, outputIndex)
 returnCode = subprocess.Popen(shlex.split(command),
 stdin=subprocess.PIPE).communicate("%s" % (selection))
 
+index=0
 for xtcfile in xtcList:
 	selection = '!SOL'
-	command = "trjconv -f %s -n %s -o %s" % (tprfile, xtcfile,
-	parser.outputFilename)
+	command = "trjconv -f %s -n %s -o %s" % (tprfile, xtcfile, str(index)+"_nosol")
 	returnCode = subprocess.Popen(shlex.split(command),
 	stdin=subprocess.PIPE).communicate("%s" % (selection))
+	index += 1
+
 
