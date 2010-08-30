@@ -36,13 +36,8 @@ print files
 xtcList = glob.glob(files)
 print xtcList
 
-#create a no nosolvent index file
-# I can't get make_ndx to read the \n properly here
-#selection = '!"SOL"'
-#command = "make_ndx -f %s -o %s" % (tprfile, options.outputFilename)
-#returnCode = subprocess.Popen(shlex.split(command), stdin=subprocess.PIPE).communicate("%s%s%s" % (selection,"\n", 'q'))
-#print returnCode
-#sys.exit(0)
+# figure out how to do this with subprocess
+os.system("echo -e '!\"SOL\"\nq' | make_ndx -f %(tprfile)s -o nosol.ndx" % vars())
 
 index=0
 for xtcfile in xtcList:
