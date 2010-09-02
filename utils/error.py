@@ -55,6 +55,8 @@ if __name__ == "__main__":
 		summedA = A.sum(axis=0)		
 		histogram = numpy.add(histogram, summedA)
 
+		print histogram
+
 		count+=1
 		block_rows += nrows
 		if count == 1:
