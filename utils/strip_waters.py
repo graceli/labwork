@@ -38,6 +38,7 @@ print xtcList
 
 # figure out how to do this with subprocess
 os.system("echo -e '!\"SOL\"\nq' | make_ndx -f %(tprfile)s -o nosol.ndx" % vars())
+os.system("echo -e '!SOL' | trjconv -f %(tprfile)s -s %(tprfile)s -o nosol.gro -n nosol.ndx" % vars())
 
 index=0
 for xtcfile in xtcList:
