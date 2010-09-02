@@ -63,13 +63,17 @@ if __name__ == "__main__":
 			print data.shape
 			print histogram.shape
 			print block_rows
-			data = numpy.append(data,(1.0/block_rows)*histogram)
+
+			scale = 1.0/block_rows
+
+			# don't apply scaling
+			data = numpy.append(data,histogram)
 			print data
 			histogram = numpy.array(numpy.arange(0,7))
 			count = 0
 			block_rows = 0
 
-	data = numpy.append(data,(1.0/block_rows)*histogram)
+	data = numpy.append(data,histogram)
 	data.shape = (data.size/7,7)
 	a,s = aggregate(data)
 
