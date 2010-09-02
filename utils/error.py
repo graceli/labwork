@@ -7,21 +7,33 @@ from optparse import OptionParser
 def error(data):
 	pass
 
-def aggregate(data):
+# computes a list of averages and std
+def aggregate(data, type="average"):
 	print data
 	nrow,ncol = data.shape
 	average=[]
 	std=[]
 	for i in range(0,ncol):
-		average.append(numpy.sum(data[:,i],axis=0))
+		if type == "sum":
+			average.append(numpy.sum(data[:,i],axis=0))
+		else:
+			average.append(numpy.average(data[:,i],axis=0))
+			
 		std.append(numpy.std(data[:,i]))
 
 	return average,std
 
 if __name__ == "__main__":
+
+	# Implements block averaging over data that is stored as a row vector
+	# Currently, this script reads in a list of files
+	# Each file containing 2D matrix data with data from each frame
+	# in a row
+
 	usage =  """ %prog [options] [shell expression] """
 	parser = OptionParser(usage)
-	#parser.add_option
+	parser.add_option("-o", dest="outfilename", help="write to file", metavar="FILE")
+
 	(options,args) = parser.parse_args()
 	
 	if len(args)<1:
@@ -32,27 +44,32 @@ if __name__ == "__main__":
 
 
 	data = numpy.array([])
-	count = 0
 	total_sampling = 3924038
 	histogram = numpy.array([0]*7)
 
+	block_rows=0
+	count = 0
 	for file in fileslist:
 		A = numpy.genfromtxt(file)
+		nrows, ncols = A.shape
 		summedA = A.sum(axis=0)		
 		histogram = numpy.add(histogram, summedA)
 
 		count+=1
+		block_rows += nrows
 		if count == 100:
 			#add A to a column in a numpy array called data
 			print "added a row"
 			print data.shape
 			print histogram.shape
-			data = numpy.append(data,(1.0/total_sampling)*histogram)
+			print block_rows
+			data = numpy.append(data,(1.0/block_rows)*histogram)
 			print data
 			histogram = numpy.array(numpy.arange(0,7))
 			count = 0
+			block_rows = 0
 
-	data = numpy.append(data,(1.0/total_sampling)*histogram)
+	data = numpy.append(data,(1.0/block_rows)*histogram)
 	data.shape = (data.size/7,7)
 	a,s = aggregate(data)
 
@@ -61,3 +78,5 @@ if __name__ == "__main__":
 	print "average = ", a
 	print "std = ", s
 	
+	numpy.savetxt(options.outfilename+'.txt', numpy.transpose([a,s]), fmt="%0.3f %0.3f")	
+
