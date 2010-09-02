@@ -57,7 +57,7 @@ if __name__ == "__main__":
 
 		count+=1
 		block_rows += nrows
-		if count == 100:
+		if count == 1:
 			#add A to a column in a numpy array called data
 			print "added a row"
 			print data.shape
