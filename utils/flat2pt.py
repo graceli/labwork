@@ -75,6 +75,7 @@ def main():
 		for i in range(1,500):
 			#file_base = "sys%(i)s_nosol.xtc_" % vars()
 			file_base = isomer + "_sys%(i)s_" % vars()
+			print name.split("-")
 			group_name,extension = name.split("-")
 			filename = file_base + extension + ".dat"
 			col_key = extension.split("_")[0]
