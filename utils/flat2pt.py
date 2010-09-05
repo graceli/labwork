@@ -6,7 +6,6 @@ import numpy
 def create_description(column_key, num_cols, format=tables.Int32Col(dflt=0)):
 	descr = {}
 	# descr.update(metacols)
-	print descr
 	for i in range(0, num_cols):
 		colname = column_key+str(i)
 		descr[colname] = format
@@ -45,9 +44,10 @@ def initialize(h5_filename):
 	"""
 	
 	h5file = tables.openFile(h5_filename, mode="a")
+	filters = tables.Filters(complevel=8, complib='zlib')
 	for group_name in ["inositol", "peptide", "residue"]:
 		if not h5file.__contains__('/' + group_name):
-			h5file.createGroup(h5file.root, group_name)
+			h5file.createGroup(h5file.root, group_name, filters=filters)
 
 	return h5file
 
@@ -57,16 +57,18 @@ def main():
 		pytable and HDF5 files
 
 	"""	
-	
-	path = sys.argv[1]
-	
-	print "path", path
+	if len(sys.argv) < 2:
+		print "Error: missing input files"
+		sys.exit(1)
+		
+	path = sys.argv[2]
+	analysis_file = sys.argv[1]
 	
 	tables_names = ["inos_bb", "inos_glu", "inos_lys", "pep_p2p_vs_t", "pep_bb", "pep_side", "res_bb", "res_side"]
 	group_name = {'inos': 'inositol', 'pep' : 'peptide', 'res' : 'residue'}
 	table_descr = {}
 	
-	h5file = initialize('analysis.h5')
+	h5file = initialize(analysis_file)
 	
 	for extension in tables_names:
 		for i in range(1,500):
@@ -98,5 +100,3 @@ def main():
 	
 if __name__ == '__main__':
 	main()
-	
-	
