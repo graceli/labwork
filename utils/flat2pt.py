@@ -65,7 +65,7 @@ def main():
 	analysis_file = sys.argv[1]
 	isomer = sys.argv[3]
 
-	tables_names = ["inositol_inos_bb", "inositol_inos_glu", "inositol_inos_lys", "peptide_p2p_vs_t", "peptide_pep_bb", "peptide_pep_side", "residue_res_bb", "residue_res_side", "residue_per_res_contacts", "residue_per_inos_contacts"]
+	tables_names = ["inositol-inos_bb", "inositol-inos_glu", "inositol-inos_lys", "peptide-p2p_vs_t", "peptide-pep_bb", "peptide_pep_side", "residue-res_bb", "residue-res_side", "residue-per_res_contacts", "residue-per_inos_contacts"]
 	#group_name = {'inos': 'inositol', 'pep' : 'peptide', 'res' : 'residue'}
 	table_descr = {}
 	
