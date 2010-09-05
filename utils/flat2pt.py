@@ -77,7 +77,7 @@ def main():
 			file_base = isomer + "_sys%(i)s_" % vars()
 			group_name,extension = name.split("_")
 			filename = file_base + extension + ".dat"
-			col_key = extension.split("_")[0]
+			col_key = extension.split("-")[0]
 			
 			path_to_file = os.path.join(path,filename)
 			if os.path.exists(path_to_file):
