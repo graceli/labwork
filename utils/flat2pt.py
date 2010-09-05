@@ -72,7 +72,8 @@ def main():
 	
 	for name in tables_names:
 		for i in range(1,500):
-			file_base = "sys%(i)s_nosol.xtc_" % vars()
+			#file_base = "sys%(i)s_nosol.xtc_" % vars()
+			file_base = "chiro_sys%(i)_" % vars()
 			group_name,extension = name.split("_")
 			filename = file_base + extension + ".dat"
 			col_key = extension.split("_")[0]
