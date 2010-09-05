@@ -64,16 +64,16 @@ def main():
 	path = sys.argv[2]
 	analysis_file = sys.argv[1]
 	
-	tables_names = ["inos_bb", "inos_glu", "inos_lys", "pep_p2p_vs_t", "pep_bb", "pep_side", "res_bb", "res_side"]
-	group_name = {'inos': 'inositol', 'pep' : 'peptide', 'res' : 'residue'}
+	tables_names = ["inositol_inos_bb", "inositol_inos_glu", "inositol_inos_lys", "peptide_p2p_vs_t", "peptide_pep_bb", "peptide_pep_side", "residue_res_bb", "residue_res_side", "residue_per_res_contacts", "residue_per_inos_contacts"]
+	#group_name = {'inos': 'inositol', 'pep' : 'peptide', 'res' : 'residue'}
 	table_descr = {}
 	
 	h5file = initialize(analysis_file)
 	
-	for extension in tables_names:
+	for name in tables_names:
 		for i in range(1,500):
 			file_base = "sys%(i)s_nosol.xtc_" % vars()
-			# print "load", file_base + extension + ".dat"
+			group_name,extension = name.split("_")
 			filename = file_base + extension + ".dat"
 			col_key = extension.split("_")[0]
 			
@@ -93,7 +93,7 @@ def main():
 				
 				# table_descr[extension] = create_description(col_key, col_num+1 ,{'sys':tables.Int32Col(dflt=0)})
 				table_descr[extension] = create_description(col_key, col_num)
-				save(h5file, data, group_name[col_key], extension, table_descr[extension])
+				save(h5file, data, group_name, extension, table_descr[extension])
 
 	# readout = h5file.root.inositol.inos_bb.read()
 	# print numpy.asscalar(numpy.array(readout[0][0]))
