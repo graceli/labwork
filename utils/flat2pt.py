@@ -63,7 +63,8 @@ def main():
 		
 	path = sys.argv[2]
 	analysis_file = sys.argv[1]
-	
+	isomer = sys.argv[3]
+
 	tables_names = ["inositol_inos_bb", "inositol_inos_glu", "inositol_inos_lys", "peptide_p2p_vs_t", "peptide_pep_bb", "peptide_pep_side", "residue_res_bb", "residue_res_side", "residue_per_res_contacts", "residue_per_inos_contacts"]
 	#group_name = {'inos': 'inositol', 'pep' : 'peptide', 'res' : 'residue'}
 	table_descr = {}
@@ -73,7 +74,7 @@ def main():
 	for name in tables_names:
 		for i in range(1,500):
 			#file_base = "sys%(i)s_nosol.xtc_" % vars()
-			file_base = "chiro_sys%(i)_" % vars()
+			file_base = isomer + "_sys%(i)s_" % vars()
 			group_name,extension = name.split("_")
 			filename = file_base + extension + ".dat"
 			col_key = extension.split("_")[0]
