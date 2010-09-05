@@ -75,9 +75,9 @@ def main():
 		for i in range(1,500):
 			#file_base = "sys%(i)s_nosol.xtc_" % vars()
 			file_base = isomer + "_sys%(i)s_" % vars()
-			group_name,extension = name.split("_")
+			group_name,extension = name.split("-")
 			filename = file_base + extension + ".dat"
-			col_key = extension.split("-")[0]
+			col_key = extension.split("_")[0]
 			
 			path_to_file = os.path.join(path,filename)
 			if os.path.exists(path_to_file):
