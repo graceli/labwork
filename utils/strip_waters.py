@@ -42,7 +42,7 @@ os.system("echo -e '!SOL' | trjconv -f %(tprfile)s -s %(tprfile)s -o nosol.gro -
 
 index=0
 for xtcfile in xtcList:
-	output=str(index)+"_nosol"
+	output=xtcfile+"_nosol"
 	if not os.path.exists(output):
 		selection = '!SOL'
 		command = "trjconv -f %s -s %s -n %s -o %s" % (xtcfile, tprfile, options.outputFilename, output)

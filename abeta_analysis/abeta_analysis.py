@@ -75,30 +75,38 @@ def main():
 	logging.info(" data will be written to %s with messages in %s", filename, LOG_FILENAME)
 	
 	config = ConfigParser.ConfigParser()
-	read = config.read('config.ini')
+	base,name=os.path.split(filename)
+	read = config.read(os.path.join(base,'config.ini'))
 	
 	h5file = initialize(filename)
 	
 	groups = config.sections()
+	logging.info("found groups %s", groups)
 	for group_name in groups:
+		logging.info("reading files under section %s", group_name)
 		for table_name, files in config.items(group_name):
 			l = files.split(' ')
 			if l == None:
 				l = [files]
-
+			all_data=[]
+			logging.info("found %d files to read and save", len(l))
 			for datafile in l:
 				logging.info("saving %s in %s %s", datafile, group_name, table_name)
 				data = numpy.genfromtxt(datafile, dtype=None)
-				descr=None
-				if len(data.dtype) == 0:
-					rows,cols=data.shape
-					descr = create_description('col', cols)
-				else:
-					descr = data.dtype
+				all_data.append(data)
 
-				logging.info("description created %s", descr)
-				save(h5file, data, group_name, table_name, descr)
-							 	
+			all_data_matrix = numpy.hstack(all_data)
+			descr=None
+			if len(all_data_matrix.dtype) == 0:
+				rows,cols = all_data_matrix.shape
+				descr = create_description('col', cols)
+			else:
+				descr = data.dtype
+
+			logging.info("description created %s", descr)
+			save(h5file, all_data_matrix, group_name, table_name, descr)
+	
+	logging.info("finished processing files")	
 if __name__ == '__main__':
 	main()
 
