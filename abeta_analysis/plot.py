@@ -6,6 +6,12 @@ import re
 import glob
 import tables
 
+def filter_nonpolar(data_matrix):
+	return data_matrix
+
+def filter_hbond(data_matrix):
+	return data_matrix[:,1::3]
+	
 def reorder(data, chain_num):
 	""" reorder the data according to a textfile mapping """
 	#load in residues
@@ -28,7 +34,7 @@ def reorder(data, chain_num):
 
 	return data_in_order
 
-def build_plot_data(h5file, tables):
+def build_plot_data(h5file, tables,filter_funct=filter_nonpolar):
 	""" Builds a list of data for each given table to be plotted
 		This changes depending on the analysis """
 	
@@ -36,6 +42,7 @@ def build_plot_data(h5file, tables):
 	data_all = []
 	chain_num=1
 	for table in tables:
+		print table
 		datatable = h5file.getNode(table).read()
 		# print datatable.dtype
 		row_size = len(datatable[0])
@@ -43,7 +50,7 @@ def build_plot_data(h5file, tables):
 		data_matrix = datatable.view(dtype=numpy.int64).reshape(-1, row_size)
 		# print data_matrix
 		nrows, ncols = data_matrix.shape
-		data_sum = numpy.sum(data_matrix, axis=0)[1:]/float(nrows)  #sum over rows of the matrix, and get rid of the first column 
+		data_sum = numpy.sum(filter_func(data_matrix), axis=0)[1:]/float(nrows)  #sum over rows of the matrix, and get rid of the first column 
 		data_sum_reordered = reorder(data_sum, chain_num)
 		data_all.append(data_sum_reordered)
 		chain_num+=1
@@ -64,7 +71,6 @@ def matshow_axis():
 		# print key, residue_map[key]
 		residue_map_in_order.append(key[0:3])
 	return residue_map_in_order
-
 
 
 def plot_matshow(filename, data, data_axis=None):
@@ -91,6 +97,14 @@ def plot_matshow(filename, data, data_axis=None):
 	pylab.savefig(filename + '.pdf' % vars())	
 	numpy.savetxt(filename + '.dat', numpy.transpose(data), fmt='%f')
 
+def gen_figure(name, data):
+	all_data_as_matrix = numpy.array(data)
+	scyllo = numpy.average(all_data_as_matrix[0:10], axis=0)
+	chiro = numpy.average(all_data_as_matrix[11:], axis=0)
+	#nonpolar_axis = plot_matshow_axis()
+	plot_matshow(name+'_sc', scyllo)
+	plot_matshow(name+'_ch', chiro)
+
 def main():
 	"""docstring for main"""
 	pass
@@ -98,23 +112,29 @@ def main():
 
 if __name__ == '__main__':
 	h5list = glob.glob("*.h5")
-	tables_list = ['/ab_15_scyllo/inositol_residue_np_ch1','/ab_15_scyllo/inositol_residue_np_ch2',
-	'/ab_15_scyllo/inositol_residue_np_ch3','/ab_15_scyllo/inositol_residue_np_ch4',
-	'/ab_15_scyllo/inositol_residue_np_ch5']
+	system='ab_64_scyllo'
+	tables_list_nonpolar = ['/%(system)s/inositol_residue_np_ch1' % vars(),'/%(system)s/inositol_residue_np_ch2' % vars(),
+	'/%(system)s/inositol_residue_np_ch3' % vars(),'/%(system)s/inositol_residue_np_ch4' % vars(),
+	'/%(system)s/inositol_residue_np_ch5' % vars()]
+	
+	tables_list_hbonds = ['/%(system)s/inositol_hbond_chain0' % vars(), '/%(system)s/inositol_hbond_chain1' % vars(), '/%(system)s/inositol_hbond_chain2' % vars(), '/%(system)s/inositol_hbond_chain3' % vars(), '/%(system)s/inositol_hbond_chain4' % vars() ]
+	
 	
 	print "list of h5 files to read:", h5list
 	print "reading tables:", tables_list
 	
 	all_systems_nonpolar_contact = []
+	all_systems_polar_contact = []
 	for h5file in h5list:
+		print h5file
 		f = tables.openFile(h5file, mode='a')
-		data = build_plot_data(f, tables_list)
-		all_systems_nonpolar_contact.append(data)
+		
+		# data_nonpolar = build_plot_data(f, tables_list_nonpolar)
+		# all_systems_nonpolar_contact.append(data_nonpolar)
+		
+		data_polar = build_plot_data(f, tables_list_hbonds, filter_func=filter_hbond)
+		all_systems_polar_contact.append(data_polar)
+	
+	# gen_figure('nonpolar', all_systems_nonpolar_contact)
+	gen_figure('polar', all_systems_polar_contact)
 
-
-	all_data_as_matrix = numpy.array(all_systems_nonpolar_contact)
-	scyllo_chain_np_contact = numpy.average(all_data_as_matrix[0:10], axis=0)
-	chiro_chain_np_contact = numpy.average(all_data_as_matrix[11:], axis=0)
-	#nonpolar_axis = plot_matshow_axis()
-	plot_matshow('test_sc', scyllo_chain_np_contact)
-	plot_matshow('test_ch', chiro_chain_np_contact)
