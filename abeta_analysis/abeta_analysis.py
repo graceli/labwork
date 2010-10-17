@@ -61,6 +61,10 @@ def initialize(h5_filename, groups=[]):
 def get_data_type(type, col_pos=0):
 	data_types = {'int': tables.Int64Col(dflt=0, pos=col_pos), 'float': tables.Float64Col(dflt=0.0, pos=col_pos)}
 	return data_types[type]
+
+def numpy_dtype(type):
+	data_types = {'int': numpy.int64, 'float': numpy.float64 }
+	return data_types[type]
 	
 def main():
 	
@@ -113,26 +117,18 @@ def main():
 			cols=0
 			if l == None or len(l) == 1:
 				logging.info("saving %s in %s %s", files, group_name, table_name)
-				all_data_matrix = numpy.genfromtxt(files, dtype=None)
-				print all_data_matrix
-				# Bug: This will fail if reading in a single file with a single column
-				shape = all_data_matrix.shape
-				logging.info("shape: %s", shape)
-				if len(shape) == 1:
-					rows = shape[0]
-					cols = 1
-				else:
-					rows = shape[0]
-					cols = shape[1]
+				all_data_matrix = numpy.genfromtxt(files)
+				# rows,cols = all_data_matrix.shape
+				# 		logging.info("shape: %s", shape)
 			else:
 				logging.info("found %d files to read and save", len(l))
 				for datafile in l:
 					logging.info("saving %s in %s %s", datafile, group_name, table_name)
-					data = numpy.genfromtxt(datafile, dtype=None)
+					data = numpy.genfromtxt(datafile)
 					all_data.append(data)
 					all_data_matrix = numpy.hstack(all_data)
-					rows,cols = all_data_matrix.shape
 			
+			rows,cols = all_data_matrix.shape
 			descr = create_description('col', cols, format=fmt)
 			logging.info("description created %s", descr)
 			save(h5file, all_data_matrix, group_name, table_name, descr)
