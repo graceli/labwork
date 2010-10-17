@@ -6,7 +6,7 @@ import numpy
 import ConfigParser
 import logging
 
-def create_description(column_key, num_cols, format=data_type):
+def create_description(column_key, num_cols, format='int'):
 	descr = {}
 	# descr.update(metacols)
 	for i in range(0, num_cols):
