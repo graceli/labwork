@@ -109,8 +109,8 @@ def main():
 			
 			all_data=[]
 			if l == None or len(l) == 1:
-				logging.info("saving %s in %s %s", datafile, group_name, table_name)
-				all_data = numpy.genfromtxt(datafile, dtype=None)
+				logging.info("saving %s in %s %s", files, group_name, table_name)
+				all_data = numpy.genfromtxt(files, dtype=None)
 			else:
 				logging.info("found %d files to read and save", len(l))
 				for datafile in l:
