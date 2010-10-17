@@ -105,29 +105,27 @@ def main():
 		# sys.exit(0)
 		for table_name, files in config.items(group_name):
 			l = files.split(' ')
-			if l == None:
-				l = [files]
-			all_data=[]
-			logging.info("found %d files to read and save", len(l))
-			for datafile in l:
-				logging.info("saving %s in %s %s", datafile, group_name, table_name)
-				data = numpy.genfromtxt(datafile, dtype=None)
-				all_data.append(data)
-
-			all_data_matrix = numpy.hstack(all_data)
-			descr=None
-			# if len(all_data_matrix.dtype) == 0:
-			# 				rows,cols = all_data_matrix.shape
-			# 				descr = create_description('col', cols, format=data_types[dtype])
-			# 			else:
-			# 				descr = data.dtype
+			print l
 			
+			all_data=[]
+			if l == None or len(l) == 1:
+				logging.info("saving %s in %s %s", datafile, group_name, table_name)
+				all_data = numpy.genfromtxt(datafile, dtype=None)
+			else:
+				logging.info("found %d files to read and save", len(l))
+				for datafile in l:
+					logging.info("saving %s in %s %s", datafile, group_name, table_name)
+					data = numpy.genfromtxt(datafile, dtype=None)
+					all_data.append(data)
+					
+			all_data_matrix = numpy.hstack(all_data)
 			rows,cols = all_data_matrix.shape
 			descr = create_description('col', cols, format=fmt)
 			logging.info("description created %s", descr)
 			save(h5file, all_data_matrix, group_name, table_name, descr)
 	
-	logging.info("finished processing files")	
+	logging.info("finished processing files")
+
 if __name__ == '__main__':
 	main()
 
