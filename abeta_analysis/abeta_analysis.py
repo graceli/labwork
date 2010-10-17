@@ -108,18 +108,23 @@ def main():
 			print l
 			
 			all_data=[]
+			all_data_matrix=None
+			rows=0
+			cols=0
 			if l == None or len(l) == 1:
 				logging.info("saving %s in %s %s", files, group_name, table_name)
-				all_data = numpy.genfromtxt(files, dtype=None)
+				all_data_matrix = numpy.genfromtxt(files, dtype=None)
+				rows = all_data_matrix.size
+				cols = 1
 			else:
 				logging.info("found %d files to read and save", len(l))
 				for datafile in l:
 					logging.info("saving %s in %s %s", datafile, group_name, table_name)
 					data = numpy.genfromtxt(datafile, dtype=None)
 					all_data.append(data)
-					
-			all_data_matrix = numpy.hstack(all_data)
-			rows,cols = all_data_matrix.shape
+					all_data_matrix = numpy.hstack(all_data)
+					rows,cols = all_data_matrix.shape
+			
 			descr = create_description('col', cols, format=fmt)
 			logging.info("description created %s", descr)
 			save(h5file, all_data_matrix, group_name, table_name, descr)
