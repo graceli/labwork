@@ -120,7 +120,7 @@ def main():
 					all_data_matrix = numpy.hstack(all_data)
 			
 			rows,cols = all_data_matrix.shape
-			descr = create_description('col', cols, format=fmt)
+			descr = create_description('col', cols, format='float')
 			logging.info("description created %s", descr)
 			save(h5file, all_data_matrix, group_name, table_name, descr)
 	

@@ -112,13 +112,14 @@ def main():
 
 
 if __name__ == '__main__':
-	system = sys.argv[1]
+	# system = sys.argv[1]
 	h5list = glob.glob("*.h5")
-	tables_list_nonpolar = ['/%(system)s/inositol_residue_np_ch1' % vars(),'/%(system)s/inositol_residue_np_ch2' % vars(),
-	'/%(system)s/inositol_residue_np_ch3' % vars(),'/%(system)s/inositol_residue_np_ch4' % vars(),
-	'/%(system)s/inositol_residue_np_ch5' % vars()]
 	
-	tables_list_hbonds = ['/%(system)s/inositol_hbond_chain0' % vars(), '/%(system)s/inositol_hbond_chain1' % vars(), '/%(system)s/inositol_hbond_chain2' % vars(), '/%(system)s/inositol_hbond_chain3' % vars(), '/%(system)s/inositol_hbond_chain4' % vars() ]
+	tables_list_nonpolar = ['/nonpolar/inositol_residue_np_ch1','/nonpolar/inositol_residue_np_ch2',
+	'/nonpolar/inositol_residue_np_ch3','/nonpolar/inositol_residue_np_ch4',
+	'/nonpolar/inositol_residue_np_ch5']
+	
+	tables_list_hbonds = ['/hbond/inositol_hbond_chain0', '/hbond/inositol_hbond_chain1', '/hbond/inositol_hbond_chain2', '/hbond/inositol_hbond_chain3', '/hbond/inositol_hbond_chain4' ]
 	
 	
 	# print "list of h5 files to read:", h5list
@@ -130,12 +131,11 @@ if __name__ == '__main__':
 		print h5file
 		f = tables.openFile(h5file, mode='a')
 		
-		# data_nonpolar = build_plot_data(f, tables_list_nonpolar)
-		# all_systems_nonpolar_contact.append(data_nonpolar)
-		
+		data_nonpolar = build_plot_data(f, tables_list_nonpolar)
+		all_systems_nonpolar_contact.append(data_nonpolar)
 		data_polar = build_plot_data(f, tables_list_hbonds, filter_func=filter_hbond)
 		all_systems_polar_contact.append(data_polar)
 	
-	# gen_figure('nonpolar', all_systems_nonpolar_contact)
+	gen_figure('nonpolar', all_systems_nonpolar_contact)
 	gen_figure('polar', all_systems_polar_contact)
 
