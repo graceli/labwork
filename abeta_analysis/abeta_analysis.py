@@ -114,11 +114,13 @@ def main():
 			if l == None or len(l) == 1:
 				logging.info("saving %s in %s %s", files, group_name, table_name)
 				all_data_matrix = numpy.genfromtxt(files, dtype=None)
+				print all_data_matrix
 				# Bug: This will fail if reading in a single file with a single column
 				shape = all_data_matrix.shape
 				logging.info("shape: %s", shape)
 				if len(shape) == 1:
 					rows = shape[0]
+					cols = 1
 				else:
 					rows = shape[0]
 					cols = shape[1]
