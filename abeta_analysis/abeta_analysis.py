@@ -115,7 +115,13 @@ def main():
 				logging.info("saving %s in %s %s", files, group_name, table_name)
 				all_data_matrix = numpy.genfromtxt(files, dtype=None)
 				# Bug: This will fail if reading in a single file with a single column
-				rows,cols= all_data_matrix.shape
+				shape = all_data_matrix.shape
+				logging.info("shape: %s", shape)
+				if len(shape) == 1:
+					rows = shape[0]
+				else:
+					rows = shape[0]
+					cols = shape[1]
 			else:
 				logging.info("found %d files to read and save", len(l))
 				for datafile in l:
