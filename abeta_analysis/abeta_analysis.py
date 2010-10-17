@@ -114,8 +114,8 @@ def main():
 			if l == None or len(l) == 1:
 				logging.info("saving %s in %s %s", files, group_name, table_name)
 				all_data_matrix = numpy.genfromtxt(files, dtype=None)
-				rows = all_data_matrix.size
-				cols = 1
+				# Bug: This will fail if reading in a single file with a single column
+				rows,cols= all_data_matrix.shape
 			else:
 				logging.info("found %d files to read and save", len(l))
 				for datafile in l:
