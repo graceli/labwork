@@ -11,7 +11,7 @@ def create_description(column_key, num_cols, format='int'):
 	# descr.update(metacols)
 	for i in range(0, num_cols):
 		colname = column_key+str(i)
-		descr[colname] = get_data_type(format, pos=i)	
+		descr[colname] = get_data_type(format, col_pos=i)	
 	return descr
 	
 def save(h5file, data, group_name, table_name, table_struct=None):
