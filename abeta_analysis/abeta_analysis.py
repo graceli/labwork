@@ -61,10 +61,6 @@ def initialize(h5_filename, groups=[]):
 def get_data_type(type, col_pos=0):
 	data_types = {'int': tables.Int64Col(dflt=0, pos=col_pos), 'float': tables.Float64Col(dflt=0.0, pos=col_pos)}
 	return data_types[type]
-
-def numpy_dtype(type):
-	data_types = {'int': numpy.int64, 'float': numpy.float64 }
-	return data_types[type]
 	
 def main():
 	
@@ -104,9 +100,6 @@ def main():
 		logging.info("reading files under section %s", group_name)
 		fmt=config.get(group_name, 'dtype')
 		config.remove_option(group_name, 'dtype')
-		# print dtype, data_types[dtype]
-		# print config.items(group_name)
-		# sys.exit(0)
 		for table_name, files in config.items(group_name):
 			l = files.split(' ')
 			print l
@@ -118,8 +111,6 @@ def main():
 			if l == None or len(l) == 1:
 				logging.info("saving %s in %s %s", files, group_name, table_name)
 				all_data_matrix = numpy.genfromtxt(files)
-				# rows,cols = all_data_matrix.shape
-				# 		logging.info("shape: %s", shape)
 			else:
 				logging.info("found %d files to read and save", len(l))
 				for datafile in l:
