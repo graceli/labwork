@@ -6,13 +6,12 @@ import numpy
 import ConfigParser
 import logging
 
-def create_description(column_key, num_cols, format=tables.Int64Col(dflt=0)):
+def create_description(column_key, num_cols, format=data_type):
 	descr = {}
 	# descr.update(metacols)
 	for i in range(0, num_cols):
 		colname = column_key+str(i)
-		descr[colname] = format
-	
+		descr[colname] = get_data_type(format, pos=i)	
 	return descr
 	
 def save(h5file, data, group_name, table_name, table_struct=None):
@@ -59,9 +58,12 @@ def initialize(h5_filename, groups=[]):
 
 	return h5file
 
-
+def get_data_type(type, col_pos=0):
+	data_types = {'int': tables.Int64Col(default=0, pos=col_pos), 'float': tables.Float64Col(default=0.0, pos=col_pos)}
+	return data_types[type]
+	
 def main():
-	data_types = {'int': tables.Int64Col(), 'float': tables.Float64Col()}
+	
 	filename = sys.argv[1]
 	
 	LOG_FILENAME = filename+'.log'
@@ -121,7 +123,7 @@ def main():
 			# 				descr = data.dtype
 			
 			rows,cols = all_data_matrix.shape
-			descr = create_description('col', cols, format=data_types[fmt])
+			descr = create_description('col', cols, format=fmt)
 			logging.info("description created %s", descr)
 			save(h5file, all_data_matrix, group_name, table_name, descr)
 	
