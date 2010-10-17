@@ -59,7 +59,7 @@ def initialize(h5_filename, groups=[]):
 	return h5file
 
 def get_data_type(type, col_pos=0):
-	data_types = {'int': tables.Int64Col(default=0, pos=col_pos), 'float': tables.Float64Col(default=0.0, pos=col_pos)}
+	data_types = {'int': tables.Int64Col(dflt=0, pos=col_pos), 'float': tables.Float64Col(dflt=0.0, pos=col_pos)}
 	return data_types[type]
 	
 def main():
