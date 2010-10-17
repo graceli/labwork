@@ -61,7 +61,9 @@ def initialize(h5_filename, groups=[]):
 
 
 def main():
+	data_types = {'int': tables.Int64Col(), 'float': tables.Float64Col()}
 	filename = sys.argv[1]
+	
 	LOG_FILENAME = filename+'.log'
 
 	
@@ -72,18 +74,33 @@ def main():
 	                    filemode='w')
 	
 	logging.info(" ==================== starting abeta_analysis.py ====================")
-	logging.info(" data will be written to %s with messages in %s", filename, LOG_FILENAME)
+	logging.info(" Data will be written to %s with messages in %s", filename, LOG_FILENAME)
 	
 	config = ConfigParser.ConfigParser()
 	base,name=os.path.split(filename)
 	read = config.read(os.path.join(base,'config.ini'))
 	
 	h5file = initialize(filename)
+	sections = config.sections()
+
+	groups = sections
+	groups.remove('analysis')
 	
-	groups = config.sections()
-	logging.info("found groups %s", groups)
+	logging.info("Found groups %s", groups)
+	for analysis_section, value in config.items('analysis'):
+		# print analysis_section, value
+		if value == "False":
+			logging.info("%s set to false. Removing %s", analysis_section, analysis_section)
+			groups.remove(analysis_section)
+		
+	logging.info("Groups %s will be analyzed", groups)
 	for group_name in groups:
 		logging.info("reading files under section %s", group_name)
+		dtype=config.get(group_name, 'dtype')
+		config.remove_option(group_name, 'dtype')
+		# print dtype, data_types[dtype]
+		# print config.items(group_name)
+		# sys.exit(0)
 		for table_name, files in config.items(group_name):
 			l = files.split(' ')
 			if l == None:
@@ -99,7 +116,7 @@ def main():
 			descr=None
 			if len(all_data_matrix.dtype) == 0:
 				rows,cols = all_data_matrix.shape
-				descr = create_description('col', cols)
+				descr = create_description('col', cols, format=dtype)
 			else:
 				descr = data.dtype
 

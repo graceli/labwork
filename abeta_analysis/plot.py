@@ -5,6 +5,7 @@ import csv
 import re
 import glob
 import tables
+import sys
 
 def filter_nonpolar(data_matrix):
 	return data_matrix
@@ -34,7 +35,7 @@ def reorder(data, chain_num):
 
 	return data_in_order
 
-def build_plot_data(h5file, tables,filter_funct=filter_nonpolar):
+def build_plot_data(h5file, tables,filter_func=filter_nonpolar):
 	""" Builds a list of data for each given table to be plotted
 		This changes depending on the analysis """
 	
@@ -83,7 +84,7 @@ def plot_matshow(filename, data, data_axis=None):
 	
 	# pylab.matshow(numpy.transpose(data), cmap=pylab.cm.spectral)
 	pylab.matshow(data, cmap=pylab.cm.spectral)
-	pylab.clim([0, 0.1])
+	pylab.clim([0, data.max()])
 	pylab.colorbar(orientation="horizontal", shrink=1)
 	#pylab.yticks(x, tuple(data_axis))
 	
@@ -111,8 +112,8 @@ def main():
 
 
 if __name__ == '__main__':
+	system = sys.argv[1]
 	h5list = glob.glob("*.h5")
-	system='ab_64_scyllo'
 	tables_list_nonpolar = ['/%(system)s/inositol_residue_np_ch1' % vars(),'/%(system)s/inositol_residue_np_ch2' % vars(),
 	'/%(system)s/inositol_residue_np_ch3' % vars(),'/%(system)s/inositol_residue_np_ch4' % vars(),
 	'/%(system)s/inositol_residue_np_ch5' % vars()]
@@ -120,9 +121,9 @@ if __name__ == '__main__':
 	tables_list_hbonds = ['/%(system)s/inositol_hbond_chain0' % vars(), '/%(system)s/inositol_hbond_chain1' % vars(), '/%(system)s/inositol_hbond_chain2' % vars(), '/%(system)s/inositol_hbond_chain3' % vars(), '/%(system)s/inositol_hbond_chain4' % vars() ]
 	
 	
-	print "list of h5 files to read:", h5list
-	print "reading tables:", tables_list
-	
+	# print "list of h5 files to read:", h5list
+	# 	print "reading tables:", tables_list
+	# 	
 	all_systems_nonpolar_contact = []
 	all_systems_polar_contact = []
 	for h5file in h5list:
