@@ -96,7 +96,7 @@ def main():
 	logging.info("Groups %s will be analyzed", groups)
 	for group_name in groups:
 		logging.info("reading files under section %s", group_name)
-		dtype=config.get(group_name, 'dtype')
+		fmt=config.get(group_name, 'dtype')
 		config.remove_option(group_name, 'dtype')
 		# print dtype, data_types[dtype]
 		# print config.items(group_name)
@@ -114,12 +114,14 @@ def main():
 
 			all_data_matrix = numpy.hstack(all_data)
 			descr=None
-			if len(all_data_matrix.dtype) == 0:
-				rows,cols = all_data_matrix.shape
-				descr = create_description('col', cols, format=dtype)
-			else:
-				descr = data.dtype
-
+			# if len(all_data_matrix.dtype) == 0:
+			# 				rows,cols = all_data_matrix.shape
+			# 				descr = create_description('col', cols, format=data_types[dtype])
+			# 			else:
+			# 				descr = data.dtype
+			
+			rows,cols = all_data_matrix.shape
+			descr = create_description('col', cols, format=data_types[fmt])
 			logging.info("description created %s", descr)
 			save(h5file, all_data_matrix, group_name, table_name, descr)
 	
