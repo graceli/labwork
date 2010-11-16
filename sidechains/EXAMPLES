@@ -1,0 +1,21 @@
+/*
+    Oct 21 2009
+
+    Example usage:
+    g_parse_index -f traj_nosol.xtc -s traj_nosol.gro -n index_with_only_polar_parts.ndx [options ...]
+
+    Notes:
+    -f I've only ever passed in the nosol xtc because its faster to process;
+       No waters are ever analyzed anyways
+
+    -s Gros worked for gromacs-3.3.1, not sure if they will with gromacs 4
+
+    -n must contain a correct selection of backbone and lysine and glutamate sidechains.  If sidechains don't exist in selection, it will still work fine
+    for backbone.
+
+    [options ..]  these are for setting files names for the output files. if
+                  not specifically set, then the default hard coded file names
+                  will be used
+*/
+
+

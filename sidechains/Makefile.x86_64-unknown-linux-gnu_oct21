@@ -1,0 +1,47 @@
+# Generated automatically from Makefile.in by configure.
+#
+# This is a Gromacs 3.0 template makefile for your own utility programs.
+#
+# Copy this file to whatever directory you are using for your own
+# software and add more targets like the template one below.
+#
+# If you are using gmake it is relatively straightforward to add
+# an include based on environment variables (like previous Gromacs versions)
+# to select compiler flags and stuff automatically, but below it is static:
+#
+
+# Variables set by the configuration script:
+#LIBS         = -lmd -lgmx -lnsl -lfftw3f   
+#LDFLAGS      = -L/scratch/cneale/GPC/exe/intel/gromacs-4.0.5/exec/lib -L/scratch/cneale/GPC/exe/intel/fftw-3.1.2/exec/lib  
+#CFLAGS	     = -O3 -w -funroll-all-loops -std=gnu99  -I/scratch/cneale/GPC/exe/intel/gromacs-4.0.5/exec/include -I/scratch/cneale/GPC/exe/intel/gromacs-4.0.5/exec/include/gromacs	
+#CC           = c++ 
+#LD           = $(CC)
+
+
+#LIBS         = -lmd_mpi -lgmx_mpi -lnsl -lfftw3f   
+LIBS         = -lmd -lgmx -lnsl -lfftw3f   
+LDFLAGS      = -L/project/pomes/cneale/GPC/exe/intel/gromacs-4.0.5/exec/lib -L/project/pomes/cneale/GPC/exe/intel/fftw-3.1.2/exec/lib  
+CFLAGS       = -O3 -w -funroll-all-loops -std=gnu99  -I/project/pomes/cneale/GPC/exe/intel/gromacs-4.0.5/exec/include -I/project/pomes/cneale/GPC/exe/intel/gromacs-4.0.5/exec/include/gromacs
+CC           = c++
+LD           = $(CC)
+
+INCLU        = -I/project/pomes/cneale/GPC/exe/intel/gromacs-4.0.5/exec/include/gromacs
+OBJS         = g_parse_index_oct21.o HB.o peptide.o hbgroup.o AminoAcid.o
+
+g_parse_index_oct21: $(OBJS)
+	$(LD) $(LDFLAGS) -o /home/grace/bin/$@ $(OBJS) $(LIBS)
+
+HB.o: HB.cpp HB.h
+	$(CC) -c $(INCLU) HB.cpp
+
+peptide.o: peptide.cpp peptide.h AminoAcid.h HB.h
+	$(CC) -c $(INCLU) peptide.cpp
+
+hbgroup.o: hbgroup.cpp hbgroup.h
+	$(CC) -c $(INCLU) hbgroup.cpp
+
+AminoAcid.o: AminoAcid.cpp AminoAcid.h
+	$(CC) -c $(INCLU) AminoAcid.cpp
+
+clean:
+	rm -rf *.o /home/grace/bin/g_parse_index_oct21

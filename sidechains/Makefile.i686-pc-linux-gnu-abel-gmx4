@@ -1,0 +1,28 @@
+# For compiling on abel
+#
+
+LIBS         = -lmd -lgmx  -lnsl -lfftw3f -lm -lmpi  -lSM -lICE -lX11
+LDFLAGS      = -L/home/grace/bin/gromacs-4.0.5//lib -L/usr/lib/lam/lib -L/home/grace/bin/fftw-3.1.2/lib
+CFLAGS       = -O3 -fomit-frame-pointer -finline-functions -Wall -Wno-unused -funroll-all-loops -std=gnu99   -I/home/grace/bin/gromacs-4.0.5//include -I/home/grace/bin/gromacs-4.0.5//include/gromacs
+CC           = c++
+LD           = $(CC)
+OBJS	     = g_parse_index_oct21.o HB.o peptide.o hbgroup.o AminoAcid.o
+
+g_parse_index_oct21: $(OBJS)
+	$(LD) $(LDFLAGS) -o ../bin/$@ $(OBJS) $(LIBS)
+
+HB.o: HB.cpp HB.h
+	$(CC) -c -I/home/grace/bin/gromacs-4.0.5/include/gromacs HB.cpp
+
+peptide.o: peptide.cpp peptide.h AminoAcid.h HB.h
+	$(CC) -c -I/home/grace/bin/gromacs-4.0.5/include/gromacs peptide.cpp
+
+hbgroup.o: hbgroup.cpp hbgroup.h
+	$(CC) -c -I/home/grace/bin/gromacs-4.0.5/include/gromacs hbgroup.cpp
+
+AminoAcid.o: AminoAcid.cpp AminoAcid.h
+	$(CC) -c -I/home/grace/bin/gromacs-4.0.5/include/gromacs AminoAcid.cpp
+
+clean:
+	rm $(OBJS)
+
