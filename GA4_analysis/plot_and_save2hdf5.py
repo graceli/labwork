@@ -5,6 +5,31 @@ import sys
 import numpy
 import pylab
 
+# Example (http://www.pytables.org/docs/manual/ch03.html#id328514)
+# Getting object metadata
+# >>> print "Object:", table
+# Object: /detector/readout (Table(10,)) 'Readout example'
+# >>> print "Table name:", table.name
+# Table name: readout
+# >>> print "Table title:", table.title
+# Table title: Readout example
+# >>> print "Number of rows in table:", table.nrows
+# Number of rows in table: 10
+# >>> print "Table variable names with their type and shape:"
+# Table variable names with their type and shape:
+# >>> for name in table.colnames:
+#       print name, ':= %s, %s' % (table.coldtypes[name],
+#                                  table.coldtypes[name].shape)
+# 
+# ADCcount := uint16, ()
+# TDCcount := uint8, ()
+# energy := float64, ()
+# grid_i := int32, ()
+# grid_j := int32, ()
+# idnumber := int64, ()
+# name := |S16, ()
+# pressure := float32, ()
+
 def create_description(column_key, num_cols, format=tables.Int32Col(dflt=0)):
 	descr = {}
 	for i in range(0, num_cols):
@@ -13,26 +38,40 @@ def create_description(column_key, num_cols, format=tables.Int32Col(dflt=0)):
 	
 	return descr
 	
-def save(h5file, data, group_name, table_name, table_struct):
+def save(h5file, data, table_path, table_struct=numpy.dtype(numpy.int64)):
 	"""	
 		save a numpy array into a given table with name table_name and 
 		description table_struct (no compression is used)
 	"""
-
-	table_path = '/%(group_name)s/%(table_name)s' % vars()
-			
+	if type(data) == numpy.ndarray:
+		nrows,ncols = data.shape
+		table_struct = create_description("col", ncols)
+	else:
+		print len(data[0])
+		print data[0]
+		print table_struct.keys()
+		print len(table_struct.keys())
+		
+	# table_path = '/%(group_name)s/%(table_name)s' % vars()
+	group_name, table_name = os.path.split(table_path)
 	if not h5file.__contains__(table_path):
-		print "table does not exist; creating table", table_name
-		table = h5file.createTable('/' + group_name, table_name, table_struct)
+		if not h5file.__contains__('%(group_name)s' % vars()):
+			print "group didn't exist; creating group", group_name
+			root, name = os.path.split(group_name)
+			group = h5file.createGroup(root, name)
+	
+		print "table does not exist; creating table", table_path
+
+		table = h5file.createTable(group_name, table_name, table_struct)
 	else:
 		table = h5file.getNode(table_path)
 	
 	table.append(data)
 	table.flush()
 	
-	print "inserted data with dimensions", data.shape, " into", table_path
+	# print "Successfully inserted data with dimensions", data.shape, " into", table_path
 			
-def initialize(h5_filename, groupName):
+def initialize(h5_filename, groupName='/'):
 	""" 
 		open or create a h5 file with predefined
 	 	groups inositol, peptide, residue

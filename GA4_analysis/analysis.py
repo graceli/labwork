@@ -2,6 +2,10 @@
 
 import tables
 import numpy
+import math
+import plot_and_save2hdf5 as myh5
+import re
+import csv
 
 def intersect(polar, nonpolar):
 	nrows, ncols = nonpolar.shape
@@ -31,11 +35,11 @@ def intersect(polar, nonpolar):
 
 def binding(polar, nonpolar):
 	nrows, ncols = nonpolar.shape
-	
-	total_binding = nonpolar + polar
+	print "number of rows", nrows
+	# total_binding = nonpolar + polar
 	
 	# aggregate is a single column of 0s or non-zeros indicating bound and unbound
-	aggregate = numpy.sum(total_binding, axis=1)
+	aggregate = numpy.sum(polar+nonpolar, axis=1)
 	nonzero_indices = numpy.nonzero(aggregate)
 	
 	# bound is the number of nonzero numbers in the array of bound and unbound
@@ -52,8 +56,8 @@ def getTable(h5file,path):
 		print path, " table does not exist in h5file"
 		return None
 
-def convert_to_numpy(table):
-	numpy_array = table.read().view(dtype=numpy.float64).reshape(-1, len(table[0]))
+def convert_to_numpy(table, dtype=numpy.float64):
+	numpy_array = table.read().view(dtype=dtype).reshape(-1, len(table[0]))
 	return numpy_array
 	
 
@@ -80,17 +84,50 @@ def disordered():
 					total = float(polar + nonpolar + p_and_np)
 					print >>f, table_path, polar, nonpolar, p_and_np, polar/total, nonpolar/total, p_and_np/total, total_inositol, bound, unbound, unbound/float(bound)*125 
 
-def mon():
+					
+def binding_error(polar_array, nonpolar_array, block_size=1000):
+	nrows,ncols = polar_array.shape
+	max_num_blocks = int(math.floor(nrows/block_size))
+	
+	Kd_blocklist = []
+	for i in range(0,max_num_blocks):
+		block_start = block_size*i
+		block_end = min(5001, block_size*(i+1)+1)
+		print "block_start=", block_start, "block_end=", block_end
+		print polar_array[block_start:block_end, 1:]
+		print numpy.array(binding(polar_array[block_start:block_end, 1:], nonpolar_array[block_start:block_end, 1:]))
+		bound_unbound_vector = numpy.array(binding(polar_array[block_start:block_end, 1:], nonpolar_array[block_start:block_end, 1:]))
+		Kd_blocklist.append(bound_unbound_vector)
+
+	return numpy.hstack(Kd_blocklist)
+
+def block_average(data):
+	print "computing block averaging"
+	print "the data has shape", data.shape
+	block_size = 200
+	nblocks = int(math.floor(1117/block_size))
+	blocklist = []
+	for i in range(0, nblocks):
+		start = i*block_size
+		end = (i+1)*block_size
+		block_average = numpy.sum(data[start:end, :], axis=0)
+		blocklist.append(block_average)
+	
+	return numpy.vstack(blocklist)
+							
+def mon(offset=0, max_num_dataset=10):
 	"""This is computes the intersection of polar and nonpolar binding of inositol"""
 	
 	polar_h5 = tables.openFile('GA4_mon_polar_analysis.h5', mode='a')
 	nonpolar_h5 = tables.openFile('GA4_mon_nonpolar_analysis.h5', mode='a')
-	# f = open('data.txt', 'w')
+
 	# print >>f, "#table_name polar nonpolar p_and_np polar_fraction nonpolar_fraction p_and_np_fraction total_inositols bound unbound K"
+
 	for system in ["mon"]:
 		for iso in ["scyllo", "chiro"]:
 			data = []
-			for i in range(0,1118):
+			errorlist = []
+			for i in range(0, max_num_dataset):
 				table_path = '/%(system)s/%(iso)s%(i)d' % vars()
 				print "analyzing",table_path
 				polar_table = getTable(polar_h5, table_path)
@@ -102,20 +139,169 @@ def mon():
 					polar, nonpolar, p_and_np, total_inositol = intersect(polar_array[0:5001,1:], nonpolar_array[0:5001,1:])
 					
 					print "computing binding constant ..."
-					bound,unbound = binding(polar_array[0:5001,1:], nonpolar_array[0:5001,1:])
+					bound,unbound = binding(polar_array[offset:5001, 1:], nonpolar_array[offset:5001, 1:])	
+					# errorlist.append(binding_error(polar_array[offset:5001, 1:], nonpolar_array[offset:5001, 1:], block_size=1000))
+					
 					total = float(polar + nonpolar + p_and_np)
 					# print >>f, table_path, polar, nonpolar, p_and_np, polar/total, nonpolar/total, p_and_np/total, total_inositol, bound, unbound, unbound/float(bound)*125
-					data.append(numpy.array([polar, nonpolar, p_and_np, polar/total, nonpolar/total, p_and_np/total, total_inositol, bound, unbound, unbound/float(bound)]))
+					data.append(numpy.array([polar, nonpolar, p_and_np, total, total_inositol, bound, unbound]))
 				else:
 					print "table not found"
 		
 			data = numpy.vstack(data)
-			numpy.savetxt('%(iso)s_data.txt' % vars(), data, fmt='%-0.3f')
-			data_aggregation = numpy.sum(data, axis=0)
-			numpy.savetxt('%(iso)s_data_aggregation.txt' % vars(), numpy.transpose(data_aggregation), fmt='%.3f')
+			# numpy.savetxt('%(iso)s_data.txt' % vars(), data, fmt='%-0.3f')
+			data_sum = numpy.sum(data, axis=0)
+			
+			# nasty output
+			heading = ["polar", "nonpolar", "p_and_np", "total", "total_inositol", "nbound", "nunbound"]
+			d = dict(zip(heading, data_sum))
+			f = open('%(iso)s_data_aggregation.txt' % vars(), 'w')
+			for key in sorted(d.keys()):
+				print >>f, key, d[key]
+			f.close()
+			
+			#compute error
+			blocklist = block_average(data)
+			numpy.savetxt('%(iso)s_blocks.txt' % vars(), blocklist, fmt='%.3f')
+						
+			# numpy.savetxt('%(iso)s_data_aggregation.txt' % vars(), numpy.transpose(data_aggregation), fmt='%.3f')
+			#output the error
+			# error_array = numpy.vstack(errorlist)
+			# error_aggregate = numpy.sum(error_array, axis=0)
+			# numpy.savetxt('%(iso)s_data_aggregation_Kd_error.txt' % vars(), numpy.vstack(error_aggregate), fmt='%d')	
+
+def stoichiometry(polar_array, nonpolar_array):
+	""" computes the binding stoichiometry of inositol
+		ie. reports the number of molecules bound to the aggregate/protein
+	"""
+	print polar_array.shape
+	print nonpolar_array.shape
+
+	total = polar_array + nonpolar_array
+
+	nrows, ncols = total.shape
+	counts = [0,0,0]
+	for i in range(0, nrows):
+		if (total[i][0] and total[i][1]):
+			counts[2] += 1
+		elif (not total[i][0] and not total[i][1]):
+			counts[0] += 1
+		else:
+			counts[1] += 1
+	return counts
+
+def analysis(saveto_h5, max_num_dataset=10):
+	""" A bad way to organize a sequence of analysis """
 	
+	# h5 files to read, tables, and paths to tables are encoded inside the analysis
+	# ideally they would be refactored into a configuration file
+	polar_h5 = tables.openFile('GA4_mon_polar_analysis.h5', mode='a')
+	nonpolar_h5 = tables.openFile('GA4_mon_nonpolar_analysis.h5', mode='a')
+
+	# analyze and aggregate all data for each iso and store each in a separate table 
+	for system in ["mon"]:
+		for iso in ["scyllo", "chiro"]:
+			# clear the results
+			analysis_results = []
+			for i in range(0, max_num_dataset):
+				table_path = '/%(system)s/%(iso)s%(i)d' % vars()
+				print "analyzing", table_path
+				polar_table = getTable(polar_h5, table_path)
+				nonpolar_table = getTable(nonpolar_h5, table_path)
+				if polar_table != None and nonpolar_table != None:
+					polar_array = convert_to_numpy(polar_table)
+					nonpolar_array = convert_to_numpy(nonpolar_table)
+					s = stoichiometry(polar_array[0:5001, 1:], nonpolar_array[0:5001,1:])
+					analysis_results.append(s)
+
+			myh5.save(saveto_h5, numpy.vstack(analysis_results), "/mon_analysis/stoichiometry_%(iso)s" % vars())
+
+def aggregate(h5, aggregate_function=numpy.sum, where='/'):
+	# sum over all rows of each table in the file
+	# and print to screen the result
+	for t in h5.listNodes(where):
+		a = numpy.sum(convert_to_numpy(t, dtype=numpy.int32), axis=0)
+		sum_across = aggregate_function(a)
+		print a/float(sum_across)
+
+def distribution(h5, iso="scyllo", where='/'):
+	total_counts = [0] * 9
+	total_points = 0
+	num_tables = 0
+
+	pattern = re.compile(r'%(iso)s' % vars())
+	for table in h5.listNodes(where):
+		# only process the table that matches the isomer
+		# this is kind of hacky
+		match = pattern.search(table._v_name)
+		if match:
+			array = convert_to_numpy(table)
+			no_time = array[:,1:]
+			nrows, ncols = no_time.shape
+			for col in range(0, ncols):
+				column = no_time[:, col]
+				counts, bins = numpy.histogram(column, bins=range(0,10))
+				total_counts += counts
+				total_points += 5001		
+			num_tables += 1
+	print "total number of tables processed", num_tables
+	numpy.savetxt('%(iso)s_distribution.txt' % vars(), numpy.transpose(numpy.vstack([range(0,9), total_counts/float(total_points)])), fmt='%0.3f')
+	
+def dssp(system='ap1f'):
+	# "Coil": Float64Col(shape=(), dflt=0.0, pos=2),
+	#   "B-Sheet": Float64Col(shape=(), dflt=0.0, pos=3),
+	#   "B-Bridge": Float64Col(shape=(), dflt=0.0, pos=4),
+	#   "Bend": Float64Col(shape=(), dflt=0.0, pos=5),
+	#   "Turn": Float64Col(shape=(), dflt=0.0, pos=6),
+	#   "A-Helix": Float64Col(shape=(), dflt=0.0, pos=7),
+	#   "3-Helix": Float64Col(shape=(), dflt=0.0, pos=8),
+	
+	f = tables.openFile('analysis_results.h5')
+	structList = ['Coil', 'B-Sheet', 'B-Bridge', 'Bend', 'Turn', 'A-Helix', '3-Helix']
+	
+	for iso in ['scyllo', 'chiro', 'control']:
+		pattern = re.compile(r"%(system)s_%(iso)s" % vars())
+		ss_distribution = {'File': '', 'Coil' : 0.0, 'B-Sheet' : 0.0, 'B-Bridge' : 0.0, 'Bend' : 0.0, 'Turn' : 0.0, 'A-Helix' : 0.0, '3-Helix' : 0.0}
+		print ss_distribution
+		# use regex to match the filename with %(iso)s
+		# and in this case, the table
+		# is this the best way to do it? 
+		heading = ['File', 'Coil', 'B-Sheet', 'B-Bridge', 'Bend', 'Turn', 'A-Helix', '3-Helix']
+	 	writer = csv.DictWriter(open('%(system)s_%(iso)s_dict.csv' % vars(), 'wb'), heading, delimiter=" ")
+		writer.writerow(dict(zip(heading, heading)))
+		for t in f.listNodes(where='/dssp'):
+			filename = t.col('filename')[0]
+			match = pattern.search(filename)
+			if match:
+				ss_distribution['File'] = filename
+				# grab each secondary structure from the list, if it exists
+				for struct in ss_distribution.keys():
+					try:
+						ss = t.col(struct)[0]
+					except KeyError:
+						print filename, struct,"does not exist in table"
+					else:
+						print filename, struct, ss
+						ss_distribution[struct] = ss
+				writer.writerow(ss_distribution)
+		
+		# finally is executed after the try whether an exception occurred or not
+		# numpy.savetxt('%(system)s_%(iso)s.txt' % vars(), ss_distribution)
+
 def main():
-	mon()
+	# h5file = tables.openFile('GA4_mon_polar_analysis.h5')
+
+	# mon(max_num_dataset=1117)
+	# saveto_h5 = myh5.initialize('analysis_results.h5')
+	# analysis(saveto_h5, max_num_dataset=1117)
+
+	# aggregate(h5file, where='/mon_analysis')
+	# distribution(h5file, iso="chiro", where='/mon/')
+	# distribution(h5file, iso="scyllo", where='/mon/')
+	
+	dssp()
+	dssp(system='ap2f')
+	dssp(system='4oct')
 	
 if __name__ == '__main__':
 	main()
