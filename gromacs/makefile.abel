@@ -1,0 +1,35 @@
+# Generated automatically from Makefile.in by configure.
+#
+# This is a Gromacs 3.0 template makefile for your own utility programs.
+#
+# Copy this file to whatever directory you are using for your own
+# software and add more targets like the template one below.
+#
+# If you are using gmake it is relatively straightforward to add
+# an include based on environment variables (like previous Gromacs versions)
+# to select compiler flags and stuff automatically, but below it is static:
+#
+
+# Variables set by the configuration script:
+LIBS         = -lmd -lgmx  -lnsl -lfftw3f
+LDFLAGS      = -L/home/grace/bin/gromacs-4.0.5//lib -L/usr/lib/lam/lib -L/home/grace/bin/fftw-3.1.2/lib  
+CFLAGS	     = -O3 -fomit-frame-pointer -finline-functions -Wall -Wno-unused -funroll-all-loops -std=gnu99 -I/home/grace/bin/gromacs-4.0.5//include -I/home/grace/bin/gromacs-4.0.5//include/gromacs	
+CC           = g++
+LD           = $(CC)
+
+all: g_pp_nonpolar g_inositol_residue_nonpolar_v2
+
+g_pp_nonpolar:  g_pp_nonpolar.o
+	$(LD) $(LDFLAGS) -o /home/grace/bin/$@ g_pp_nonpolar.o $(LIBS)
+
+g_inositol_residue_nonpolar_v2: g_inositol_residue_nonpolar_v2.o
+	$(LD) $(LDFLAGS) -o /home/grace/bin/$@ g_inositol_residue_nonpolar_v2.o $(LIBS)
+
+g_eed: g_eed.o
+	$(LD) $(LDFLAGS) -o /home/grace/bin/$@ g_eed.o $(LIBS)
+
+g_mdmat_g: g_mdmat_g.o
+	$(LD) $(LDFLAGS) -o /home/grace/bin/$@ g_mdmat_g.o $(LIBS)
+
+clean:
+	rm *.o
