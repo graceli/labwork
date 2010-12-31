@@ -1,0 +1,12 @@
+
+# pass in the native structure
+   #pass in as a tpr
+   #functions to use the tpr like a snapshot
+
+# calculate the Ca native contact matrix of the tpr
+
+#for each frame
+#    calculate the Calpha contact matrix
+#
+
+
