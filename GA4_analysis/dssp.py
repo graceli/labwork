@@ -36,11 +36,14 @@ def process_dssp(filename, totalResidue, h5file='analysis_results.h5'):
 			# should all be data now
 			cols = line.split()
 			for i in range(1,columnTotal+1):
-				averageStruct[i] += float(cols[i])/totalResidue
+				# correct for the 3 extra residues are counted in the GA4 system by dssp
+				if legend[i] == "Coil":
+					averageStruct[i] += (float(cols[i]) - 3)/totalResidue
+				else:
+					averageStruct[i] += float(cols[i])/totalResidue
 			totalFramesProcessed+=1
 
 	# print "total number of columns is", columnTotal
-
 	table = []
 	table_descr = {}
 	table.append(filename)

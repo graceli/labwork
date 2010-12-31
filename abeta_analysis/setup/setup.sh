@@ -12,6 +12,7 @@ function add_binder {
     done
 }
 
+PROTEIN="/Users/grace/scratch/abeta_pydr/abeta42.gro"
 for ratio in 15 64; do 
     if [ ! -e $ratio ]; then
         mkdir $ratio
@@ -23,9 +24,9 @@ for ratio in 15 64; do
         fi
 
         cd $binder
-        for repeat in {1..20}; do 
+        for repeat in {1..1}; do 
             mkdir sys${repeat}
-            add_binder /Users/grace/scratch/abeta_pydr/abeta42.gro $binder $ratio $repeat
+            add_binder $PROTEIN $binder $ratio $repeat
             mv *.gro sys${repeat}
         done
         cd ../

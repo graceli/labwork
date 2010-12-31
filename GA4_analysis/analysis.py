@@ -6,6 +6,8 @@ import math
 import plot_and_save2hdf5 as myh5
 import re
 import csv
+import glob
+import os
 
 def intersect(polar, nonpolar):
 	nrows, ncols = nonpolar.shape
@@ -247,7 +249,7 @@ def distribution(h5, iso="scyllo", where='/'):
 	print "total number of tables processed", num_tables
 	numpy.savetxt('%(iso)s_distribution.txt' % vars(), numpy.transpose(numpy.vstack([range(0,9), total_counts/float(total_points)])), fmt='%0.3f')
 	
-def dssp(system='ap1f'):
+def dssp():
 	# "Coil": Float64Col(shape=(), dflt=0.0, pos=2),
 	#   "B-Sheet": Float64Col(shape=(), dflt=0.0, pos=3),
 	#   "B-Bridge": Float64Col(shape=(), dflt=0.0, pos=4),
@@ -256,52 +258,91 @@ def dssp(system='ap1f'):
 	#   "A-Helix": Float64Col(shape=(), dflt=0.0, pos=7),
 	#   "3-Helix": Float64Col(shape=(), dflt=0.0, pos=8),
 	
+	""" 
+		reads the h5 file containing the secondary structure analysis timeseries
+		and outputs a distribution for each datafile
+		write the computed distribution to a csv file with headings
+	"""
 	f = tables.openFile('analysis_results.h5')
 	structList = ['Coil', 'B-Sheet', 'B-Bridge', 'Bend', 'Turn', 'A-Helix', '3-Helix']
-	
-	for iso in ['scyllo', 'chiro', 'control']:
-		pattern = re.compile(r"%(system)s_%(iso)s" % vars())
-		ss_distribution = {'File': '', 'Coil' : 0.0, 'B-Sheet' : 0.0, 'B-Bridge' : 0.0, 'Bend' : 0.0, 'Turn' : 0.0, 'A-Helix' : 0.0, '3-Helix' : 0.0}
-		print ss_distribution
-		# use regex to match the filename with %(iso)s
-		# and in this case, the table
-		# is this the best way to do it? 
-		heading = ['File', 'Coil', 'B-Sheet', 'B-Bridge', 'Bend', 'Turn', 'A-Helix', '3-Helix']
-	 	writer = csv.DictWriter(open('%(system)s_%(iso)s_dict.csv' % vars(), 'wb'), heading, delimiter=" ")
-		writer.writerow(dict(zip(heading, heading)))
-		for t in f.listNodes(where='/dssp'):
-			filename = t.col('filename')[0]
-			match = pattern.search(filename)
-			if match:
-				ss_distribution['File'] = filename
-				# grab each secondary structure from the list, if it exists
-				for struct in ss_distribution.keys():
-					try:
-						ss = t.col(struct)[0]
-					except KeyError:
-						print filename, struct,"does not exist in table"
-					else:
-						print filename, struct, ss
-						ss_distribution[struct] = ss
-				writer.writerow(ss_distribution)
+	for system in ['4oct', 'ap1f', 'ap2f']:
+		for iso in ['scyllo', 'chiro', 'control']:
+			pattern = re.compile(r"%(system)s_%(iso)s" % vars())
+			ss_distribution = {'#filename': '', 'Coil' : 0.0, 'B-Sheet' : 0.0, 'B-Bridge' : 0.0, 'Bend' : 0.0, 'Turn' : 0.0, 'A-Helix' : 0.0, '3-Helix' : 0.0}
+
+			# use regex to match the tables for 'system' and 'iso' -- another better way? 
+			heading = ['#filename', 'Coil', 'B-Sheet', 'B-Bridge', 'Bend', 'Turn', 'A-Helix', '3-Helix']
 		
-		# finally is executed after the try whether an exception occurred or not
-		# numpy.savetxt('%(system)s_%(iso)s.txt' % vars(), ss_distribution)
+			#write data to ascii csv to import into Excel
+			dictFilename = '%(system)s_%(iso)s_dict.csv' % vars()
+			fhandle = open(dictFilename, 'wb')
+		 	writer = csv.DictWriter(fhandle, heading, delimiter=" ")
+			writer.writerow(dict(zip(heading, heading)))
+
+			num_matches = 0
+			for t in f.listNodes(where='/dssp'):
+				filename = t.col('filename')[0]
+				match = pattern.search(filename)
+				if match:
+					ss_distribution['#filename'] = filename
+					print "processing", filename
+					# compute the sum of ss distribution over
+					# all independent runs
+					for struct in ss_distribution.keys():
+						if struct != '#filename':
+							try:
+								ss = t.col(struct)[0]
+							except KeyError:
+								print filename, struct,"does not exist in table"
+							else:
+								# print filename, struct, ss
+								ss_distribution[struct] = float(ss)
+						else:
+							continue
+					writer.writerow(ss_distribution)
+					fhandle.flush()
+			fhandle.close()
+			#regenerate csv file and compute the average and std (over all independent systems)
+			#TODO: figure out how to do this without read off of disk
+			#get rid of the first column because its all strings (read in as NaN by Numpy)
+	
+	data = []
+	for dictFilename in glob.glob("*.csv"):
+		try:
+			data = numpy.genfromtxt(dictFilename, comments='#')[:,1:]
+		except IOError:
+			print data
+			print dictFilename, "size", os.path.getsize(dictFilename), "had a problem"
+
+
+		# print data
+		average = numpy.average(data, axis=0)
+		print average
+		stdev = numpy.std(data, axis=0)
+		writer = csv.DictWriter(open(dictFilename, 'a'), heading, delimiter=" ")
+		#append the average and stdev back into the csv file
+		aggregate_data = {'average':average, 'stdev':stdev}
+		for newhead in ['average', 'stdev']:
+			index = 0
+			for attr in heading:
+				if attr == "#filename":
+					ss_distribution[attr] = newhead
+				else:
+					print index
+					ss_distribution[attr] = aggregate_data[newhead][index]
+					index += 1
+			writer.writerow(ss_distribution)
 
 def main():
 	# h5file = tables.openFile('GA4_mon_polar_analysis.h5')
-
 	# mon(max_num_dataset=1117)
 	# saveto_h5 = myh5.initialize('analysis_results.h5')
 	# analysis(saveto_h5, max_num_dataset=1117)
-
 	# aggregate(h5file, where='/mon_analysis')
 	# distribution(h5file, iso="chiro", where='/mon/')
 	# distribution(h5file, iso="scyllo", where='/mon/')
 	
 	dssp()
-	dssp(system='ap2f')
-	dssp(system='4oct')
-	
+
 if __name__ == '__main__':
 	main()
