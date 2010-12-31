@@ -23,7 +23,7 @@ for ratio in 15 64; do
         fi
 
         cd $binder
-        for repeat in {1..20}; do 
+        for repeat in {1..1}; do 
             mkdir sys${repeat}
             add_binder /Users/grace/scratch/abeta_pydr/abeta42.gro $binder $ratio $repeat
             mv *.gro sys${repeat}
