@@ -30,14 +30,27 @@ import pylab
 # name := |S16, ()
 # pressure := float32, ()
 
-def create_description(column_key, num_cols, format=tables.Int32Col(dflt=0)):
+def initialize(h5_filename, groupName='/'):
+	""" 
+		open or create a h5 file with predefined
+	 	groups inositol, peptide, residue
+	"""
+	
+	h5file = tables.openFile(h5_filename, mode="a")
+	filters = tables.Filters(complevel=8, complib='zlib')
+	if not h5file.__contains__('/'+groupName):
+		h5file.createGroup(h5file.root, groupName, filters=filters)
+
+	return h5file
+
+def create_description(column_key, num_cols, format=tables.Int64Col(dflt=0)):
 	descr = {}
 	for i in range(0, num_cols):
 		colname = column_key+str(i)
 		descr[colname] = format
-	
+
 	return descr
-	
+
 def save(h5file, data, table_path, table_struct=numpy.dtype(numpy.int64)):
 	"""	
 		save a numpy array into a given table with name table_name and 
@@ -51,7 +64,7 @@ def save(h5file, data, table_path, table_struct=numpy.dtype(numpy.int64)):
 		print data[0]
 		print table_struct.keys()
 		print len(table_struct.keys())
-		
+
 	# table_path = '/%(group_name)s/%(table_name)s' % vars()
 	group_name, table_name = os.path.split(table_path)
 	if not h5file.__contains__(table_path):
@@ -59,30 +72,23 @@ def save(h5file, data, table_path, table_struct=numpy.dtype(numpy.int64)):
 			print "group didn't exist; creating group", group_name
 			root, name = os.path.split(group_name)
 			group = h5file.createGroup(root, name)
-	
+
 		print "table does not exist; creating table", table_path
 
 		table = h5file.createTable(group_name, table_name, table_struct)
 	else:
 		table = h5file.getNode(table_path)
-	
+
 	table.append(data)
 	table.flush()
-	
-	# print "Successfully inserted data with dimensions", data.shape, " into", table_path
-			
-def initialize(h5_filename, groupName='/'):
-	""" 
-		open or create a h5 file with predefined
-	 	groups inositol, peptide, residue
-	"""
-	
-	h5file = tables.openFile(h5_filename, mode="a")
-	filters = tables.Filters(complevel=8, complib='zlib')
-	if not h5file.__contains__('/'+groupName):
-		h5file.createGroup(h5file.root, groupName, filters=filters)
+	print "Successfully inserted data with dimensions", data.shape, " into", table_path
 
-	return h5file
+def getTable(h5file,path):
+	if h5file.__contains__(path):
+		return h5file.getNode(path)
+	else:
+		print path, " table does not exist in h5file"
+		return None
 
 def main():
 	"""

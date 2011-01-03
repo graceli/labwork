@@ -5,6 +5,7 @@ import os
 import numpy
 
 """
+Contact Analysis for disordered oligomer systems (GA4)
 post-processes (averages and standard deviation) data files for polar and nonpolar contacts.
 each file is a columnar data file (time series data).
 """

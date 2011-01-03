@@ -51,12 +51,12 @@ def binding(polar, nonpolar):
 	return bound, unbound
 	
 			
-def getTable(h5file,path):
-	if h5file.__contains__(path):
-		return h5file.getNode(path)
-	else:
-		print path, " table does not exist in h5file"
-		return None
+# def getTable(h5file,path):
+# 	if h5file.__contains__(path):
+# 		return h5file.getNode(path)
+# 	else:
+# 		print path, " table does not exist in h5file"
+# 		return None
 
 def convert_to_numpy(table, dtype=numpy.float64):
 	numpy_array = table.read().view(dtype=dtype).reshape(-1, len(table[0]))
@@ -75,8 +75,8 @@ def disordered():
 		for iso in ["scyllo", "chiro"]:
 			for i in range(0,5):
 				table_path = '/%(system)s/%(iso)s%(i)d' % vars()
-				polar_table = getTable(polar_h5, table_path)
-				nonpolar_table = getTable(nonpolar_h5, table_path)
+				polar_table = myh5.getTable(polar_h5, table_path)
+				nonpolar_table = myh5.getTable(nonpolar_h5, table_path)
 				
 				if polar_table != None and nonpolar_table != None:
 					polar_array = convert_to_numpy(polar_table)
@@ -132,8 +132,8 @@ def mon(offset=0, max_num_dataset=10):
 			for i in range(0, max_num_dataset):
 				table_path = '/%(system)s/%(iso)s%(i)d' % vars()
 				print "analyzing",table_path
-				polar_table = getTable(polar_h5, table_path)
-				nonpolar_table = getTable(nonpolar_h5, table_path)
+				polar_table = myh5.getTable(polar_h5, table_path)
+				nonpolar_table = myh5.getTable(nonpolar_h5, table_path)
 				if polar_table != None and nonpolar_table != None:
 					polar_array = convert_to_numpy(polar_table)
 					nonpolar_array = convert_to_numpy(nonpolar_table)
@@ -208,8 +208,8 @@ def analysis(saveto_h5, max_num_dataset=10):
 			for i in range(0, max_num_dataset):
 				table_path = '/%(system)s/%(iso)s%(i)d' % vars()
 				print "analyzing", table_path
-				polar_table = getTable(polar_h5, table_path)
-				nonpolar_table = getTable(nonpolar_h5, table_path)
+				polar_table = myh5.getTable(polar_h5, table_path)
+				nonpolar_table = myh5.getTable(nonpolar_h5, table_path)
 				if polar_table != None and nonpolar_table != None:
 					polar_array = convert_to_numpy(polar_table)
 					nonpolar_array = convert_to_numpy(nonpolar_table)
