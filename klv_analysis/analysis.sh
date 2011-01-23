@@ -120,7 +120,7 @@ function clean {
 #do all analysis for systems in the presence of inositol
 function do_inositol {	
 	for sys in 15 45; do
-		xtc="$sys/xtc/0-200ns/"
+		xtc="${sys}to4/xtc/0-200ns/"
 		tpr="common/${sys}to4_nosol.tpr"
 		ndx="common/${sys}to4_analysis.ndx"
 		output_base="analysis"
