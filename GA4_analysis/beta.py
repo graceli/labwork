@@ -2,13 +2,15 @@ import plot_and_save2hdf5 as myh5
 import glob
 import os
 import numpy
+import tables
+import utils
 
 """ Analysis for beta-aggregate for GA4 """
 
 # TODO: Geometric binding mode analysis
 # TODO: Frequency of binding to C=O vs N-H (I have to parse this data)
 def intersect(polar, nonpolar):
-	nrows, ncols = nonpolar.shape
+	nrows, ncols = polar.shape
 	
 	print "nonpolar has dimensions ", nonpolar.shape
 	print "polar has dimensions", polar.shape
@@ -21,7 +23,8 @@ def intersect(polar, nonpolar):
 	polar_count = 0
 	total_inositol = 0
 	for r in range(0,nrows):
-		for i in range(0, ncols):
+		# first column is ignored; it is assumed to be time
+		for i in range(1, ncols):
 			# print nonpolar_new[r][i], polar[r][i]
 			if nonpolar[r][i] > 0.0 and polar[r][i] > 0.0:
 				p_and_np_count += 1
@@ -39,8 +42,14 @@ def binding(polar, nonpolar):
 	# total_binding = nonpolar + polar
 	
 	# aggregate is a single column of 0s or non-zeros indicating bound and unbound
-	aggregate = numpy.sum(polar+nonpolar, axis=1)
-	nonzero_indices = numpy.nonzero(aggregate)
+	# ignore the first column; it is assumed to be time
+	try:
+		aggregate = numpy.sum(polar[:,1:] + nonpolar[:, 1:], axis=1)
+	except ValueError:
+		print "polar", polar.shape
+		print "nonpolar", nonpolar.shape
+	else:
+		nonzero_indices = numpy.nonzero(aggregate)
 	
 	# bound is the number of nonzero numbers in the array of bound and unbound
 	bound = len(aggregate[nonzero_indices])
@@ -56,19 +65,26 @@ def stoichiometry(polar_array, nonpolar_array):
 	print nonpolar_array.shape
 
 	total = polar_array + nonpolar_array
-
 	nrows, ncols = total.shape
-	counts = [0,0,0]
+	counts = [0]*ncols
 	for i in range(0, nrows):
-		if (total[i][0] and total[i][1]):
-			counts[2] += 1
-		elif (not total[i][0] and not total[i][1]):
-			counts[0] += 1
-		else:
-			counts[1] += 1
-	return counts
+		nbound = 0
+		# ignore the first column as time
+		for n in range(1, ncols):
+			if total[i][n]:
+				nbound += 1
+		try:
+			counts[nbound] += 1
+		except IndexError:
+			print nbound
 
-
+	try:
+		normalize = counts/numpy.sum(counts)
+	except:
+		print normalize
+		return counts
+	else:
+		return counts
 
 def read_polar(h5file):
 	""" reads in the flat files contain polar contact analysis into a
@@ -79,9 +95,9 @@ def read_polar(h5file):
 	polar = glob.glob("polar/*.dat")
 	for file in polar:
 		# print file
-		data = numpy.genfromtxt(file)
+		data = numpy.genfromtxt(file, dtype=numpy.int32)
 		# construct table path from filename
-		discard, rest = file.split('/')
+		discard, rest = os.path.split(file)
 		parts = rest.split('_')
 		group_name, ext = parts[-1].split('.')
 		table_name = '_'.join(parts[0:4])
@@ -91,16 +107,20 @@ def read_polar(h5file):
 		
 		myh5.save(h5file, data, table_path)
 
+
 def read_nonpolar(h5file):
 	""" reads in the flat files containing nonpolar contact analysis into a 
 		h5 file
 	"""
-	nonpolar = glob.glob("nonpolar/*per_inositol_contacts.dat")
+	nonpolar = glob.glob("nonpolar_all/*per_inositol_contacts.dat")
 	for file in nonpolar:
 		# print file
-		data = numpy.genfromtxt(file)
-		parts = file.split('_')
-		table_name = 'inf_' + '_'.join(parts[1:3])
+		data = numpy.genfromtxt(file, dtype=numpy.int32)
+		# Nasty file name string parsing
+		path, filename = os.path.split(file)
+		parts = filename.split('_')
+		sys_number = parts[2][-1]
+		table_name = 'inf_' + '_'.join(parts[1:3])[:-1] + '_sys' + sys_number
 		group_name = 'nonpolar_per_inositol'
 		table_path = os.path.join(os.path.join('/', group_name), table_name)
 		print "saving %(file)s to" % vars(), table_path
@@ -111,42 +131,33 @@ def load():
 	h5file = myh5.initialize('GA4_beta_analysis.h5')
 	read_polar(h5file)
 	read_nonpolar(h5file)
-	return h5file
+	h5file.close()
 
-def disordered():
+def analyze(h5file):
 	"""This is computes the intersection of polar and nonpolar binding of inositol"""
-
-	polar_h5 = tables.openFile('GA4_disordered_polar_analysis.h5', mode='a')
-	nonpolar_h5 = tables.openFile('GA4_disordered_nonpolar_analysis.h5', mode='a')
-
+	# open the h5 file for protofibrils
+	inositol_concentration_mM = 119
 	f = open('data.txt', 'w')
-	print >>f, "#table_name polar nonpolar p_and_np polar_fraction nonpolar_fraction p_and_np_fraction total_inositols bound unbound"
-	
+	print >>f, "#table_name polar nonpolar p_and_np polar_fraction nonpolar_fraction p_and_np_fraction total_inositols bound unbound Kd stoichiometry"
+	 
 	for t in h5file.listNodes('/nonpolar_per_inositol'):
 		# find matching polar table
-				
-		intersect(polar, nonpolar)
-		binding(polar, nonpolar)
-		stoichiometry(polar, nonpolar)
+		nonpolar_table = t
+		polar_table = h5file.getNode(os.path.join('/polar-contacts-per-inositol', t.name))
 		
 		if polar_table != None and nonpolar_table != None:
-			polar_array = convert_to_numpy(polar_table)
-			nonpolar_array = convert_to_numpy(nonpolar_table)
+			polar_array = utils.convert_to_numpy(polar_table)
+			nonpolar_array = utils.convert_to_numpy(nonpolar_table)
 			polar,nonpolar,p_and_np, total_inositol = intersect(polar_array, nonpolar_array)
 			bound,unbound = binding(polar_array, nonpolar_array)
+			stoic = stoichiometry(polar_array, nonpolar_array)
 			total = float(polar + nonpolar + p_and_np)
-			print >>f, table_path, polar, nonpolar, p_and_np, polar/total, nonpolar/total, p_and_np/total, total_inositol, bound, unbound, unbound/float(bound)*125
-						
-def analyze(h5file):
-	""" run analysis """
-
+			print >>f, polar_table.name, nonpolar_table.name, polar, nonpolar, p_and_np, polar/total, nonpolar/total, p_and_np/total, total_inositol, bound, unbound, unbound/float(bound)*inositol_concentration_mM, stoic
 
 def main():
 	load()
-	
-	# h5file = tables.openFile('GA4_beta_analysis.h5')
-	# analyze(h5file)
-
+	h5file = tables.openFile('GA4_beta_analysis.h5')
+	analyze(h5file)
 	
 if __name__ == '__main__':
 	main()

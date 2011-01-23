@@ -8,11 +8,15 @@ import re
 import csv
 import glob
 import os
+import utils
 
 def intersect(polar, nonpolar):
 	nrows, ncols = nonpolar.shape
 	
+	print "computing the intersecting"
 	print "nonpolar has dimensions ", nonpolar.shape
+	print nonpolar
+
 	print "polar has dimensions", polar.shape
 	print nonpolar
 	print polar
@@ -50,7 +54,6 @@ def binding(polar, nonpolar):
 	
 	return bound, unbound
 	
-			
 # def getTable(h5file,path):
 # 	if h5file.__contains__(path):
 # 		return h5file.getNode(path)
@@ -58,11 +61,10 @@ def binding(polar, nonpolar):
 # 		print path, " table does not exist in h5file"
 # 		return None
 
-def convert_to_numpy(table, dtype=numpy.float64):
-	numpy_array = table.read().view(dtype=dtype).reshape(-1, len(table[0]))
-	return numpy_array
+# def convert_to_numpy(table, dtype=numpy.float64):
+# 	numpy_array = table.read().view(dtype=dtype).reshape(-1, len(table[0]))
+# 	return numpy_array
 	
-
 def disordered():
 	"""This is computes the intersection of polar and nonpolar binding of inositol"""
 	
@@ -70,23 +72,25 @@ def disordered():
 	nonpolar_h5 = tables.openFile('GA4_disordered_nonpolar_analysis.h5', mode='a')
 
 	f = open('data.txt', 'w')
-	print >>f, "#table_name polar nonpolar p_and_np polar_fraction nonpolar_fraction p_and_np_fraction total_inositols bound unbound"
+	print >>f, "#table_name polar nonpolar p_and_np polar_fraction nonpolar_fraction p_and_np_fraction total_inositols nframes bound unbound Kd"
 	for system in ["ap1f", "oct"]:
 		for iso in ["scyllo", "chiro"]:
-			for i in range(0,5):
+			for i in range(0,6):
 				table_path = '/%(system)s/%(iso)s%(i)d' % vars()
 				polar_table = myh5.getTable(polar_h5, table_path)
 				nonpolar_table = myh5.getTable(nonpolar_h5, table_path)
 				
 				if polar_table != None and nonpolar_table != None:
-					polar_array = convert_to_numpy(polar_table)
-					nonpolar_array = convert_to_numpy(nonpolar_table)
-					polar,nonpolar,p_and_np, total_inositol = intersect(polar_array, nonpolar_array)
-					bound,unbound = binding(polar_array, nonpolar_array)
+					# Note need to specify float64, since now pytables is all 32 bit
+					polar_array = utils.convert_to_numpy(polar_table, dtype=numpy.float64)
+					nonpolar_array = utils.convert_to_numpy(nonpolar_table, dtype=numpy.float64)
+					# need to exclude first column of nonpolar data because its time
+					polar,nonpolar,p_and_np, total_inositol = intersect(polar_array, nonpolar_array[:,1:])
+					bound,unbound = binding(polar_array, nonpolar_array[:,1:])
 					total = float(polar + nonpolar + p_and_np)
-					print >>f, table_path, polar, nonpolar, p_and_np, polar/total, nonpolar/total, p_and_np/total, total_inositol, bound, unbound, unbound/float(bound)*125 
+					print >>f, table_path, polar, nonpolar, p_and_np, polar/total, nonpolar/total, p_and_np/total, total_inositol, total_inositol/2, bound, unbound, unbound/float(bound)*123
 
-					
+
 def binding_error(polar_array, nonpolar_array, block_size=1000):
 	nrows,ncols = polar_array.shape
 	max_num_blocks = int(math.floor(nrows/block_size))
@@ -135,8 +139,8 @@ def mon(offset=0, max_num_dataset=10):
 				polar_table = myh5.getTable(polar_h5, table_path)
 				nonpolar_table = myh5.getTable(nonpolar_h5, table_path)
 				if polar_table != None and nonpolar_table != None:
-					polar_array = convert_to_numpy(polar_table)
-					nonpolar_array = convert_to_numpy(nonpolar_table)
+					polar_array = utils.convert_to_numpy(polar_table)
+					nonpolar_array = utils.convert_to_numpy(nonpolar_table)
 					print "computing intersection ..."
 					polar, nonpolar, p_and_np, total_inositol = intersect(polar_array[0:5001,1:], nonpolar_array[0:5001,1:])
 					
@@ -211,8 +215,8 @@ def analysis(saveto_h5, max_num_dataset=10):
 				polar_table = myh5.getTable(polar_h5, table_path)
 				nonpolar_table = myh5.getTable(nonpolar_h5, table_path)
 				if polar_table != None and nonpolar_table != None:
-					polar_array = convert_to_numpy(polar_table)
-					nonpolar_array = convert_to_numpy(nonpolar_table)
+					polar_array = utils.convert_to_numpy(polar_table)
+					nonpolar_array = utils.convert_to_numpy(nonpolar_table)
 					s = stoichiometry(polar_array[0:5001, 1:], nonpolar_array[0:5001,1:])
 					analysis_results.append(s)
 
@@ -222,9 +226,9 @@ def aggregate(h5, aggregate_function=numpy.sum, where='/'):
 	# sum over all rows of each table in the file
 	# and print to screen the result
 	for t in h5.listNodes(where):
-		a = numpy.sum(convert_to_numpy(t, dtype=numpy.int32), axis=0)
+		a = numpy.sum(utils.convert_to_numpy(t, dtype=numpy.int32), axis=0)
 		sum_across = aggregate_function(a)
-		print a/float(sum_across)
+		print t.name, a/float(sum_across)
 
 def distribution(h5, iso="scyllo", where='/'):
 	total_counts = [0] * 9
@@ -237,7 +241,7 @@ def distribution(h5, iso="scyllo", where='/'):
 		# this is kind of hacky
 		match = pattern.search(table._v_name)
 		if match:
-			array = convert_to_numpy(table)
+			array = utils.convert_to_numpy(table)
 			no_time = array[:,1:]
 			nrows, ncols = no_time.shape
 			for col in range(0, ncols):
@@ -338,11 +342,14 @@ def main():
 	# mon(max_num_dataset=1117)
 	# saveto_h5 = myh5.initialize('analysis_results.h5')
 	# analysis(saveto_h5, max_num_dataset=1117)
+	
+	# h5file = myh5.initialize('analysis_results.h5')
 	# aggregate(h5file, where='/mon_analysis')
 	# distribution(h5file, iso="chiro", where='/mon/')
 	# distribution(h5file, iso="scyllo", where='/mon/')
 	
-	dssp()
+	# dssp()
+	disordered()
 
 if __name__ == '__main__':
 	main()

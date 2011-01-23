@@ -43,7 +43,7 @@ def initialize(h5_filename, groupName='/'):
 
 	return h5file
 
-def create_description(column_key, num_cols, format=tables.Int64Col(dflt=0)):
+def create_description(column_key, num_cols, format=tables.Int32Col(dflt=0)):
 	descr = {}
 	for i in range(0, num_cols):
 		colname = column_key+str(i)
@@ -51,7 +51,7 @@ def create_description(column_key, num_cols, format=tables.Int64Col(dflt=0)):
 
 	return descr
 
-def save(h5file, data, table_path, table_struct=numpy.dtype(numpy.int64)):
+def save(h5file, data, table_path, table_struct=numpy.dtype(numpy.int32)):
 	"""	
 		save a numpy array into a given table with name table_name and 
 		description table_struct (no compression is used)
@@ -104,7 +104,7 @@ def main():
 	file = sys.argv[1]
 	groupName = sys.argv[2]
 	tableName = sys.argv[3]
-	data = numpy.genfromtxt(file, dtype=numpy.float64)
+	data = numpy.genfromtxt(file, dtype=numpy.float32)
 
 	nrows, ncols = data.shape
 
@@ -112,7 +112,7 @@ def main():
 	# note that name is hard coded in
 	analysis_fname = "analysis.h5"
 	h5file = initialize(analysis_fname, groupName)
-	table_descr = create_description("col", ncols, format=tables.Float64Col(dflt=0.0))
+	table_descr = create_description("col", ncols, format=tables.Float32Col(dflt=0.0))
 
 	save(h5file, data, groupName, tableName, table_descr)
 	

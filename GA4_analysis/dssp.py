@@ -51,10 +51,10 @@ def process_dssp(filename, totalResidue, h5file='analysis_results.h5'):
 	
 	for i in range(1,columnTotal+1):
 		table.append(averageStruct[i]/totalFramesProcessed)
-		table_descr[legend[i]] = tables.Float64Col(pos=i)
+		table_descr[legend[i]] = tables.Float32Col(pos=i)
 	
 	table.append(totalFramesProcessed)
-	table_descr['num_frames'] = tables.Float64Col(pos=columnTotal+1)
+	table_descr['num_frames'] = tables.Float32Col(pos=columnTotal+1)
 	
 	h5 = myh5.initialize(h5file)
 	
