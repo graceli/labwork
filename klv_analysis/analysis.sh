@@ -9,8 +9,10 @@ CUTOFF=0.45
 OUTPUT=out
 NTASK=8
 
-GROUP[15]="15 33" 
-GROUP[45]="15 63"
+GROUP[15,0]=15
+GROUP[15,1]=33
+GROUP[45,0]=15 
+GROUP[45,1]=63
 
 #interpeptide nonpolar interactions
 function pp_nonpolar {
@@ -67,11 +69,12 @@ function polar_residue {
 	output_dir=$4/polar
 	NPEP=$5
 	NINOS=$6
-	GRP=$7
+	GRP1=$7
+	GRP2=$8
 	mkdir -p $output_dir
 	for file in `ls $xtc/*.xtc`; do
 		base=`basename $file .xtc`
-		seq $GRP | g_parse_index_oct21 -f $xtc/$base -s $tpr -n $ndx -num_peptides $NPEP -num_inositol $NINOS -deffnm ${base}_ $TEST 2> $OUTPUT >&2 &
+		seq $GRP1 $GRP2 | g_parse_index_oct21 -f $xtc/$base -s $tpr -n $ndx -num_peptides $NPEP -num_inositol $NINOS -deffnm ${base}_ $TEST 2> $OUTPUT >&2 &
 			
 		let task=$task+1
 		if [ "$task" == "$NTASK" ]; then
@@ -129,7 +132,7 @@ function do_inositol {
 		pp_nonpolar $xtc $tpr $ndx $output_base
 		wait
 		NPEP=4; NINOS=$sys
-		polar_residue $xtc $tpr $ndx $output_base $NPEP $NINOS ${GROUP[$sys]}
+		polar_residue $xtc $tpr $ndx $output_base $NPEP $NINOS ${GROUP[$sys,0]} ${GROUP[$sys,1]}
 		wait
 		nonpolar_residue $xtc $tpr $ndx $output_base
 		wait
