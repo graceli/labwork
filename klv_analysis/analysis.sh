@@ -9,12 +9,9 @@ CUTOFF=0.45
 OUTPUT=out
 NTASK=8
 
-#combine into one
-#NDX="../common/g_pp_nonpolar.ndx"
-#NDX_NONPOLAR="common/nonpolar.ndx"
-#NDX_CLUST="common/klv_nosol.ndx"
 GROUP[15]="15 33" 
 GROUP[45]="15 63"
+
 #interpeptide nonpolar interactions
 function pp_nonpolar {
 	GRP=14
@@ -24,8 +21,9 @@ function pp_nonpolar {
 	ndx=$3
 	output_dir=$4/pp_nonpolar
 	mkdir -p $output_dir
-	for file in `ls $xtc/*.xtc`; do 
-        echo $GRP | g_pp_nonpolar -f $file -s $tpr -n $ndx -deffnm $output_dir/${file}_ -cutoff $CUTOFF $TEST 2> $OUTPUT >&2 &
+	for file in `ls $xtc/*.xtc`; do
+		base=`basename $file .xtc`
+        echo $GRP | g_pp_nonpolar -f $file -s $tpr -n $ndx -deffnm $output_dir/${base}_ -cutoff $CUTOFF $TEST > $OUTPUT 2>&1 &
         echo "starting process $task"
         let task=$task+1
         if [ "$task" == "$NTASK" ]; then
@@ -45,8 +43,9 @@ function nonpolar_residue {
 	output_dir=$4/nonpolar_residue
 	mkdir -p $output_dir
 	for file in `ls $xtc/*.xtc`; do
+		base=`basename $file .xtc`
 		echo $GRP | g_inositol_residue_nonpolar_v2 -f $file -s $tpr \
-			-n $ndx -per_residue_contacts $output_dir/${file}_per_residue_contact.dat \
+			-n $ndx -per_residue_contacts $output_dir/${base}_per_residue_contact.dat \
 			-per_inositol_contacts $output_dir/${file}_per_inositol_contacts.dat -dist $CUTOFF $TEST > $OUTPUT 2>&1 &
 			
 		let task=$task+1
@@ -91,8 +90,9 @@ function cluster {
 	ndx=$3
 	output_dir=$4/cluster
 	mkdir -p $output_dir
-	for file in `ls $xtc/*.xtc`; do 
-	    echo $GRP | g_clustsize -f $file -s $tpr -n $ndx -nc $output_dir/${file}_nclust.xvg -cut $CUTOFF -noxvgr $TEST > $OUTPUT 2>&1 &
+	for file in `ls $xtc/*.xtc`; do
+		base=`basename $file .xtc`
+	    echo $GRP | g_clustsize -f $file -s $tpr -n $ndx -nc $output_dir/${base}_nclust.xvg -cut $CUTOFF -noxvgr $TEST > $OUTPUT 2>&1 &
 		let task=$task+1
 		if [ "$task" == "$NTASK" ]; then
 			wait
@@ -110,7 +110,8 @@ function dssp {
 	output_dir=$4/dssp
 	mkdir -p $output_dir
 	for file in `ls $xtc/*.xtc`; do
-	        echo $GRP | do_dssp -f $file -s $tpr -o $output_dir/${file}_o -sc $output_dir/${file}_sc $TEST > $OUTPUT 2>&1 &
+		base=`basename $file .xtc`
+		echo $GRP | do_dssp -f $file -s $tpr -o $output_dir/${base}_o -sc $output_dir/${file}_sc $TEST > $OUTPUT 2>&1 &
 	done	
 }
 
@@ -157,4 +158,5 @@ function do_with_water {
 
 do_inositol
 rm analysis/*/\#*
+rm \#*
 # clean
