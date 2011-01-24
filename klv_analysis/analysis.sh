@@ -6,14 +6,15 @@ trap "exit" INT TERM KILL
 
 TEST='-b 0 -e 1'
 CUTOFF=0.45
-OUTPUT=/dev/null
+OUTPUT=out
 NTASK=8
 
 #combine into one
-NDX="../common/g_pp_nonpolar.ndx"
-NDX_NONPOLAR="common/nonpolar.ndx"
-NDX_CLUST="common/klv_nosol.ndx"
-GROUP=("15 33" "15 63")
+#NDX="../common/g_pp_nonpolar.ndx"
+#NDX_NONPOLAR="common/nonpolar.ndx"
+#NDX_CLUST="common/klv_nosol.ndx"
+GROUP[15]="15 33" 
+GROUP[45]="15 63"
 #interpeptide nonpolar interactions
 function pp_nonpolar {
 	GRP=14
@@ -23,8 +24,8 @@ function pp_nonpolar {
 	ndx=$3
 	output_dir=$4/pp_nonpolar
 	mkdir -p $output_dir
-	for file in `ls $xtc`; do 
-        echo $GRP | g_pp_nonpolar -f $file -s $TPR -n $NDX -deffnm $output_dir/${file}_ -cutoff $CUTOFF $TEST 2> $OUTPUT >&2 &
+	for file in `ls $xtc/*.xtc`; do 
+        echo $GRP | g_pp_nonpolar -f $file -s $tpr -n $ndx -deffnm $output_dir/${file}_ -cutoff $CUTOFF $TEST 2> $OUTPUT >&2 &
         echo "starting process $task"
         let task=$task+1
         if [ "$task" == "$NTASK" ]; then
@@ -43,13 +44,13 @@ function nonpolar_residue {
 	ndx=$3
 	output_dir=$4/nonpolar_residue
 	mkdir -p $output_dir
-	for file in `ls $xtc`; do
-		echo $GRP | g_inositol_residue_nonpolar_v2 -f $file -s $TPR \
-			-n $NDX_NONPOLAR -per_residue_contacts $output_dir/${file}_per_residue_contact.dat \
+	for file in `ls $xtc/*.xtc`; do
+		echo $GRP | g_inositol_residue_nonpolar_v2 -f $file -s $tpr \
+			-n $ndx -per_residue_contacts $output_dir/${file}_per_residue_contact.dat \
 			-per_inositol_contacts $output_dir/${file}_per_inositol_contacts.dat -dist $CUTOFF $TEST > $OUTPUT 2>&1 &
 			
 		let task=$task+1
-		if [ "$task" == "$NTASK"]; then
+		if [ "$task" == "$NTASK" ]; then
 			wait
 			task=0
 		fi
@@ -69,12 +70,12 @@ function polar_residue {
 	NINOS=$6
 	GRP=$7
 	mkdir -p $output_dir
-	for file in `ls $xtc`; do
+	for file in `ls $xtc/*.xtc`; do
 		base=`basename $file .xtc`
-		seq $GRP | g_parse_index_oct21 -f $file -s $tpr -n $NDX -num_peptides $NPEP -num_inositol $NINOS -deffnm ${base}_ $TEST 2> $OUTPUT >&2 &
+		seq $GRP | g_parse_index_oct21 -f $xtc/$base -s $tpr -n $ndx -num_peptides $NPEP -num_inositol $NINOS -deffnm ${base}_ $TEST 2> $OUTPUT >&2 &
 			
 		let task=$task+1
-		if [ "$task" == "$NTASK"]; then
+		if [ "$task" == "$NTASK" ]; then
 			wait
 			task=0
 		fi
@@ -88,12 +89,12 @@ function cluster {
 	xtc=$1
 	tpr=$2
 	ndx=$3
-	output_dir=$2/cluster
+	output_dir=$4/cluster
 	mkdir -p $output_dir
-	for file in `ls $xtc`; do 
+	for file in `ls $xtc/*.xtc`; do 
 	    echo $GRP | g_clustsize -f $file -s $tpr -n $ndx -nc $output_dir/${file}_nclust.xvg -cut $CUTOFF -noxvgr $TEST > $OUTPUT 2>&1 &
 		let task=$task+1
-		if [ "$task" == "$NTASK"]; then
+		if [ "$task" == "$NTASK" ]; then
 			wait
 			task=0
 		fi
@@ -108,8 +109,8 @@ function dssp {
 	ndx=$3
 	output_dir=$4/dssp
 	mkdir -p $output_dir
-	for file in `ls $xtc`; do
-	        echo $GRP | do_dssp -f $file -s $TPR -o $output_dir/${file}_o -sc $output_dir/${file}_sc -dt 10 $TEST
+	for file in `ls $xtc/*.xtc`; do
+	        echo $GRP | do_dssp -f $file -s $tpr -o $output_dir/${file}_o -sc $output_dir/${file}_sc $TEST > $OUTPUT 2>&1 &
 	done	
 }
 
@@ -127,7 +128,7 @@ function do_inositol {
 		pp_nonpolar $xtc $tpr $ndx $output_base
 		wait
 		NPEP=4; NINOS=$sys
-		polar $xtc $tpr $ndx $output_base $NPEP $NINOS ${GROUP[$sys]}
+		polar_residue $xtc $tpr $ndx $output_base $NPEP $NINOS ${GROUP[$sys]}
 		wait
 		nonpolar_residue $xtc $tpr $ndx $output_base
 		wait
@@ -155,4 +156,5 @@ function do_with_water {
 
 
 do_inositol
+rm analysis/*/\#*
 # clean
