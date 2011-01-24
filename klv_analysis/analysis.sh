@@ -74,7 +74,7 @@ function polar_residue {
 	mkdir -p $output_dir
 	for file in `ls $xtc/*.xtc`; do
 		base=`basename $file .xtc`
-		seq $GRP1 $GRP2 | g_parse_index_oct21 -f $xtc/$base -s $tpr -n $ndx -num_peptides $NPEP -num_inositol $NINOS -deffnm ${base}_ $TEST 2> $OUTPUT >&2 &
+		seq $GRP1 $GRP2 | g_parse_index_oct21 -f $xtc/$base -s $tpr -n $ndx -num_peptides $NPEP -num_inositol $NINOS -deffnm $xtc/${base}_ $TEST 2> $OUTPUT >&2 &
 			
 		let task=$task+1
 		if [ "$task" == "$NTASK" ]; then
@@ -114,7 +114,7 @@ function dssp {
 	mkdir -p $output_dir
 	for file in `ls $xtc/*.xtc`; do
 		base=`basename $file .xtc`
-		echo $GRP | do_dssp -f $file -s $tpr -o $output_dir/${base}_o -sc $output_dir/${file}_sc $TEST > $OUTPUT 2>&1 &
+		echo $GRP | do_dssp -f $file -s $tpr -o $output_dir/${base}_o -sc $output_dir/${base}_sc $TEST > $OUTPUT 2>&1 &
 	done	
 }
 
