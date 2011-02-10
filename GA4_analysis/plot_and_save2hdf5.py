@@ -104,7 +104,7 @@ def main():
 	file = sys.argv[1]
 	groupName = sys.argv[2]
 	tableName = sys.argv[3]
-	data = numpy.genfromtxt(file, dtype=numpy.float32)
+	data = numpy.genfromtxt(file, dtype=numpy.float32, comments="#")
 
 	nrows, ncols = data.shape
 
@@ -114,7 +114,7 @@ def main():
 	h5file = initialize(analysis_fname, groupName)
 	table_descr = create_description("col", ncols, format=tables.Float32Col(dflt=0.0))
 
-	save(h5file, data, groupName, tableName, table_descr)
+	save(h5file, data, os.path.join(groupName, tableName), table_descr)
 	
 	# example of how you would read the pytable assuming that you have a table
 	# in a file h5file and a group called inositol and a table called inos_bb

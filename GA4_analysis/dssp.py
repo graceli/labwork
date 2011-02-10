@@ -4,7 +4,7 @@ import tables
 import glob
 import os
 
-def process_dssp(filename, totalResidue, h5file='analysis_results.h5'):
+def process_dssp(filename, totalResidue, correction_factor, h5file='analysis_results.h5'):
 	fp = open(filename)
 
 	#initialize structure lists
@@ -13,7 +13,7 @@ def process_dssp(filename, totalResidue, h5file='analysis_results.h5'):
 	columnTotal = 0
 	columnIndex = 0
 	totalFramesProcessed=0
-
+	raw_data = []
 	for line in fp:
 		if line[0] == "#":
 			continue;
@@ -35,10 +35,11 @@ def process_dssp(filename, totalResidue, h5file='analysis_results.h5'):
 		else:
 			# should all be data now
 			cols = line.split()
+			raw_data.append(cols)
 			for i in range(1,columnTotal+1):
 				# correct for the 3 extra residues are counted in the GA4 system by dssp
 				if legend[i] == "Coil":
-					averageStruct[i] += (float(cols[i]) - 3)/totalResidue
+					averageStruct[i] += (float(cols[i]) - correction_factor)/totalResidue
 				else:
 					averageStruct[i] += float(cols[i])/totalResidue
 			totalFramesProcessed+=1
@@ -58,17 +59,21 @@ def process_dssp(filename, totalResidue, h5file='analysis_results.h5'):
 	
 	h5 = myh5.initialize(h5file)
 	
-	# def save(h5file, data, table_path, table_struct=numpy.dtype(numpy.int64)):
 	basename,ext = os.path.splitext(filename)
 	myh5.save(h5, [tuple(table),], '/dssp/%(basename)s' % vars(), table_descr)
+	
+	raw_data_array = numpy.Array(raw_data)
+	(nrows, ncols) = raw_data_array.shape
+	myh5.save(h5, raw_data_array, '/dssp_data/%(basename)s' % vars(), myh5.create_description('col', ncols, format=tables.Int32Col(dflt=0)))
 	
 
 if __name__ == '__main__':
 	filename='systematic_ap1f_scyllo_system4_scount.xvg'
 	total_residues = 32
+	correction_factor = 3
 	files = glob.glob("*.xvg")
 	for filename in files:
 		print filename
 
-		process_dssp(filename, total_residues)
+		process_dssp(filename, total_residues, correction_factor)
 	

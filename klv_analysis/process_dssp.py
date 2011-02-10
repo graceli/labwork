@@ -3,7 +3,8 @@ import sys
 
 if len(sys.argv) < 3:
 	print "use:", sys.argv[0], "<file input>", "<Nresidues>"
-	exit(0) 
+	exit(0)
+
 filename = sys.argv[1]
 fp = open(filename)
 
@@ -18,8 +19,8 @@ legend={}
 averageStruct = {}
 columnTotal = 0
 columnIndex = 0
-totalFramesProcessed=0
-
+totalFramesProcessed = 0
+line_num = 0
 for line in fp:
 	if line[0] == "#":
 		continue;
@@ -43,12 +44,17 @@ for line in fp:
 		cols = line.split()
 		#print line
 		#print cols[0]
-		for i in range(1,columnTotal+1):
-			averageStruct[i] += float(cols[i])/totalResidue
-		totalFramesProcessed+=1
+		if line_num >=20001:
+			for i in range(1,columnTotal+1):
+				averageStruct[i] += float(cols[i])/totalResidue
+			totalFramesProcessed+=1
+		else:
+			print >> sys.stderr, "skipping", line_num
+
+	line_num += 1
 
 # print "total number of columns is", columnTotal
-print filename
+# print filename
 for i in range(1,columnTotal+1):
 	print legend[i], averageStruct[i]/totalFramesProcessed, totalFramesProcessed
 					
