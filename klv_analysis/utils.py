@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 import numpy
 import sys
+import pylab
+import config
+import subprocess
 
 def reorder_and_normalize(map_filename, data):
 	""" reorder the nonpolar matrix columns using the mapping in a flat file called table.dat 
@@ -35,17 +38,32 @@ def reorder_and_normalize(map_filename, data):
 
 	return numpy.transpose(numpy.array(data_in_order))
 
-def smooth(data, window_size):
-	nrows,ncols = data.shape
-	total_length = nrows - window_size + 1
+def smooth(data, window_size, time_present=True, timestep=1):
+	if len(data.shape) > 1:
+		nrows,ncols = data.shape
+		assert nrows > ncols, "Number of cols is more than rows in the matrix!"
+	else:
+		nrows = data.shape[0]
+		ncols = 1
+
+	window_actual = window_size/timestep
+	total_length = nrows - window_actual + 1
 	smoothed = []
-	print smoothed
 	for w in range(0, total_length):
-		values = [ w + 0.5*window_size ]
-		for i in range(0, ncols):
-			values.append(numpy.average(data[w:w+window_size+1, i]))
+		if time_present == False:
+			values = [ w*timestep + 0.5*window_size ]
+		else:
+			values = []
+
+		if ncols == 1:
+			values.append(numpy.average(data[w:w+window_actual + 1]))
+		else:
+			for i in range(0, ncols):
+				values.append(numpy.average(data[w:w+window_actual + 1, i]))
+	
 		smoothed.append(values)
-	return numpy.array(smoothed)
+
+	return numpy.array(numpy.vstack(smoothed))
 
 def columnAverage(data,colnum):
 	total_num_systems = len(data)
@@ -58,15 +76,40 @@ def columnAverage(data,colnum):
 			if time < len(data[i][:,colnum]):
 				values.append(data[i][time,colnum])
 
-#		datapoint_time = data[i][time,0]	
 		avg = numpy.average(values)
 		std = numpy.std(values)
 		stats.append([avg, std])	
 
 	print "computed", len(stats), "number of points"
-
 	return numpy.array(stats)
 		
+def savetxt(filename, header, data, compress='.gz', fmt='%0.2f'):
+	f=open(filename, 'w')
+	f.write(config.HEADER_NONPOLAR)
+	f.close()
+
+	numpy.savetxt(filename, data, fmt=fmt)
+	retcode = subprocess.call(["gzip", filename])
+
+def summary_statistics(data, sum_across="columns"):
+	# hack -- data matrix format is specific to KLVFFAE
+	# data -- list of time series and becomes rows in a matrix when vstacked
+	# transpose is done to make time series run up and down, which is more intuitive to me
+	print data
+	# data = numpy.transpose(numpy.vstack(data))
+	nrows, ncols = data.shape
+	print data
+
+	assert nrows > ncols
+	axis=0
+	if sum_across == "columns":
+		axis=1
+
+	return [numpy.average(data, axis=axis), numpy.std(data, axis=axis)]
+
+def array_list_to_matrix(arraylist):
+	return numpy.transpose(numpy.vstack(numpy.array(arraylist)))
+
 def main():
 	"""docstring for main"""
 	file = sys.argv[1]
