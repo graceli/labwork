@@ -8,7 +8,7 @@ def create_description(column_key, num_cols, format=tables.Int32Col(dflt=0)):
 	# descr.update(metacols)
 	for i in range(0, num_cols):
 		colname = column_key+str(i)
-		descr[colname] = format
+		descr[colname] = tables.Int32Col(dflt=0.0, pos=i)
 	
 	return descr
 	
@@ -72,7 +72,7 @@ def main():
 	h5file = initialize(analysis_file)
 	
 	for name in tables_names:
-		for i in range(1,500):
+		for i in range(1,600):
 			#file_base = "sys%(i)s_nosol.xtc_" % vars()
 			file_base = isomer + "_sys%(i)s_" % vars()
 			#print name.split("-")
