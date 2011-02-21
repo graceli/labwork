@@ -120,29 +120,30 @@ def plot(datalist, labellist, ratio, use_flat_files=False):
 		ax1.fill_between(time, 
 						(datalist[i][:,1] - datalist[i][:,2])/config.NMOLECULES, 
 						(datalist[i][:,1] + datalist[i][:,2])/config.NMOLECULES,
-						alpha=1,
+						alpha=0.5,
 						facecolor=config.SHADED_COLOR[isomer],
 						edgecolor=config.SHADED_COLOR[isomer], 
 						lw=0.5)
 		ax2.fill_between(time,
 					(datalist[i][:,3] - datalist[i][:,4])/config.NMOLECULES,
 					(datalist[i][:,3] + datalist[i][:,4])/config.NMOLECULES, 
-					alpha=1,
+					alpha=0.5,
 					facecolor=config.SHADED_COLOR[isomer],
 					edgecolor=config.SHADED_COLOR[isomer], 
 					lw=0.5)
 		ax1.plot(time, datalist[i][:,1]/config.NMOLECULES, color=config.LINE_COLOR[isomer], label=labellist[i])
 		ax2.plot(time, datalist[i][:,3]/config.NMOLECULES, color=config.LINE_COLOR[isomer], label=labellist[i])
+		# print "using line color for", isomer, config.LINE_COLOR[isomer]
 
 	ax2.set_xlabel('Time (ns)')
 	ax1.set_ylabel('Intermolecular Hydrogen Bonds per peptide')
 	ax2.set_ylabel('Intramolecular Hydrogen Bonds per peptide')
 	ax1.grid(True); ax2.grid(True)
 	ax1.set_xlim(0, config.RUNTIME_NS); ax2.set_xlim(0, config.RUNTIME_NS)
-	ax1.set_ylim(0,2); ax2.set_ylim(0,2)
+	ax1.set_ylim(0, 3); ax2.set_ylim(0, 3)
 
-	ax1.legend(loc='lower right', ncol=1, columnspacing=0.5, borderaxespad=0.)
-	ax2.legend(loc='lower right', ncol=1, columnspacing=0.5, borderaxespad=0.)
+	ax1.legend(loc='upper right', ncol=1, columnspacing=0.5, borderaxespad=0.)
+	ax2.legend(loc='upper right', ncol=1, columnspacing=0.5, borderaxespad=0.)
 
 	#frame = leg.get_frame()
 	#frame.set_linewidth(0.5)
