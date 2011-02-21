@@ -46,8 +46,8 @@ def initialize(h5_filename, groupName='/'):
 def create_description(column_key, num_cols, format=tables.Int32Col(dflt=0)):
 	descr = {}
 	for i in range(0, num_cols):
-		colname = column_key+str(i)
-		descr[colname] = format
+		colname = column_key + str(i)
+		descr[colname] = tables.Int32Col(dflt=0.0, pos=i)
 
 	return descr
 
@@ -67,13 +67,14 @@ def save(h5file, data, table_path, table_struct=numpy.dtype(numpy.int32)):
 
 	# table_path = '/%(group_name)s/%(table_name)s' % vars()
 	group_name, table_name = os.path.split(table_path)
+	filters = tables.Filters(complevel=8, complib='zlib')
 	if not h5file.__contains__(table_path):
 		if not h5file.__contains__('%(group_name)s' % vars()):
 			print "group didn't exist; creating group", group_name
 			root, name = os.path.split(group_name)
-			group = h5file.createGroup(root, name)
+			group = h5file.createGroup(root, name, filters=filters)
 
-		print "table does not exist; creating table", table_path
+		print "table does not exist; creating table at", table_path
 
 		table = h5file.createTable(group_name, table_name, table_struct)
 	else:
@@ -81,13 +82,22 @@ def save(h5file, data, table_path, table_struct=numpy.dtype(numpy.int32)):
 
 	table.append(data)
 	table.flush()
-	print "Successfully inserted data with dimensions", data.shape, " into", table_path
+	print "Successfully inserted data into", table_path
 
 def getTable(h5file,path):
 	if h5file.__contains__(path):
 		return h5file.getNode(path)
 	else:
 		print path, " table does not exist in h5file"
+		return None
+
+def getTableAsMatrix(h5file, path, dtype=numpy.int32):
+	"""returns a table as a numpy array matrix object"""
+	table = getTable(h5file, path)
+	if table:
+		numpy_array = table.read().view(dtype=dtype).reshape(-1, len(table[0]))
+		return numpy_array
+	else:
 		return None
 
 def main():
@@ -104,17 +114,17 @@ def main():
 	file = sys.argv[1]
 	groupName = sys.argv[2]
 	tableName = sys.argv[3]
-	data = numpy.genfromtxt(file, dtype=numpy.float32, comments="#")
+	data = numpy.genfromtxt(file, dtype=numpy.int32, comments="#")
 
 	nrows, ncols = data.shape
 
 	# save our data read in to a *.h5 (HDF5 format)
 	# note that name is hard coded in
-	analysis_fname = "analysis.h5"
+	analysis_fname = sys.argv[4]
+
 	h5file = initialize(analysis_fname, groupName)
 	table_descr = create_description("col", ncols, format=tables.Float32Col(dflt=0.0))
-
-	save(h5file, data, os.path.join(groupName, tableName), table_descr)
+	save(h5file, data, os.path.join('/'+groupName, tableName), table_descr)
 	
 	# example of how you would read the pytable assuming that you have a table
 	# in a file h5file and a group called inositol and a table called inos_bb
