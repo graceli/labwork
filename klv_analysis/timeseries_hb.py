@@ -27,7 +27,7 @@ def create_datalist(ratio):
 			if iso == "water":
 				labellist.append(iso)
 			else:
-				labellist.append(iso + " " + config.RATIO[conc])
+				labellist.append(iso + " " + config.RATIO[ratio])
 
 	return (datalist, labellist)
 
@@ -39,13 +39,15 @@ def process(h5file, ratio, format="p2p_vs_t.dat"):
 	datalist = []
 	labellist = []
 	isomerlist = ["scyllo", "chiro", "water"]
-
+	mean_contact_list = []
+	std_contact_list = []
+	
 	for iso in isomerlist:
 		print "processing", iso
 		pattern = re.compile(r"%(iso)s.*%(ratio)s.*%(format)s" % vars())
 		if iso == "water":
 			pattern = re.compile(r"%(iso)s.*%(format)s" % vars())
-			
+
 		data_inter = []
 		data_intra = []
 		for table in h5file.listNodes(where='/polar'):
@@ -55,38 +57,49 @@ def process(h5file, ratio, format="p2p_vs_t.dat"):
 				data = myh5.getTableAsMatrix(h5file, table_path, dtype=numpy.int32)
 				data = data.astype('float')
 				print "converted to float32", data
-				
+
 				nrows, ncols = data.shape
 				assert nrows > ncols
 				print "Test data read in dimensions", data.shape, data.dtype
 				data_inter.append(data[0:config.LASTFRAME,1])
 				data_intra.append(data[0:config.LASTFRAME,2])
-				
+
 		# compute summary statistics
 		print "summarizing statistics ... "
+		inter_matrix = utils.array_list_to_matrix(data_inter)
+		intra_matrix = utils.array_list_to_matrix(data_intra)
+		average_inter, std_inter = utils.summary_statistics(inter_matrix)
+		average_intra, std_intra = utils.summary_statistics(intra_matrix)
 		
-		average_inter, std_inter = utils.summary_statistics(utils.array_list_to_matrix(data_inter))
-		average_intra, std_intra = utils.summary_statistics(utils.array_list_to_matrix(data_intra))
+		# compute the time average number of contacts and its std error
+		avg_contacts = numpy.average(inter_matrix, axis=0)
+		mean_contact = numpy.average(avg_contacts)
+		std_contact = numpy.std(avg_contacts)
+
+		mean_contact_list.append(mean_contact)
+		std_contact_list.append(std_contact)
+		print mean_contact, std_contact
+
 		time = data[0:config.LASTFRAME,0]
-		
 		# print "Test: dimensions of average_inter", average_inter.shape
 		plotdata = utils.array_list_to_matrix([ time, average_inter, std_inter, average_intra, std_intra ])
 		print "plotdata", plotdata
 		print "Test: dimensions of plotdata for", iso, ratio, plotdata.shape
 		plotdata_smoothed = utils.smooth(plotdata, 500, time_present=True, timestep=2)
 		print plotdata_smoothed
-		
+
 		datalist.append(plotdata_smoothed)
 		print "smoothed data", plotdata_smoothed, plotdata_smoothed.shape
-		
+
 		ratiolabel = config.RATIO[ratio]
 		if iso == "water":
-			labellist.append("%(iso)s" % vars())
+			labellist.append("water" % vars())
 		else:
 			labellist.append("%(iso)s (%(ratiolabel)s)" % vars())
-			
-		utils.savetxt('%(iso)s_%(ratio)s_p2p_vs_t.txt' % vars(), header, plotdata, fmt='%0.2f')
-		utils.savetxt('%(iso)s_%(ratio)s_p2p_vs_t_smoothed.txt' % vars(), header, plotdata_smoothed, fmt='%0.2f')
+
+	utils.savetxt('%(ratio)s_p2p_vs_t.txt' % vars(), header, plotdata, fmt='%0.2f')
+	utils.savetxt('%(ratio)s_p2p_vs_t_smoothed.txt' % vars(), header, plotdata_smoothed, fmt='%0.2f')
+	utils.savetxt('%(ratio)s_avg_contacts_w_err.txt' % vars(), "#scyllo chiro water", numpy.vstack([mean_contact_list, std_contact_list]), fmt='%0.2f')
 
 	return (datalist, labellist)
 	
@@ -110,7 +123,7 @@ def plot(datalist, labellist, ratio, use_flat_files=False):
 		print "plotting", isomer
 		
 		if isomer == "water":
-			label = "no inositol"
+			labellist[i] = "no inositol"
 
 		# print "Test: time column for", labellist[i], datalist[i][:,0]
 		nrows, ncols = datalist[i].shape

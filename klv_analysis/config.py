@@ -1,6 +1,7 @@
 import pylab
 import plot_settings as ps
 
+STARTFRAME = 20000
 LASTFRAME = 90000
 NMOLECULES = 4
 RATIO = { "15to4" : "4:1", "45to4" : "10:1" }
@@ -9,6 +10,7 @@ RUNTIME_NS = 180
 LINE_COLOR = { 'scyllo' : 'blue', 'chiro' : 'red', 'water' : 'green' }
 SHADED_COLOR = { 'scyllo' : 'lightblue', 'chiro' : 'pink', 'water' : 'chartreuse' }
 LABEL = { 'scyllo' : 'scyllo', 'chiro' : 'chiro', 'water' : 'no inositol' }
+ISOMER_LIST = ['scyllo', 'chiro', 'water']
 
 # plot_settings thirdparty
 # config.configure_plot()

@@ -65,7 +65,8 @@ def plot(data, ratio):
 def process(h5file, ratio):
 	isomerlist = ["scyllo", "chiro", "water"]
 	plot_data = []
-
+	mean_contact_list = []
+	std_contact_list = []
 	#read in files for each system and aggregate
 	format="pp_nonpolar_vs_t.xvg"
 	for iso in isomerlist:
@@ -90,6 +91,15 @@ def process(h5file, ratio):
 		print "data_matrix", data_matrix, data_matrix.shape
 
 		avg, std = utils.summary_statistics(data_matrix, sum_across="columns")
+		
+		avg_contacts = numpy.average(data_matrix[config.STARTFRAME:config.LASTFRAME], axis=0)
+		mean_contact = numpy.average(avg_contacts)
+		std_contact = numpy.std(avg_contacts)
+		print mean_contact
+		print std_contact
+		mean_contact_list.append(mean_contact)
+		std_contact_list.append(std_contact)
+		
 		avg_smoothed = utils.smooth(avg/config.NMOLECULES, 500, time_present=False, timestep=2)
 		std_smoothed = utils.smooth(std/config.NMOLECULES, 500, time_present=True, timestep=2)
 		plot_data.append(avg_smoothed)
@@ -99,6 +109,8 @@ def process(h5file, ratio):
 	print "timeseries_matrix", timeseries_matrix, timeseries_matrix.shape
 	print "time", timeseries_matrix[:,0]
 	numpy.savetxt(ratio + "_pp_nonpolar_smoothed.txt.gz", timeseries_matrix, fmt='%0.3f')
+	utils.savetxt(ratio + "_avg_pp_nonpolar_contact.txt", "#scyllo chiro water", numpy.vstack([mean_contact_list, std_contact_list]), fmt='%0.3f')
+
 	return timeseries_matrix
 
 def run(h5file, ratio, use_flat_files=False):

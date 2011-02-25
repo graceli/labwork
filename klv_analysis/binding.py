@@ -1,5 +1,44 @@
+import sys
+import csv
+import tables
+import plot_and_save2hdf5 as myh5
+import utils
+
+def intersection_mon(h5file, isomer, ratio):
+	polar_matrix = myh5.getTableAsMatrix(h5file, '/inositol/inos_total')
+	nonpolar_matrix = myh5.getTableAsMatrix(h5file, '/residue/per_inos_contacts')
+	
+	print polar_matrix.shape
+	print nonpolar_matrix.shape
+	
+	assert polar_matrix.shape == nonpolar_matrix.shape, "the two matrices are expected to have the same dimensions"
+	
+	nrows, ncols = polar_matrix.shape
+	counts = [{'polar_only' : 0, 'nonpolar_only' : 0, 'polar_nonpolar' : 0}, {'polar_only' : 0, 'nonpolar_only' : 0, 'polar_nonpolar' : 0}]
+	for i in nrows:	
+		for j in range(1, ncols):
+			if polar_matrx[i][0] < 7500:
+				if polar_matrix[i][j] and nonpolar_matrix[i][j]:
+					counts[0]['polar_nonpolar'] += 1
+				elif polar_matrix[i][j]:
+					counts[0]['polar_only'] += 1
+				elif nonpolarMatrix[i][j]:
+					counts[0]['nonpolar_only'] += 1
+			else:
+				if polar_matrix[i][j] and nonpolar_matrix[i][j]:
+					counts[1]['polar_nonpolar'] += 1
+				elif polar_matrix[i][j]:
+					counts[1]['polar_only'] += 1
+				elif nonpolarMatrix[i][j]:
+					counts[1]['nonpolar_only'] += 1
+	# class csv.DictWriter(csvfile, fieldnames[, restval=''[, extrasaction='raise'[, dialect='excel'[, *args, **kwds]]]])
+	csv.DictWriter(open('intersection_mon.csv', 'wb'), counts.keys())
+	csv.writeRow(counts[0])
+	csv.writeRow(counts[1])
+	
+
 def intersection(h5file, ratio):
-	"""docstring for intersection"""
+	"""intersection analysis for disordered oligomers"""
 
 	#nasty fix for different table names
 	polarName = {'15to4' : 'whole_nosol_0-200ns_inos_total.dat', '45to4' : 'whole_nosol_0-200_inos_total.dat'}
@@ -97,3 +136,17 @@ def nonpolar_residue(h5file, tag):
 
 		#save the normalized average and std
 		numpy.savetxt('%(tag)s_nonpolar_residue_inositol_contact_%(isomer)s_avg_std.txt' % vars(), [average, std], fmt='%0.8f')
+
+if __name__ == '__main__':
+	if len(sys.argv) < 2:
+		parser.error("Please specify a .h5 input file")
+	
+	filename = sys.argv[1]
+	# option = sys.argv[2]
+	# use_flat_flag = False
+	print filename
+	
+	h5file = tables.openFile(filename)
+	isomer,sys,analysis = filename.split('_')
+	intersection_mon(h5file, isomer, '15to1')
+		

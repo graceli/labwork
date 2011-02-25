@@ -65,7 +65,8 @@ def main():
 	analysis_file = sys.argv[1]
 	isomer = sys.argv[3]
 
-	tables_names = ["inositol-inos_bb", "inositol-inos_glu", "inositol-inos_lys", "peptide-p2p_vs_t", "peptide-pep_bb", "peptide-pep_side", "residue-res_bb", "residue-res_side", "residue-per_res_contacts", "residue-per_inos_contacts"]
+	# tables_names = ["inositol-inos_bb", "inositol-inos_glu", "inositol-inos_lys", "inositol-""peptide-p2p_vs_t", "peptide-pep_bb", "peptide-pep_side", "residue-res_bb", "residue-res_side", "residue-per_res_contacts", "residue-per_inos_contacts"]
+	tables_names = ["inositol-inos_total", "residue-per_inos_contacts"]
 	#group_name = {'inos': 'inositol', 'pep' : 'peptide', 'res' : 'residue'}
 	table_descr = {}
 	
@@ -83,7 +84,7 @@ def main():
 			path_to_file = os.path.join(path,filename)
 			if os.path.exists(path_to_file):
 				print "loading", path_to_file
-				data = numpy.genfromtxt(path_to_file, dtype=int, comments="#")
+				data = numpy.genfromtxt(path_to_file, dtype=int, comments="#")[0:7500]
 				print "loaded a numpy array with shape", data.shape
 				shape = data.shape
 				

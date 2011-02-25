@@ -53,7 +53,7 @@ def binding(polar, nonpolar):
 	unbound = len(aggregate) - bound
 	
 	return bound, unbound
-	
+
 # def getTable(h5file,path):
 # 	if h5file.__contains__(path):
 # 		return h5file.getNode(path)

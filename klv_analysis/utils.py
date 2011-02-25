@@ -85,11 +85,11 @@ def columnAverage(data,colnum):
 		
 def savetxt(filename, header, data, compress='.gz', fmt='%0.2f'):
 	f=open(filename, 'w')
-	f.write(config.HEADER_NONPOLAR)
+	f.write(header)
 	f.close()
-
 	numpy.savetxt(filename, data, fmt=fmt)
-	retcode = subprocess.call(["gzip", filename])
+	# retcode = subprocess.call(["gzip", filename])
+	# f.close()
 
 def summary_statistics(data, sum_across="columns"):
 	# hack -- data matrix format is specific to KLVFFAE
@@ -108,7 +108,12 @@ def summary_statistics(data, sum_across="columns"):
 	return [numpy.average(data, axis=axis), numpy.std(data, axis=axis)]
 
 def array_list_to_matrix(arraylist):
-	return numpy.transpose(numpy.vstack(numpy.array(arraylist)))
+	mat = numpy.transpose(numpy.vstack(numpy.array(arraylist)))
+	nrows, ncols = mat.shape
+	
+	assert nrows > ncols, "Expected matrix to have more rows than columns"
+	
+	return mat
 
 def main():
 	"""docstring for main"""
