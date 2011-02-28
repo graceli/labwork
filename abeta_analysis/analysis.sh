@@ -82,7 +82,7 @@ function rmsd {
 
 cd $PBS_O_WORKDIR
 base_dir=`pwd`
-DATA=$base_dir
+DATA="/scratch/grace/inositol/abeta42/2/xtc"
 SHM="/dev/shm/analysis"
 
 rmsd scyllo 15 $SHM
