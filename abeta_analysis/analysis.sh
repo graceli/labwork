@@ -1,7 +1,9 @@
 #!/bin/sh
+#PBS -l nodes=1:compute-eth:ppn=8,walltime=02:00:00,os=centos53computeA
+#PBS -N analysis
 
-set -u
-set -e
+#set -u
+#set -e
 set -x
 
 proteingrp=1
@@ -63,6 +65,8 @@ function clean {
 }
 
 function rmsd {
+	echo "calculating the rmsd ... "
+
 	# GRP="14 12"
 	# task=0
 	# xtc=$1
@@ -75,12 +79,10 @@ function rmsd {
 	i=1
 	
 	# ab_scyllo_15_1_nosol_whole.xtc
-#	seq 1 10 | parallel -j 4 'trj="ab_${iso}_${ratio}_{}_nosol_whole"; echo 1 1 | g_rms -f $DATA/$trj -s nmr_protein.tpr -o $output_dir/${trj}_rmsd_protein.xvg; echo 4 4 | g_rms -f $DATA/$trj -s nmr_protein.tpr -o $output_dir/${trj}_rmsd_backbone.xvg'
+	seq 1 10 | parallel -j 8 "echo 1 1 | g_rms -f $DATA/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit.xtc -s nmr_protein.tpr -o $output_dir/ab_${iso}_${ratio}_{}_nosol_whole_rmsd_protein.xvg"
+	seq 1 10 | parallel -j 8 "echo 4 4 | g_rms -f $DATA/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit.xtc -s nmr_protein.tpr -o $output_dir/ab_${iso}_${ratio}_{}_nosol_whole_rmsd_backbone.xvg"
 	
-	echo "ps aux | grep g_rms | xargs kill -9" >> kill_rmsd.sh
-	chmod u+x kill_rmsd.sh
-	
-	clean "test"
+	clean "${iso}_${ratio}_rmsd"
 }
 
 cd $PBS_O_WORKDIR
@@ -88,6 +90,14 @@ base_dir=`pwd`
 DATA="/scratch/grace/inositol/abeta42/2/xtc"
 SHM="/dev/shm/analysis"
 
-rmsd scyllo 15 $SHM
-# ${ANALYSIS}
+#Externally bound variables
+#ISO=scyllo
+#RATIO=15
+#ANALYSIS=rmsd
+echo $ISO
+echo $RATIO
+echo $ANALYSIS
+
+${ANALYSIS} $ISO $RATIO $SHM
+
 
