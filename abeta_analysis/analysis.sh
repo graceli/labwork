@@ -64,25 +64,30 @@ function clean {
 	rm -rf analysis analysis.tgz
 }
 
+# calculate the rmsd of the protein using the nmr structure as a reference
 function rmsd {
-	echo "calculating the rmsd ... "
-
-	# GRP="14 12"
-	# task=0
-	# xtc=$1
-	# tpr=$2
-	# ndx=$3
     iso=$1
     ratio=$2
 	output_dir=$3/rmsd
 	mkdir -p $output_dir
-	i=1
 	
-	# ab_scyllo_15_1_nosol_whole.xtc
 	seq 1 10 | parallel -j 8 "echo 1 1 | g_rms -f $DATA/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit.xtc -s nmr_protein.tpr -o $output_dir/ab_${iso}_${ratio}_{}_nosol_whole_rmsd_protein.xvg"
 	seq 1 10 | parallel -j 8 "echo 4 4 | g_rms -f $DATA/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit.xtc -s nmr_protein.tpr -o $output_dir/ab_${iso}_${ratio}_{}_nosol_whole_rmsd_backbone.xvg"
 	
 	clean "${iso}_${ratio}_rmsd"
+}
+
+# calculate the rmsf
+function rmsf_calpha {
+	iso=$1
+    ratio=$2
+	output_dir=$3/rmsd
+	mkdir -p $output_dir
+	
+    calpha=3
+    # backbone fitting for specific parts of the peptide    
+	seq 1 10 | parallel -j 8 "echo $calpha | g_rmsf -f ab_${iso}_${ratio}_${i}_nosol_whole.xtc_c_fit.xtc -s ${ratio}_nosol.tpr -o $output_dir/${iso}_${ratio}_rmsf.xvg -fit -res -ox $output_dir/ab_${iso}_${ratio}_${i}_nosol_whole.xtc_c_fit -noxvgr"
+	clean "${iso}_${ratio}_rmsf"
 }
 
 cd $PBS_O_WORKDIR
