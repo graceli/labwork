@@ -6,43 +6,12 @@ set -u
 #set -e
 set -x
 
-proteingrp=1
-insgrp=12
-chain1=18
-chain2=19
-chain3=20
-chain4=21
-chain5=22
-xvgr="-noxvgr"
-start=1
-end=20
+
 
 #extract the number of nonpolar contacts between inositol and residues
 # function make_indices {
 # 	echo -e "'SideChain'&aC*&!rACE\nsplitch17\nq" | make_ndx -f common/em.tpr -o common/ab_nonpolar.ndx 
 # 	RETURN_CODE=$?
-# }
-
-# function nonpolar {
-# 	for s in `seq $start $end`; do
-# 		DATA=../sys${s}
-# 		#mkdir sys${s}_o
-# 		echo -e "'SideChain'&aC*&!rACE\nsplitch17\nq" | make_ndx -f $DATA/em.tpr -o $DATA/ab_nonpolar.ndx 
-# 		for xtc in $DATA/sys${s}.xtc $DATA/sys${s}.part0002.xtc $DATA/sys${s}.part0003.xtc; do 
-# 			echo "analyzing $xtc ..."
-# 			for i in $chain1 $chain2 $chain3 $chain4 $chain5; do
-# 				echo $i $insgrp | g_inositol_residue_nonpolar_v2 -f $xtc -s $DATA/em.tpr -n $DATA/ab_nonpolar.ndx -per_residue_contacts chain${i}_residue_np_contact.dat -per_inositol_contacts chain${i}_inositol_np_contact.dat
-# 				 mv table.dat chain${i}_table.dat
-# 			
-# 				trap "exit 1" SIGTERM TERM KILL SIGINT
-# 			done
-# 
-# 			### evoke python script ###
-# 			python abeta_analysis.py sys${s}.h5
-# 			###########################
-# 			rm *.dat
-# 		done
-# 	done
 # }
 
 # function dssp {
@@ -62,6 +31,37 @@ function clean {
 	tar cvfz "analysis_${1}.tgz" analysis
 	cp analysis*.tgz $base_dir
 	rm -rf analysis analysis.tgz
+}
+
+proteingrp=1
+insgrp=12
+chain1=17
+chain2=18
+chain3=19
+chain4=20
+chain5=21
+xvgr="-noxvgr"
+# start=1
+# end=20
+function nonpolar {
+	iso=$1
+    ratio=$2
+	output_dir=$3/rmsd
+	mkdir -p $output_dir
+	
+	# echo -e "'SideChain'&aC*&!rACE\nsplitch17\nq" | make_ndx -f ${ratio}_nosol.tpr -o ab_nonpolar.ndx
+	make_ndx -f ${ratio}_nosol.tpr -o ab_nonpolar.ndx << EOF
+	'SideChain'&aC*&!rACE
+	splitch16
+	q
+	EOF
+	
+	for s in `seq 1 10`; do
+		xtc="ab_${iso}_${ratio}_${s}_nosol_whole.xtc_c_fit"
+		if [ -e "$DATA/$xtc" ]; then
+			seq $chain1 $chain5 | parallel -j 5 "echo $i $insgrp | g_inositol_residue_nonpolar_v2 -f $DATA/$xtc -s ${ratio}_nosol.tpr -n ab_nonpolar.ndx -per_residue_contacts $output_dir/chain${i}_residue_np_contact.dat -per_inositol_contacts $output_dir/chain${i}_inositol_np_contact.dat"
+		fi
+	done
 }
 
 # calculate the rmsd of the protein using the nmr structure as a reference

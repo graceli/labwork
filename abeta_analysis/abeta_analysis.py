@@ -59,16 +59,12 @@ def initialize(h5_filename, groups=[]):
 	return h5file
 
 def get_data_type(type, col_pos=0):
-	data_types = {'int': tables.Int64Col(dflt=0, pos=col_pos), 'float': tables.Float64Col(dflt=0.0, pos=col_pos)}
+	data_types = {'int': tables.Int32Col(dflt=0, pos=col_pos), 'float': tables.Float32Col(dflt=0.0, pos=col_pos)}
 	return data_types[type]
 	
 def main():
-	
 	filename = sys.argv[1]
-	
 	LOG_FILENAME = filename+'.log'
-
-	
 	logging.basicConfig(level=logging.INFO,
 	                    format='%(asctime)s %(levelname)-8s %(message)s',
 	                    datefmt='%a, %d %b %Y %H:%M:%S',
@@ -108,29 +104,26 @@ def main():
 			all_data_matrix=None
 			rows=0
 			cols=0
-			if l == None or len(l) == 1:
-				logging.info("saving %s in %s %s", files, group_name, table_name)
-				all_data_matrix = numpy.genfromtxt(files)
-			else:
-				logging.info("found %d files to read and save", len(l))
-				for datafile in l:
-					logging.info("saving %s in %s %s", datafile, group_name, table_name)
-					data = numpy.genfromtxt(datafile)
-					all_data.append(data)
-					all_data_matrix = numpy.hstack(all_data)
-			
-			rows,cols = all_data_matrix.shape
-			descr = create_description('col', cols, format='float')
-			logging.info("description created %s", descr)
-			save(h5file, all_data_matrix, group_name, table_name, descr)
+			# if l == None or len(l) == 1:
+			# 	logging.info("saving %s in %s %s", files, group_name, table_name)
+			# 	all_data_matrix = numpy.genfromtxt(files)
+			# else:
+			logging.info("found %d files to read and save", len(l))
+			for datafile in l:
+				logging.info("saving %s in %s %s", datafile, group_name, table_name + "_" + datafile)
+				data = numpy.genfromtxt(datafile)
+				# all_data.append(data)
+				# all_data_matrix = numpy.hstack(all_data)
+				rows,cols = data.shape
+				descr = create_description('col', cols, format='float')
+				logging.info("description created %s", descr)
+				save(h5file, data, group_name, table_name, descr)
 	
 	logging.info("finished processing files")
 
 if __name__ == '__main__':
 	main()
 
-
-	
 	# ro = file.getNode('/ab_15_scyllo/inositol_residue_np_ch5').read()
 	# ro.view(dtype=np.int64).reshape(-1,len(ro[0]))
 	# sum(ro.view(dtype=np.int64).reshape(-1,len(ro[0])),axis=0)
