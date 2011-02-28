@@ -70,7 +70,6 @@ function rmsd {
 	# ndx=$3
 	output_dir=$1/rmsd
 	mkdir -p $output_dir
-	cd $xtc
 	i=1
 	trj="ab_${iso}_${ratio}_${i}_nosol_whole"
 	# ab_scyllo_15_1_nosol_whole.xtc
