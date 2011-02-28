@@ -40,9 +40,9 @@ extern "C" {
 }
 
 
-#define DEBUG_INOS
+//#define DEBUG_INOS
 //#define DEBUG_COM
-//#define DEBUG_CONTACT
+#define DEBUG_CONTACT
 //#define EDGES
 //#define DEBUG_KEY
 
@@ -210,7 +210,7 @@ bool is_in_contact(t_pbc* pbc, rvec p1, rvec p2, real cutoff, real &dist2){
     }
 
 #ifdef DEBUG_CONTACT
-    cout<<dist<<endl;
+    cout<<dist<<" ";
 #endif
 
     return false;
@@ -373,13 +373,22 @@ int main(int argc,char *argv[]) {
         if(per_inositol_contacts_snapshot.size() == 0){
             per_inositol_contacts_snapshot.resize(num_groups_detected, 0);
         }
-
+		
+		bool bInContact = false;	
         for( int i=0; i<inositol_com.size(); i++ ) {
+			float min_dist = 10; 
             for( int atomIndex = 0; atomIndex < NUM_ATOMS_PROTEIN; atomIndex++ ) {
                 //residue_id = top->atoms.atom[ index[PROTEIN][atomIndex] ].resnr;
                 //residueName = *(top->atoms.resname[ residue_id ]);
-                if( is_in_contact(&pbc, x[ index[PROTEIN][atomIndex] ], inositol_com[i], CUTOFF, dist) ) {
-                    
+				bInContact = is_in_contact(&pbc, x[ index[PROTEIN][atomIndex] ], inositol_com[i], CUTOFF, dist); 
+				
+				if (dist < min_dist) {
+					min_dist = dist;
+				}
+
+                if(bInContact) { 
+               		cout << "At t=" << t << " inositol " << i << " is in contact at dist=" << dist << endl; 
+
                     residue_id = top->atoms.atom[ index[PROTEIN][atomIndex] ].resnr;
                     residueName = *(top->atoms.resname[ residue_id ]);
 
@@ -396,6 +405,10 @@ int main(int argc,char *argv[]) {
 
                 }
             }
+
+#ifdef DEBUG_CONTACT
+			cout << "min_dist=" << min_dist << endl;
+#endif
         }
 
         //output per residue contacts
@@ -403,10 +416,9 @@ int main(int argc,char *argv[]) {
         for(map<string,int>::iterator iter = per_residue_contacts_snapshot.begin(); iter != per_residue_contacts_snapshot.end(); iter++) {
 
 #ifdef DEBUG_KEY
-	    cerr << iter->first<<" ";
-            cerr << iter->second<<" "<<endl;
+	    	cerr << iter->first<<" ";
+        	cerr << iter->second<<" "<<endl;
 #endif 
-
             f_per_residue_contacts<<iter->second<<" ";
         }
 

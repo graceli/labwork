@@ -3,7 +3,7 @@
 #PBS -N analysis
 
 set -u
-#set -e
+set -e
 set -x
 
 
@@ -46,22 +46,23 @@ xvgr="-noxvgr"
 function nonpolar {
 	iso=$1
     ratio=$2
-	output_dir=$3/rmsd
+	output_dir=$3/nonpolar
 	mkdir -p $output_dir
 	
-	# echo -e "'SideChain'&aC*&!rACE\nsplitch17\nq" | make_ndx -f ${ratio}_nosol.tpr -o ab_nonpolar.ndx
-	make_ndx -f ${ratio}_nosol.tpr -o ab_nonpolar.ndx << EOF
-	'SideChain'&aC*&!rACE
-	splitch16
-	q
-	EOF
+	 echo -e "'SideChain'&aC*&!rACE\nsplitch16\nq" | make_ndx -f ${ratio}_nosol.tpr -o ab_nonpolar.ndx
+	#make_ndx -f ${ratio}_nosol.tpr -o ab_nonpolar.ndx <<EOF
+	#'SideChain'&aC*&!rACE
+	#splitch 16
+	#q
+	#EOF
 	
 	for s in `seq 1 10`; do
 		xtc="ab_${iso}_${ratio}_${s}_nosol_whole.xtc_c_fit"
-		if [ -e "$DATA/$xtc" ]; then
-			seq $chain1 $chain5 | parallel -j 5 "echo $i $insgrp | g_inositol_residue_nonpolar_v2 -f $DATA/$xtc -s ${ratio}_nosol.tpr -n ab_nonpolar.ndx -per_residue_contacts $output_dir/chain${i}_residue_np_contact.dat -per_inositol_contacts $output_dir/chain${i}_inositol_np_contact.dat"
+		if [ -e "$DATA/${xtc}.xtc" ]; then
+			seq $chain1 $chain5 | parallel -j 5 "echo {} $insgrp | g_inositol_residue_nonpolar_v2 -f $DATA/$xtc -s ${ratio}_nosol.tpr -n ab_nonpolar.ndx -per_residue_contacts $output_dir/chain{}_residue_np_contact.dat -per_inositol_contacts $output_dir/chain{}_inositol_np_contact.dat"
 		fi
 	done
+	clean "${iso}_${ratio}_nonpolar"
 }
 
 # calculate the rmsd of the protein using the nmr structure as a reference
@@ -90,20 +91,24 @@ function rmsf_calpha {
 	clean "${iso}_${ratio}_rmsf"
 }
 
-cd $PBS_O_WORKDIR
+test="$1"
+TEST="-b 0"
+if [ -z "$test" ]; then
+	echo "running in production mode"
+	cd $PBS_O_WORKDIR
+else
+	echo "testing ..."
+	#set externally bound variables
+	ISO=scyllo
+	RATIO=15
+	ANALYSIS=nonpolar
+	TEST="-b 0 -e 1000"
+fi
+
 base_dir=`pwd`
 DATA="/scratch/grace/inositol/abeta42/2/xtc"
 SHM="/dev/shm/analysis"
 
-#Externally bound variables
-#ISO=water
-#RATIO=64
-#ANALYSIS=rmsf_calpha
-#echo $ISO
-#echo $RATIO
-#echo $ANALYSIS
-
-TEST="-b 0"
 echo `pwd`
 ${ANALYSIS} $ISO $RATIO $SHM
 
