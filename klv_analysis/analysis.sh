@@ -156,8 +156,8 @@ function do_inositol_polar {
    ndx="common/${SYSTEM}to4_analysis.ndx"
    output_base="/dev/shm/analysis"
 
-    polar_residue $xtc $tpr $ndx $output_base $NPEP $NINOS ${GROUP[$SYSTEM,0]} ${GROUP[$SYSTEM,1]} $ISOMER
-    echo "polar_residue $xtc $tpr $ndx $output_base $NPEP $NINOS ${GROUP[$SYSTEM,0]} ${GROUP[$SYSTEM,1]} $ISOMER"
+   polar_residue $xtc $tpr $ndx $output_base $NPEP $NINOS ${GROUP[$SYSTEM,0]} ${GROUP[$SYSTEM,1]} $ISOMER
+   echo "polar_residue $xtc $tpr $ndx $output_base $NPEP $NINOS ${GROUP[$SYSTEM,0]} ${GROUP[$SYSTEM,1]} $ISOMER"
 }
 
 
