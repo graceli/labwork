@@ -73,16 +73,23 @@ function rmsd {
 	output_dir=$3/rmsd
 	mkdir -p $output_dir
 	i=1
-	trj="ab_${iso}_${ratio}_${i}_nosol_whole"
+	
 	# ab_scyllo_15_1_nosol_whole.xtc
-	echo 1 1 | g_rms -f $DATA/$trj -s nmr_protein.tpr -o $output_dir/${trj}_rmsd_protein.xvg
-	echo 4 4 | g_rms -f $DATA/$trj -s nmr_protein.tpr -o $output_dir/${trj}_rmsd_backbone.xvg
+	seq 1 10 | parallel -j 4 << EOF
+		trj="ab_${iso}_${ratio}_${i}_nosol_whole"
+		echo 1 1 | g_rms -f $DATA/$trj -s nmr_protein.tpr -o $output_dir/${trj}_rmsd_protein.xvg
+		echo 4 4 | g_rms -f $DATA/$trj -s nmr_protein.tpr -o $output_dir/${trj}_rmsd_backbone.xvg
+	EOF
+	
+	echo "ps aux | grep g_rms | xargs kill -9" >> kill_rmsd.sh
+	chmod u+x kill_rmsd.sh
+	
 	clean "test"
 }
 
 cd $PBS_O_WORKDIR
 base_dir=`pwd`
-DATA=$base_dir
+DATA="/scratch/grace/inositol/abeta42/2/xtc"
 SHM="/dev/shm/analysis"
 
 rmsd scyllo 15 $SHM
