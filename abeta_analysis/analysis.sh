@@ -68,7 +68,9 @@ function rmsd {
 	# xtc=$1
 	# tpr=$2
 	# ndx=$3
-	output_dir=$1/rmsd
+    iso=$1
+    ratio=$2
+	output_dir=$3/rmsd
 	mkdir -p $output_dir
 	i=1
 	trj="ab_${iso}_${ratio}_${i}_nosol_whole"
@@ -83,6 +85,6 @@ base_dir=`pwd`
 DATA=$base_dir
 SHM="/dev/shm/analysis"
 
-rmsd $SHM
+rmsd scyllo 15 $SHM
 # ${ANALYSIS}
 
