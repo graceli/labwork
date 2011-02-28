@@ -75,11 +75,7 @@ function rmsd {
 	i=1
 	
 	# ab_scyllo_15_1_nosol_whole.xtc
-	seq 1 10 | parallel -j 4 << EOF
-		trj="ab_${iso}_${ratio}_${i}_nosol_whole"
-		echo 1 1 | g_rms -f $DATA/$trj -s nmr_protein.tpr -o $output_dir/${trj}_rmsd_protein.xvg
-		echo 4 4 | g_rms -f $DATA/$trj -s nmr_protein.tpr -o $output_dir/${trj}_rmsd_backbone.xvg
-	EOF
+#	seq 1 10 | parallel -j 4 'trj="ab_${iso}_${ratio}_{}_nosol_whole"; echo 1 1 | g_rms -f $DATA/$trj -s nmr_protein.tpr -o $output_dir/${trj}_rmsd_protein.xvg; echo 4 4 | g_rms -f $DATA/$trj -s nmr_protein.tpr -o $output_dir/${trj}_rmsd_backbone.xvg'
 	
 	echo "ps aux | grep g_rms | xargs kill -9" >> kill_rmsd.sh
 	chmod u+x kill_rmsd.sh
