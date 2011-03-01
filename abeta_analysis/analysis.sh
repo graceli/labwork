@@ -28,7 +28,7 @@ function clean {
 	cd /dev/shm
 	tar cvfz "analysis_${1}.tgz" analysis
 	cp analysis*.tgz $base_dir
-	rm -rf analysis analysis.tgz
+	rm -rf * 
 }
 
 chain_start=0
@@ -43,7 +43,11 @@ function chain_hbonds {
 		xtc="ab_${iso}_${ratio}_${s}_nosol_whole.xtc_c_fit"
 		if [ -e "$DATA/${xtc}.xtc" ]; then
 			mkdir -p $output_dir/$s
-			seq $chain_start $chain_end | parallel -j 8 "echo {} $(({}+1)) | g_hbond -f $DATA/$xtc -s ${ratio}_nosol.tpr -n chain.ndx -nonitacc -nomerge -num $output_dir/$s/chain_{}_$(({}+1))_hbonds -noxvgr $TEST > /dev/null 2>&1"
+			for ch in `seq $chain_start $chain_end`; do
+				let next=ch+1
+				echo $ch $next | g_hbond -f $DATA/$xtc -s ${ratio}_nosol.tpr -n chain.ndx -nonitacc -nomerge -num $output_dir/$s/chain_${ch}_${next}_hbonds $TEST > /dev/null 2>&1 &
+			done
+			wait
 		fi
 		# python /home/grace/AnalysisScripts/abeta_analysis/abeta_analysis.py sys${s}.h5
 	done
@@ -108,8 +112,8 @@ function rmsd {
 	output_dir=$3/rmsd
 	mkdir -p $output_dir
 	
-	seq 1 10 | parallel -j 8 "echo 1 1 | g_rms -f $DATA/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit.xtc -s nmr_protein.tpr -o $output_dir/ab_${iso}_${ratio}_{}_nosol_whole_rmsd_protein.xvg -noxvgr"
-	seq 1 10 | parallel -j 8 "echo 4 4 | g_rms -f $DATA/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit.xtc -s nmr_protein.tpr -o $output_dir/ab_${iso}_${ratio}_{}_nosol_whole_rmsd_backbone.xvg -noxvgr"
+	seq 1 10 | parallel -j 8 "echo 1 1 | g_rms -f $DATA/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit.xtc -s nmr_protein.tpr -o $output_dir/ab_${iso}_${ratio}_{}_nosol_whole_rmsd_protein.xvg -noxvgr $TEST"
+	seq 1 10 | parallel -j 8 "echo 4 4 | g_rms -f $DATA/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit.xtc -s nmr_protein.tpr -o $output_dir/ab_${iso}_${ratio}_{}_nosol_whole_rmsd_backbone.xvg -noxvgr $TEST"
 	
 	clean "${iso}_${ratio}_rmsd"
 }
@@ -129,7 +133,7 @@ function rmsf_calpha {
 
 mode='production'
 target='production'
-TEST="-b 0"
+TEST="-b 1000"
 if [ "$mode" == "$target" ]; then
 	echo "running in production mode"
 	cd $PBS_O_WORKDIR
@@ -138,8 +142,8 @@ else
 	#set externally bound variables
 	ISO=scyllo
 	RATIO=15
-	ANALYSIS=hbonds
-	TEST="-b 0 -e 10"
+	ANALYSIS=chain_hbonds
+	TEST="-b 1000 -e 1010"
 fi
 
 base_dir=`pwd`
@@ -148,5 +152,4 @@ SHM="/dev/shm/analysis"
 
 echo `pwd`
 ${ANALYSIS} $ISO $RATIO $SHM
-
 
