@@ -44,10 +44,11 @@ function hbonds {
 	output_dir=$3/rmsd
 	mkdir -p $output_dir
 		
-	for s in `seq 1 20`; do
+	for s in `seq 1 10`; do
 		xtc="ab_${iso}_${ratio}_${s}_nosol_whole.xtc_c_fit"
-		if [ -e "$DATA/$xtc" ]; then			
-			seq $res_start $res_end | parallel -j 8 "echo {} $INS_grp | g_hbond -f $xtc -s $DATA/em.tpr -n g_hbond_15.ndx -nonitacc -nomerge -num {} $xvgr > /dev/null 2>&1 &"
+		if [ -e "$DATA/$xtc" ]; then
+			mkdir -p $output_dir/$s
+			seq $res_start $res_end | parallel -j 8 "echo {} $INS_grp | g_hbond -f $DATA/$xtc -s ${ratio}_nosol.tpr -n g_hbond_${ratio}.ndx -nonitacc -nomerge -num $output_dir/$s/{} $xvgr > /dev/null 2>&1 &"
 		fi
 		# python /home/grace/AnalysisScripts/abeta_analysis/abeta_analysis.py sys${s}.h5
 	done
@@ -70,12 +71,7 @@ function nonpolar {
 	output_dir=$3/nonpolar
 	mkdir -p $output_dir
 	
-	 echo -e "'SideChain'&aC*&!rACE\nsplitch16\nq" | make_ndx -f ${ratio}_nosol.tpr -o ab_nonpolar.ndx
-	#make_ndx -f ${ratio}_nosol.tpr -o ab_nonpolar.ndx <<EOF
-	#'SideChain'&aC*&!rACE
-	#splitch 16
-	#q
-	#EOF
+	 echo -e "'SideChain'&aC*&!rACE\nsplitch16\nq" | make_ndx -f ${ratio}_nosol.tpr -o ab_${ratio}_nonpolar.ndx
 	
 	for s in `seq 1 10`; do
 		xtc="ab_${iso}_${ratio}_${s}_nosol_whole.xtc_c_fit"
@@ -122,8 +118,8 @@ else
 	#set externally bound variables
 	ISO=scyllo
 	RATIO=15
-	ANALYSIS=nonpolar
-	TEST="-b 0 -e 1000"
+	ANALYSIS=hbonds
+	TEST="-b 0 -e 10"
 fi
 
 base_dir=`pwd`
