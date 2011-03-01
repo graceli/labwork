@@ -34,6 +34,26 @@ function clean {
 	rm -rf analysis analysis.tgz
 }
 
+res_start=0
+res_end=129
+INS_grp=130
+num=0
+function hbonds {
+	iso=$1
+    ratio=$2
+	output_dir=$3/rmsd
+	mkdir -p $output_dir
+		
+	for s in `seq 1 20`; do
+		xtc="ab_${iso}_${ratio}_${s}_nosol_whole.xtc_c_fit"
+		if [ -e "$DATA/$xtc" ]; then			
+			seq $res_start $res_end | parallel -j 8 "echo {} $INS_grp | g_hbond -f $xtc -s $DATA/em.tpr -n g_hbond_15.ndx -nonitacc -nomerge -num {} $xvgr > /dev/null 2>&1 &"
+		fi
+		# python /home/grace/AnalysisScripts/abeta_analysis/abeta_analysis.py sys${s}.h5
+	done
+}
+
+
 proteingrp=1
 insgrp=12
 chain1=17
