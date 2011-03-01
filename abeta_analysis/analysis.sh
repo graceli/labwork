@@ -6,8 +6,6 @@ set -u
 set -e
 set -x
 
-
-
 #extract the number of nonpolar contacts between inositol and residues
 # function make_indices {
 # 	echo -e "'SideChain'&aC*&!rACE\nsplitch17\nq" | make_ndx -f common/em.tpr -o common/ab_nonpolar.ndx 
@@ -24,8 +22,7 @@ set -x
 #         done
 # }
 
-temp=`mktemp -tp .`
-trap 'clean "$temp"; exit' TERM INT SIGINT
+trap 'clean $RANDOM; exit' TERM INT SIGINT
 
 function clean {
 	cd /dev/shm
@@ -41,17 +38,18 @@ num=0
 function hbonds {
 	iso=$1
     ratio=$2
-	output_dir=$3/rmsd
+	output_dir=$3/hbonds
 	mkdir -p $output_dir
 		
 	for s in `seq 1 10`; do
 		xtc="ab_${iso}_${ratio}_${s}_nosol_whole.xtc_c_fit"
-		if [ -e "$DATA/$xtc" ]; then
+		if [ -e "$DATA/${xtc}.xtc" ]; then
 			mkdir -p $output_dir/$s
-			seq $res_start $res_end | parallel -j 8 "echo {} $INS_grp | g_hbond -f $DATA/$xtc -s ${ratio}_nosol.tpr -n g_hbond_${ratio}.ndx -nonitacc -nomerge -num $output_dir/$s/{} $xvgr > /dev/null 2>&1 &"
+			seq $res_start $res_end | parallel -j 8 "echo {} $INS_grp | g_hbond -f $DATA/$xtc -s ${ratio}_nosol.tpr -n g_hbond_${ratio}.ndx -nonitacc -nomerge -num $output_dir/$s/{} $xvgr $TEST > /dev/null 2>&1"
 		fi
 		# python /home/grace/AnalysisScripts/abeta_analysis/abeta_analysis.py sys${s}.h5
 	done
+	clean "${iso}_${ratio}_hbonds"
 }
 
 
@@ -76,7 +74,7 @@ function nonpolar {
 	for s in `seq 1 10`; do
 		xtc="ab_${iso}_${ratio}_${s}_nosol_whole.xtc_c_fit"
 		if [ -e "$DATA/${xtc}.xtc" ]; then
-			seq $chain1 $chain5 | parallel -j 5 "echo {} $insgrp | g_inositol_residue_nonpolar_v2 -f $DATA/$xtc -s ${ratio}_nosol.tpr -n ab_nonpolar.ndx -per_residue_contacts $output_dir/chain{}_residue_np_contact.dat -per_inositol_contacts $output_dir/chain{}_inositol_np_contact.dat -per_residue_table chain{}_table.dat"
+			seq $chain1 $chain5 | parallel -j 5 "echo {} $insgrp | g_inositol_residue_nonpolar_v2 -f $DATA/$xtc -s ${ratio}_nosol.tpr -n ab_${ratio}_nonpolar.ndx -per_residue_contacts $output_dir/chain{}_residue_np_contact.dat -per_inositol_contacts $output_dir/chain{}_inositol_np_contact.dat -per_residue_table chain{}_table.dat $TEST"
 		fi
 	done
 	clean "${iso}_${ratio}_nonpolar"
@@ -108,9 +106,10 @@ function rmsf_calpha {
 	clean "${iso}_${ratio}_rmsf"
 }
 
-test="--production"
+mode='production'
+target='production'
 TEST="-b 0"
-if [ "$test"=="--production" ]; then
+if [ "$mode" == "$target" ]; then
 	echo "running in production mode"
 	cd $PBS_O_WORKDIR
 else
