@@ -42,7 +42,7 @@ extern "C" {
 
 //#define DEBUG_INOS
 //#define DEBUG_COM
-#define DEBUG_CONTACT
+//#define DEBUG_CONTACT
 //#define EDGES
 //#define DEBUG_KEY
 
@@ -387,8 +387,9 @@ int main(int argc,char *argv[]) {
 				}
 
                 if(bInContact) { 
+#ifdef DEBUG_CONTACT
                		cout << "At t=" << t << " inositol " << i << " is in contact at dist=" << dist << endl; 
-
+#endif
                     residue_id = top->atoms.atom[ index[PROTEIN][atomIndex] ].resnr;
                     residueName = *(top->atoms.resname[ residue_id ]);
 

@@ -4,7 +4,7 @@
 LIBS         = -lxml2 -lmd -lgmx -lnsl -lfftw3f
 LDFLAGS      = -L /project/pomes/cneale/GPC/exe/intel/gromacs-4.0.5/exec/lib -L /project/pomes/cneale/GPC/exe/intel/fftw-3.1.2/exec/lib  
 CFLAGS       = -O3 -w -funroll-all-loops -std=gnu99  -I/project/pomes/cneale/GPC/exe/intel/gromacs-4.0.5/exec/include -I/project/pomes/cneale/GPC/exe/intel/gromacs-4.0.5/exec/include/gromacs
-CC           = cc
+CC           = c++
 LD           = $(CC)
 
 # The real make targets - note that most make programs support

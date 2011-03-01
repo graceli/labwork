@@ -1,5 +1,5 @@
 #!/bin/sh
-#PBS -l nodes=1:compute-eth:ppn=8,walltime=05:00:00,os=centos53computeA
+#PBS -l nodes=1:compute-eth:ppn=8,walltime=08:00:00,os=centos53computeA
 #PBS -N analysis
 
 set -u
@@ -24,7 +24,8 @@ set -x
 #         done
 # }
 
-trap "clean; exit" TERM INT SIGINT
+temp=`mktemp -tp .`
+trap 'clean "$temp"; exit' TERM INT SIGINT
 
 function clean {
 	cd /dev/shm
@@ -59,7 +60,7 @@ function nonpolar {
 	for s in `seq 1 10`; do
 		xtc="ab_${iso}_${ratio}_${s}_nosol_whole.xtc_c_fit"
 		if [ -e "$DATA/${xtc}.xtc" ]; then
-			seq $chain1 $chain5 | parallel -j 5 "echo {} $insgrp | g_inositol_residue_nonpolar_v2 -f $DATA/$xtc -s ${ratio}_nosol.tpr -n ab_nonpolar.ndx -per_residue_contacts $output_dir/chain{}_residue_np_contact.dat -per_inositol_contacts $output_dir/chain{}_inositol_np_contact.dat"
+			seq $chain1 $chain5 | parallel -j 5 "echo {} $insgrp | g_inositol_residue_nonpolar_v2 -f $DATA/$xtc -s ${ratio}_nosol.tpr -n ab_nonpolar.ndx -per_residue_contacts $output_dir/chain{}_residue_np_contact.dat -per_inositol_contacts $output_dir/chain{}_inositol_np_contact.dat -per_residue_table chain{}_table.dat"
 		fi
 	done
 	clean "${iso}_${ratio}_nonpolar"
@@ -91,9 +92,9 @@ function rmsf_calpha {
 	clean "${iso}_${ratio}_rmsf"
 }
 
-test="$1"
+test="--production"
 TEST="-b 0"
-if [ -z "$test" ]; then
+if [ "$test"=="--production" ]; then
 	echo "running in production mode"
 	cd $PBS_O_WORKDIR
 else
