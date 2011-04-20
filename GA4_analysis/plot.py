@@ -3,6 +3,7 @@ import pylab
 import numpy
 import matplotlib
 import sys
+import config
 
 def plot_settings(setting="default"):
 	if setting == "pub":
@@ -88,9 +89,9 @@ def plot_timeseries(xlabel='', ylabel=''):
 				x = average[:,0]/1000
 				y1 = average[:,1]
 				y2 = average[:,2]
-			
-				pylab.plot(x, y1, label='%(iso)s' % vars(), linewidth=1)
-				pylab.plot(x, y2, label='%(iso)s' % vars(), linewidth=1)
+					# ax1.plot(time, datalist[i][:,1]/config.NMOLECULES, color=config.LINE_COLOR[isomer], label=labellist[i])
+				pylab.plot(x, y1, label='%(iso)s' % vars(), color=config.LINE_COLOR[iso], linewidth=1)
+				pylab.plot(x, y2, label='%(iso)s' % vars(), color=config.LINE_COLOR[iso], linewidth=1)
 			
 				pylab.grid(True)
 				# pylab.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='upper right',
