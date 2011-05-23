@@ -54,8 +54,6 @@ function chain_hbonds {
 	clean "${iso}_${ratio}_chain_hbonds"
 }
 
-
-
 res_start=0
 res_end=129
 INS_grp=130
@@ -131,7 +129,7 @@ function rmsf_calpha {
 	clean "${iso}_${ratio}_rmsf"
 }
 
-mode='production'
+mode='test'
 target='production'
 TEST="-b 1000"
 if [ "$mode" == "$target" ]; then
@@ -140,8 +138,8 @@ if [ "$mode" == "$target" ]; then
 else
 	echo "testing ..."
 	#set externally bound variables
-	ISO=scyllo
-	RATIO=64
+	ISO=glycerol
+	RATIO=15
 	ANALYSIS=rmsd
 	#TEST="-b 1000 -e 1010"
 fi
