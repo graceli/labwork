@@ -1,9 +1,9 @@
 #!/bin/sh
-#PBS -l nodes=1:compute-eth:ppn=8,walltime=08:00:00,os=centos53computeA
+#PBS -l nodes=1:compute-eth:ppn=8,walltime=02:00:00,os=centos53computeA
 #PBS -N analysis
 
 set -u
-set -e
+#set -e
 set -x
 
 #extract the number of nonpolar contacts between inositol and residues
@@ -22,7 +22,7 @@ set -x
 #         done
 # }
 
-trap 'clean $RANDOM; exit' TERM INT SIGINT
+trap 'clean $RANDOM; exit' TERM INT SIGINT EXIT SIGKILL SIGSTOP SIGTERM
 
 function clean {
 	cd /dev/shm
@@ -112,8 +112,8 @@ function rmsd {
 	output_dir=$3/rmsd
 	mkdir -p $output_dir
 	
-	seq 1 10 | parallel -j 8 "echo 1 1 | g_rms -f $DATA/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit.xtc -s nmr_protein.tpr -o $output_dir/ab_${iso}_${ratio}_{}_nosol_whole_rmsd_protein.xvg -noxvgr $TEST"
-	seq 1 10 | parallel -j 8 "echo 4 4 | g_rms -f $DATA/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit.xtc -s nmr_protein.tpr -o $output_dir/ab_${iso}_${ratio}_{}_nosol_whole_rmsd_backbone.xvg -noxvgr $TEST"
+	seq 1 10 | parallel -j 8 "echo 1 1 | g_rms -f $DATA/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit.xtc -s ${ratio}_nosol.tpr -o $output_dir/ab_${iso}_${ratio}_{}_nosol_whole_rmsd_protein.xvg -noxvgr $TEST"
+	seq 1 10 | parallel -j 8 "echo 4 4 | g_rms -f $DATA/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit.xtc -s ${ratio}_nosol.tpr -o $output_dir/ab_${iso}_${ratio}_{}_nosol_whole_rmsd_backbone.xvg -noxvgr $TEST"
 	
 	clean "${iso}_${ratio}_rmsd"
 }
@@ -141,9 +141,9 @@ else
 	echo "testing ..."
 	#set externally bound variables
 	ISO=scyllo
-	RATIO=15
-	ANALYSIS=chain_hbonds
-	TEST="-b 1000 -e 1010"
+	RATIO=64
+	ANALYSIS=rmsd
+	#TEST="-b 1000 -e 1010"
 fi
 
 base_dir=`pwd`
@@ -153,3 +153,5 @@ SHM="/dev/shm/analysis"
 echo `pwd`
 ${ANALYSIS} $ISO $RATIO $SHM
 
+#remove everything in memory in case signals aren't trapped properly
+rm -rf /dev/shm/*
