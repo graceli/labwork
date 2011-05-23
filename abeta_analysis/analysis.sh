@@ -45,7 +45,7 @@ function chain_hbonds {
 			mkdir -p $output_dir/$s
 			for ch in `seq $chain_start $chain_end`; do
 				let next=ch+1
-				echo $ch $next | g_hbond -f $DATA/$xtc -s ${ratio}_nosol.tpr -n chain.ndx -nonitacc -nomerge -num $output_dir/$s/chain_${ch}_${next}_hbonds $TEST > /dev/null 2>&1 &
+				echo $ch $next | g_hbond -f $DATA/$xtc -s ${iso}_${ratio}_nosol.tpr -n chain.ndx -nonitacc -nomerge -num $output_dir/$s/chain_${ch}_${next}_hbonds $TEST > /dev/null 2>&1 &
 			done
 			wait
 		fi
@@ -70,7 +70,7 @@ function hbonds {
 		xtc="ab_${iso}_${ratio}_${s}_nosol_whole.xtc_c_fit"
 		if [ -e "$DATA/${xtc}.xtc" ]; then
 			mkdir -p $output_dir/$s
-			seq $res_start $res_end | parallel -j 8 "echo {} $INS_grp | g_hbond -f $DATA/$xtc -s ${ratio}_nosol.tpr -n g_hbond_${ratio}.ndx -nonitacc -nomerge -num $output_dir/$s/{} $xvgr $TEST > /dev/null 2>&1"
+			seq $res_start $res_end | parallel -j 8 "echo {} $INS_grp | g_hbond -f $DATA/$xtc -s ${iso}_${ratio}_nosol.tpr -n g_hbond_${ratio}.ndx -nonitacc -nomerge -num $output_dir/$s/{} $xvgr $TEST > /dev/null 2>&1"
 		fi
 		# python /home/grace/AnalysisScripts/abeta_analysis/abeta_analysis.py sys${s}.h5
 	done
@@ -94,12 +94,12 @@ function nonpolar {
 	output_dir=$3/nonpolar
 	mkdir -p $output_dir
 	
-	 echo -e "'SideChain'&aC*&!rACE\nsplitch16\nq" | make_ndx -f ${ratio}_nosol.tpr -o ab_${ratio}_nonpolar.ndx
+	 echo -e "'SideChain'&aC*&!rACE\nsplitch16\nq" | make_ndx -f ${iso}_${ratio}_nosol.tpr -o ab_${ratio}_nonpolar.ndx
 	
 	for s in `seq 1 10`; do
 		xtc="ab_${iso}_${ratio}_${s}_nosol_whole.xtc_c_fit"
 		if [ -e "$DATA/${xtc}.xtc" ]; then
-			seq $chain1 $chain5 | parallel -j 5 "echo {} $insgrp | g_inositol_residue_nonpolar_v2 -f $DATA/$xtc -s ${ratio}_nosol.tpr -n ab_${ratio}_nonpolar.ndx -per_residue_contacts $output_dir/chain{}_residue_np_contact.dat -per_inositol_contacts $output_dir/chain{}_inositol_np_contact.dat -per_residue_table chain{}_table.dat $TEST"
+			seq $chain1 $chain5 | parallel -j 5 "echo {} $insgrp | g_inositol_residue_nonpolar_v2 -f $DATA/$xtc -s ${iso}_${ratio}_nosol.tpr -n ab_${ratio}_nonpolar.ndx -per_residue_contacts $output_dir/chain{}_residue_np_contact.dat -per_inositol_contacts $output_dir/chain{}_inositol_np_contact.dat -per_residue_table chain{}_table.dat $TEST"
 		fi
 	done
 	clean "${iso}_${ratio}_nonpolar"
@@ -127,7 +127,7 @@ function rmsf_calpha {
     calpha=3
 
     # backbone fitting for specific parts of the peptide    
-	seq 1 10 | parallel -j 8 "echo $calpha | g_rmsf -f $DATA/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit.xtc -s ${ratio}_nosol.tpr -o $output_dir/${iso}_${ratio}_{}_rmsf.xvg -fit -res -ox $output_dir/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit -noxvgr $TEST" 
+	seq 1 10 | parallel -j 8 "echo $calpha | g_rmsf -f $DATA/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit.xtc -s ${iso}_${ratio}_nosol.tpr -o $output_dir/${iso}_${ratio}_{}_rmsf.xvg -fit -res -ox $output_dir/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit -noxvgr $TEST" 
 	clean "${iso}_${ratio}_rmsf"
 }
 
