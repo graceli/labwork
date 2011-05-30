@@ -5,7 +5,7 @@ import copy
 
 import numpy
 import tables
-import matplotlib
+#import matplotlib
 
 # import my own modules
 import plot_and_save2hdf5 as myh5
