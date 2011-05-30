@@ -62,7 +62,7 @@ def read_analysis_file(infile):
 	print
 	return data
 
-def parse(h5file_name):
+def parse(datfile, h5file_name):
 	"""read all the analysis files into a single h5 file"""
 	
 	# print "parsing into h5file"
@@ -70,16 +70,12 @@ def parse(h5file_name):
 	column_names = ['replica', 'sequence', 'w', 'w_nominal', 'rg', 'sas1', 'sas2']
 	descr = create_description(column_names, 7)
 	h5file = myh5.initialize(h5file_name)
-	fileslist = glob.glob("PRIOR_TO_RESTART_Fri_Dec_24_17:32:02_EST_2010_database.dat.noforce")
-	for name in fileslist:
-		# print "reading", name
 		
-		f = open(name)
-		data = read_analysis_file(f)
-		f.close()
-		data_array = numpy.array(data)
-		# print data_array.shape
-		myh5.save(h5file, numpy.array(data), '/root',  table_struct=descr)
+	f = open(datfile)
+	data = read_analysis_file(f)
+	f.close()
+	data_array = numpy.array(data)
+	myh5.save(h5file, numpy.array(data), '/root',  table_struct=descr)
 
 def create_description(column_keys, num_cols, format=tables.Float32Col(dflt=0.0)):
 	# print format
@@ -96,7 +92,10 @@ def main():
 	# for each temperature compute the average and distribution (histogram) for the radius of gyration
 	
 	temperature_list = [300, 600]
-	h5file = parse('DR_analysis.h5')
+	datfile = sys.argv[1]
+	h5_name = sys.argv[2]
+
+	h5file = parse(datfile, h5_name)
 	# for T in temperature_list:
 	# 	rg = h5file.where(temperature=T)
 		# results.append([T, average(rg)])

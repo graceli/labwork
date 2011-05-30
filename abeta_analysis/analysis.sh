@@ -110,8 +110,8 @@ function rmsd {
 	output_dir=$3/rmsd
 	mkdir -p $output_dir
 	
-	seq 1 10 | parallel -j 8 "echo 1 1 | g_rms -f $DATA/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit.xtc -s ${ratio}_nosol.tpr -o $output_dir/ab_${iso}_${ratio}_{}_nosol_whole_rmsd_protein.xvg -noxvgr $TEST"
-	seq 1 10 | parallel -j 8 "echo 4 4 | g_rms -f $DATA/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit.xtc -s ${ratio}_nosol.tpr -o $output_dir/ab_${iso}_${ratio}_{}_nosol_whole_rmsd_backbone.xvg -noxvgr $TEST"
+	seq 1 10 | parallel -j 8 "echo 1 1 | g_rms -f $DATA/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit.xtc -s ${iso}_${ratio}_nosol.tpr -o $output_dir/ab_${iso}_${ratio}_{}_nosol_whole_rmsd_protein.xvg -noxvgr $TEST"
+	seq 1 10 | parallel -j 8 "echo 4 4 | g_rms -f $DATA/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit.xtc -s ${iso}_${ratio}_nosol.tpr -o $output_dir/ab_${iso}_${ratio}_{}_nosol_whole_rmsd_backbone.xvg -noxvgr $TEST"
 	
 	clean "${iso}_${ratio}_rmsd"
 }
@@ -130,7 +130,7 @@ function rmsf_calpha {
 }
 
 mode='test'
-target='production'
+target='test'
 TEST="-b 1000"
 if [ "$mode" == "$target" ]; then
 	echo "running in production mode"
@@ -141,7 +141,7 @@ else
 	ISO=glycerol
 	RATIO=15
 	ANALYSIS=rmsd
-	#TEST="-b 1000 -e 1010"
+	TEST="-b 1000 -e 1010"
 fi
 
 base_dir=`pwd`
