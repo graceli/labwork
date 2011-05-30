@@ -66,7 +66,7 @@ def parse(h5file_name):
 	column_names = ['replica', 'sequence', 'w', 'w_nominal', 'rg', 'sas1', 'sas2']
 	descr = create_description(column_names, 7)
 	h5file = myh5.initialize(h5file_name)
-	fileslist = glob.glob("noforce.dat")
+	fileslist = glob.glob("PRIOR_TO_RESTART_Fri_Dec_24_17:32:02_EST_2010_database.dat.noforce")
 	for name in fileslist:
 		print "reading", name
 		
@@ -93,7 +93,6 @@ def main():
 	
 	temperature_list = [300, 600]
 	h5file = parse('DR_analysis.h5')
-	
 	# for T in temperature_list:
 	# 	rg = h5file.where(temperature=T)
 		# results.append([T, average(rg)])
