@@ -58,7 +58,7 @@ def save(h5file, data, table_path, table_struct=numpy.dtype(numpy.int32)):
 	"""
 	if type(data) == numpy.ndarray:
 		nrows,ncols = data.shape
-		table_struct = create_description("col", ncols)
+		# table_struct = create_description("col", ncols)
 	else:
 		print len(data[0])
 		print data[0]

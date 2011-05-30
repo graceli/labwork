@@ -30,7 +30,7 @@ import pylab
 # name := |S16, ()
 # pressure := float32, ()
 
-def initialize(h5_filename, groupName='/'):
+def initialize(h5_filename, groupName='root'):
 	""" 
 		open or create a h5 file with predefined
 	 	groups inositol, peptide, residue
@@ -51,7 +51,7 @@ def create_description(column_key, num_cols, format=tables.Int32Col(dflt=0)):
 
 	return descr
 
-def save(h5file, data, table_path, table_struct=numpy.dtype(numpy.int32)):
+def save(h5file, data, table_path='/root', table_struct=numpy.dtype(numpy.int32)):
 	"""	
 		save a numpy array into a given table with name table_name and 
 		description table_struct (no compression is used)

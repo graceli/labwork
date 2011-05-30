@@ -75,7 +75,7 @@ def main():
 	logging.info(" Data will be written to %s with messages in %s", filename, LOG_FILENAME)
 	
 	config = ConfigParser.ConfigParser()
-	base,name=os.path.split(filename)
+	base,name = os.path.split(filename)
 	read = config.read(os.path.join(base,'config.ini'))
 	
 	h5file = initialize(filename)
