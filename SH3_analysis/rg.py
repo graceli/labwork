@@ -75,7 +75,7 @@ def parse(datfile, h5file_name):
 	data = read_analysis_file(f)
 	f.close()
 	data_array = numpy.array(data)
-	myh5.save(h5file, numpy.array(data), '/root',  table_struct=descr)
+	myh5.save(h5file, numpy.array(data), '/test', table_struct=descr)
 
 def create_description(column_keys, num_cols, format=tables.Float32Col(dflt=0.0)):
 	# print format
