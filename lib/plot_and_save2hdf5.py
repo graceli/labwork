@@ -76,7 +76,7 @@ def save(h5file, data, table_path, table_struct=numpy.dtype(numpy.int32)):
 
 		print "table does not exist; creating table at", table_path
 
-		table = h5file.createTable(group_name, table_name, table_struct)
+		table = h5file.createTable(group_name, table_name, table_struct, filters=filters)
 	else:
 		table = h5file.getNode(table_path)
 
