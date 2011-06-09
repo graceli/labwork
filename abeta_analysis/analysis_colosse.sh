@@ -2,15 +2,9 @@
 #PBS -l nodes=1:compute-eth:ppn=8,walltime=02:00:00,os=centos53computeA
 #PBS -N analysis
 
-set -u
+#set -u
 #set -e
 set -x
-
-#extract the number of nonpolar contacts between inositol and residues
-# function make_indices {
-# 	echo -e "'SideChain'&aC*&!rACE\nsplitch17\nq" | make_ndx -f common/em.tpr -o common/ab_nonpolar.ndx 
-# 	RETURN_CODE=$?
-# }
 
 # function dssp {
 #         for ratio in 15 64; do
@@ -22,14 +16,7 @@ set -x
 #         done
 # }
 
-trap 'clean $RANDOM; exit' TERM INT SIGINT EXIT SIGKILL SIGSTOP SIGTERM
-
-function clean {
-	cd /dev/shm
-	tar cvfz "analysis_${1}.tgz" analysis
-	cp analysis*.tgz $base_dir
-	rm -rf * 
-}
+trap 'exit' TERM INT SIGINT EXIT SIGKILL SIGSTOP SIGTERM
 
 chain_start=0
 chain_end=3
@@ -53,8 +40,6 @@ function chain_hbonds {
 	done
 	clean "${iso}_${ratio}_chain_hbonds"
 }
-
-
 
 res_start=0
 res_end=129
@@ -105,19 +90,6 @@ function nonpolar {
 	clean "${iso}_${ratio}_nonpolar"
 }
 
-# calculate the rmsd of the protein using the nmr structure as a reference
-function rmsd {
-    iso=$1
-    ratio=$2
-	output_dir=$3/rmsd
-	mkdir -p $output_dir
-	
-	seq 1 10 | parallel -j 8 "echo 1 1 | g_rms -f $DATA/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit.xtc -s ${ratio}_nosol.tpr -o $output_dir/ab_${iso}_${ratio}_{}_nosol_whole_rmsd_protein.xvg -noxvgr $TEST"
-	seq 1 10 | parallel -j 8 "echo 4 4 | g_rms -f $DATA/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit.xtc -s ${ratio}_nosol.tpr -o $output_dir/ab_${iso}_${ratio}_{}_nosol_whole_rmsd_backbone.xvg -noxvgr $TEST"
-	
-	clean "${iso}_${ratio}_rmsd"
-}
-
 # calculate the rmsf
 function rmsf_calpha {
 	iso=$1
@@ -131,27 +103,25 @@ function rmsf_calpha {
 	clean "${iso}_${ratio}_rmsf"
 }
 
-mode='production'
-target='production'
-TEST="-b 1000"
-if [ "$mode" == "$target" ]; then
-	echo "running in production mode"
-	cd $PBS_O_WORKDIR
-else
-	echo "testing ..."
-	#set externally bound variables
-	ISO=scyllo
-	RATIO=64
-	ANALYSIS=rmsd
-	#TEST="-b 1000 -e 1010"
-fi
+# calculate the rmsd of the protein using the nmr structure as a reference
+function rmsd {
+	echo 1 1 | g_rms -f $DATA/sys${SYS}_nosol_whole.xtc -s $DATA/protein_sugar.tpr -o sys${SYS}_whole_rmsd_protein.xvg -noxvgr $TEST
+	# echo 4 4 | g_rms -f $DATA/sys{}_nosol_whole.xtc -s protein_sugar.tpr -o $output_dir/sys{}_whole_rmsd_backbone.xvg -noxvgr $TEST
+}
 
 base_dir=`pwd`
-DATA="/scratch/grace/inositol/abeta42/2/xtc"
-SHM="/dev/shm/analysis"
+DATA="/rap/uix-840-ac/grace/abeta/42/glucose/xtc"
 
-echo `pwd`
-${ANALYSIS} $ISO $RATIO $SHM
+# SYS=$SYSN
+# ANALYSIS=$ANALY
+SYS=1
+ANALYSIS=rmsd
+TEST="-dt 1000"
 
-#remove everything in memory in case signals aren't trapped properly
-rm -rf /dev/shm/*
+echo "For system $SYS"
+echo "Performing analysis $ANALYSIS"
+
+mkdir analysis/$SYS; cd analysis/$SYS
+mkdir $ANALYSIS; cd $ANALYSIS
+${ANALYSIS} $SYS
+
