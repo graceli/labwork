@@ -91,21 +91,14 @@ function nonpolar {
 }
 
 # calculate the rmsf
-function rmsf_calpha {
-	iso=$1
-    ratio=$2
-	output_dir=$3/rmsf
-	mkdir -p $output_dir
-    calpha=3
-
-    # backbone fitting for specific parts of the peptide    
-	seq 1 10 | parallel -j 8 "echo $calpha | g_rmsf -f $DATA/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit.xtc -s ${iso}_${ratio}_nosol.tpr -o $output_dir/${iso}_${ratio}_{}_rmsf.xvg -fit -res -ox $output_dir/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit -noxvgr $TEST" 
-	clean "${iso}_${ratio}_rmsf"
+function rmsf {
+    # backbone fitting for specific parts of the peptide
+	echo "C-alpha" | g_rmsf -f $DATA/sys${SYS}_${TAG}.xtc -s $DATA/protein_sugar.tpr -o sys${SYS}_${TAG}_rmsf.xvg -fit -res -ox sys${SYS}_${TAG}_ox.xvg -noxvgr $TEST 
 }
 
 # calculate the rmsd of the protein using the nmr structure as a reference
 function rmsd {
-	echo 1 1 | g_rms -f $DATA/sys${SYS}_nosol_whole.xtc -s $DATA/protein_sugar.tpr -o sys${SYS}_whole_rmsd_protein.xvg -noxvgr $TEST
+	echo 1 1 | g_rms -f $DATA/sys${SYS}_${tag}.xtc -s $DATA/protein_sugar.tpr -o sys${SYS}_whole_rmsd_protein.xvg -noxvgr $TEST
 	# echo 4 4 | g_rms -f $DATA/sys{}_nosol_whole.xtc -s protein_sugar.tpr -o $output_dir/sys{}_whole_rmsd_backbone.xvg -noxvgr $TEST
 }
 
@@ -115,8 +108,9 @@ DATA="/rap/uix-840-ac/grace/abeta/42/glucose/xtc"
 # SYS=$SYSN
 # ANALYSIS=$ANALY
 SYS=1
-ANALYSIS=rmsd
+ANALYSIS=rmsf
 TEST="-dt 1000"
+TAG="nosol_whole"
 
 echo "For system $SYS"
 echo "Performing analysis $ANALYSIS"

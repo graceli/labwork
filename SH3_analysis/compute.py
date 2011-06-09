@@ -7,13 +7,19 @@ def main():
 	print "reading table ..."
 	
 	#data_640K = h5file.getNode('/root').readWhere('(w < 0.792) & (w >= 0.786)')['rg']
-	data_602K = h5file.getNode('/root').readWhere('(w < 0.841) & (w > 0.830)')['rg']
-	data_300K = h5file.getNode('/root').readWhere('(w > 1.666) &  (w < 1.689)')['rg']
+	# data_602K = h5file.getNode('/root').readWhere('(w < 0.841) & (w > 0.830)')['rg']
+	# data_300K = h5file.getNode('/root').readWhere('(w > 1.666) &  (w < 1.689)')['rg']
 	
-	average_300K = numpy.average(data_300K)
-	average_602K = numpy.average(data_602K)
-	#average_640K = numpy.average(data_640K)
-
+	# Note: w_nominal is the index to the temperature list starting with the highest temperature first
+	templist = []
+	
+	
+	
+	
+	for i in range(0,131):
+		data = h5file.getNode('/root').readWhere('w_nominal==%(i)' % vars())['rg']	
+		average = numpy.average(data)
+		print >> f 
 	print data_300K	
 	print "<rg> at 300K = ", average_300K
 	print data_300K.shape

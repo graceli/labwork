@@ -15,11 +15,13 @@ def plot_settings(setting="default"):
 		pylab.rcParams['font.size'] = 12
 
 
-def plot_with_error(x, y, yerror, label, axes=None):
+def plot_with_error(x, y, label, yerror=None, axes=None):
 	""" plots a figure onto a figure object and 
 	returns the modified figure"""
 	
-	axes.fill_between(x, y-yerror, y+yerror, alpha=0.1)
+	if yerror is not None:
+		axes.fill_between(x, y-yerror, y+yerror, edgecolor='none', facecolor='green', alpha=0.25)
+	
 	axes.plot(x,y,label=label)
 	# fig.savefig(name)
 	
@@ -29,15 +31,14 @@ def plot_eed(file_name="test.png"):
 	# I don't have Latex installed
 	# pylab.rcParams['text.usetex']=True
 	# pylab.rcParams['text.latex.unicode']=True
-	
 	scyllo = numpy.genfromtxt('scyllo_eed_data2.dat', dtype=float)	
 	chiro = numpy.genfromtxt('chiro_eed_data2.dat', dtype=float)	
 	plot_settings(setting="pub")
 	
 	fig = pylab.figure()
-	# fig.subplots_adjust(top=0.9, bottom=0.19, left=0.18, right=0.90, wspace=0.001)
-	pylab.axes([0.05, 0.05, 0.92, 0.92])
-
+	fig.subplots_adjust(top=0.9, bottom=0.19, left=0.18, right=0.90, wspace=0.001)
+	# pylab.axes([0.05, 0.05, 0.92, 0.92])
+	
 	ax1 = fig.add_subplot(1,2,1)
 	# figure sharing doesn't work -- don't know why ...
 	ax2 = fig.add_subplot(1,2,2)	
@@ -59,10 +60,14 @@ def plot_eed(file_name="test.png"):
 			y = eed_data[:,i]
 			yerror = eed_data[:,i+1]
 			state = int(i/2)
-			ax = plot_with_error(x, y, yerror, '%(state)d hbonds' % vars(), axes=ax)
+			if i+1 == 4:
+				ax = plot_with_error(x, y, '%(state)d hbonds' % vars(), yerror=yerror, axes=ax)			
+			else:
+				ax = plot_with_error(x, y, '%(state)d hbonds' % vars(), yerror=None, axes=ax)			
+				
 		nax += 1
 	ax2.legend()
-	fig.savefig("all.png")
+	fig.savefig('test.png')
 
 def plot_timeseries(xlabel='', ylabel=''):
 	""" plot the time series for peptide-peptide nonpolar and polar contacts """
@@ -71,10 +76,14 @@ def plot_timeseries(xlabel='', ylabel=''):
 	pylab.rcParams['font.size'] = 9
 	pylab.rcParams['legend.fontsize'] = 'small'
 	pylab.rcParams['legend.loc'] = 'best'
+	line_type = {'chiro': '-', 'scyllo':'-', 'control':'-'}
+	# color = {'chiro': '#A8A8A8', 'scyllo':'#686868', 'control':'#000000'}
+	color = {'chiro': 'blue', 'scyllo':'red', 'control':'#000000'}
+	
 	# pylab.subplots_adjust(top=0.9, bottom=0.19)
 	# pylab.axes([0.05, 0.05, 0.92, 0.92])
 	
-	for system in ['systematic_4oct', 'systematic_ap1f', 'systematic_ap2f']:
+	for system in ['systematic_4oct', 'systematic_ap1f']:
 		for iso in ['scyllo', 'chiro', 'control']:
 			filename = '%(system)s_%(iso)s_average.txt' % vars()
 			try:
@@ -83,24 +92,27 @@ def plot_timeseries(xlabel='', ylabel=''):
 				print filename,"is empty"
 			else:
 				pylab.axes([0.15, 0.12, 0.81, 0.85])
-				pylab.xlim(0, 100)
+				pylab.xlim(0, 80)
 				pylab.ylim(0, 13)
 				
 				x = average[:,0]/1000
 				y1 = average[:,1]
 				y2 = average[:,2]
 					# ax1.plot(time, datalist[i][:,1]/config.NMOLECULES, color=config.LINE_COLOR[isomer], label=labellist[i])
-				pylab.plot(x, y1, label='%(iso)s' % vars(), color=config.LINE_COLOR[iso], linewidth=1)
-				pylab.plot(x, y2, label='%(iso)s' % vars(), color=config.LINE_COLOR[iso], linewidth=1)
-			
+				# pylab.plot(x, y1, label='%(iso)s' % vars(), color=config.LINE_COLOR[iso], linewidth=1)
+				# pylab.plot(x, y2, label='%(iso)s' % vars(), color=config.LINE_COLOR[iso], linewidth=1)
+				ltype = line_type[iso]
+				c = color[iso]
+				pylab.plot(x, y1, '--', dashes=(4,3), color='%(c)s' % vars(), label='%(iso)s' % vars(), linewidth=0.5)
+				pylab.plot(x, y2, '%(ltype)s' % vars(), color='%(c)s' % vars(), label='%(iso)s' % vars(), linewidth=0.75)
 				pylab.grid(True)
 				# pylab.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='upper right',
 				       # ncol=3, borderaxespad=0.)
-				pylab.legend(loc='upper center', ncol=3, borderaxespad=0)
+				# pylab.legend(loc='upper center', ncol=3, borderaxespad=0)
 
 
-		pylab.ylabel(ylabel)
-		pylab.xlabel(xlabel)
+		# pylab.ylabel(ylabel)
+		# pylab.xlabel(xlabel)
 		pylab.savefig('%(system)s.png' %vars())
 		pylab.clf()
 
@@ -112,8 +124,14 @@ def plot_timeseries_single(xlabel='', ylabel=''):
 	pylab.rcParams['legend.fontsize'] = 'small'
 	pylab.rcParams['legend.loc'] = 'best'
 
-	for system in ['systematic_4oct', 'systematic_ap1f', 'systematic_ap2f']:
-		for iso in ['scyllo', 'chiro', 'control']:
+	# for system in ['systematic_4oct', 'systematic_ap1f', 'systematic_ap2f']:
+	# 	for iso in ['scyllo', 'chiro', 'control']:
+	line_type = {'chiro': '-', 'scyllo':'-', 'control':'-'}
+	# color = {'chiro': '#A8A8A8', 'scyllo':'#686868', 'control':'#000000'}
+	color = {'chiro': 'blue', 'scyllo':'red', 'control':'#000000'}
+	
+	for system in ['systematic_ap1f', 'systematic_4oct']:
+		for iso in ['chiro','scyllo', 'control']:
 			filename = '%(system)s_%(iso)s_average.txt'
 			try:
 				average = numpy.genfromtxt('%(system)s_%(iso)s_average.txt' % vars())
@@ -124,44 +142,23 @@ def plot_timeseries_single(xlabel='', ylabel=''):
 				x = average[:,0]/1000
 				y1 = average[:,1]
 				# y2 = average[:,2]
-				pylab.xlim(0, 100)
+				pylab.xlim(0, 80)
 				pylab.ylim(0, 7)
 				
-				pylab.plot(x, y1, label='%(iso)s' % vars(), linewidth=1)
+				ltype = line_type[iso]
+				c = color[iso]
+				pylab.plot(x, y1, '%(ltype)s' % vars(), color='%(c)s' % vars(), label='%(iso)s' % vars(), linewidth=0.75)
 				# pylab.plot(x, y2, label='%(iso)s inter-' % vars(), linewidth=1)
 
 				pylab.grid(True)
 				# pylab.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
 				       # ncol=3, mode="expand", borderaxespad=0.)
-				pylab.legend(loc='lower right')
+				# pylab.legend(loc='lower right')
 		
-		pylab.ylabel(ylabel)
-		pylab.xlabel(xlabel)
+		# pylab.ylabel(ylabel)
+		# pylab.xlabel(xlabel)
 		pylab.savefig('%(system)s.png' %vars())
 		pylab.clf()
-
-# Decided not to use this to plot stuff
-# def plot_vertical_bars(name, data_columns, data_error, ylabel='y-axis', xlabel='x-axis', xticks=None, legend=None):
-# 	"""
-# 		data_columns -- data to plot as bars organized in columns, each column is a set of bars, with the height of the bar
-# 		in each row of the column.  The number of columns is the number of different category of bars.
-# 	"""
-# 	# TODO: assert that the data_column is a numpy array
-# 	barwidth = 0.35
-# 	nrows, ncols = data_columns.shape
-# 	# indices used for the ticks of each bar plot
-# 	index = numpy.arange(nrows)
-# 	for i in data_columns:
-# 		rects = pylab.bar(index, data_columns[i], barwidth, yerr=data_error[i])
-# 		rectList.append(rects)
-# 	
-# 	#set plot legend and labels, if any
-# 	pylab.ylabel(ylabel)
-# 	pylab.xlabel(xlabel)
-# 	pylab.xticks(index+barwidth, xticks)
-# 	pylab.legend(tuple(rectList), legend)
-# 	pylab.savefig(name + '.png')
-# 	pylab.clf()
 	
 def main():
 	# plot the eed data for monomers
@@ -175,6 +172,10 @@ def main():
 	# plot nonpolar contact plots
 	if sys.argv[1] == "nonpolar":
 		plot_timeseries_single(ylabel='Total nonpolar contact', xlabel='Time (ns)')
-
+	
+	if sys.argv[1] == "eed":
+		print "plotting eed ..."
+		plot_eed()
+	
 if __name__ == '__main__':
 	main()

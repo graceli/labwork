@@ -17,8 +17,10 @@ def save(name, A):
 	numpy.savetxt(name, numpy.transpose(numpy.vstack((average, stddev))))
 
 def nonpolar():
-	for system in ['systematic_ap1f', 'systematic_ap2f', 'systematic_4oct']:
-		for iso in ['scyllo', 'chiro', 'control']:
+	# for system in ['systematic_ap1f', 'systematic_ap2f', 'systematic_4oct']:
+	# 	for iso in ['scyllo', 'chiro', 'control']:
+	for system in ['systematic_ap1f']:
+		for iso in ['chiro']:
 			interList = []
 			intraList = []
 			nrows_min = 200000
@@ -57,7 +59,54 @@ def nonpolar():
 			print sum
 			numpy.savetxt('%(system)s_%(iso)s_average.txt' % vars(), sum, fmt='%0.3f')
 			
+# this is to fill in the missing 20ns in ap1f chiro system
+def nonpolar_hack():
+	"""docstring for nonpolar_hack"""
+	for system in ['systematic_ap1f']:
+		for iso in ['chiro']:
+			interList = []
+			intraList = []
+			nrows_min = 200000
+			for i in range(0,5):
+				inter_filename = '%(system)s_%(iso)s%(i)d_inter_dists_cutoff.dat.1000' % vars()
+				intra_filename = '%(system)s_%(iso)s%(i)d_intra_dists_cutoff.dat.1000' % vars()
 
+				if os.path.exists(inter_filename) and os.path.exists(intra_filename):
+					print 'analyzing', inter_filename
+					print 'analyzing', intra_filename
+					inter_data_array = numpy.genfromtxt(inter_filename)
+					intra_data_array = numpy.genfromtxt(intra_filename)
+					nrows, ncols = inter_data_array.shape
+					print nrows, ncols
+					if nrows < nrows_min:
+						nrows_min = nrows
+						
+					interList.append(numpy.genfromtxt(inter_filename))
+					intraList.append(numpy.genfromtxt(intra_filename))
+			
+			interList_repack = []
+			intraList_repack = []
+			print "nrows_min", nrows_min
+			if interList:
+				for a,b in zip(interList, intraList):
+					print a.shape[0], b.shape[0]
+					if a.shape[0] > nrows_min and b.shape[0] > nrows_min:
+						print "adding"
+						interList_repack.append(a[nrows_min+1:90000])
+						intraList_repack.append(b[nrows_min+1:90000])
+						
+			print interList_repack, len(interList_repack)
+			inter_array = numpy.transpose(numpy.array(interList_repack))
+			inter_average = numpy.average(inter_array, axis=2)
+			print inter_average
+			intra_array = numpy.transpose(numpy.array(intraList_repack))
+			intra_average = numpy.average(intra_array, axis=2)
+			print intra_average
+			sum = numpy.transpose(inter_average+intra_average)
+			sum[:,0] = sum[:,0]/2
+			print sum
+			numpy.savetxt('%(system)s_%(iso)s_average_extended.txt' % vars(), sum, fmt='%0.3f')
+			
 def polar():
 	# copied out of systematic_analysis_total.pl
 	# $intra[$cols[1]]++;
@@ -96,7 +145,7 @@ def polar():
 				numpy.savetxt('%(system)s_%(iso)s_std.txt' % vars(), stddev,fmt='%0.3f')
 
 if __name__ == '__main__':
-	nonpolar()
+	nonpolar_hack()
 	
 	
 
