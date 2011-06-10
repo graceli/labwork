@@ -65,9 +65,9 @@ chain_start=0
 chain_end=3
 function chain_hbonds {
 	xtc="ab_${iso}_${ratio}_${s}_nosol_whole.xtc_c_fit"
-	for ch in {$chain_start..$chain_end}; do
+	for ch in `{$chain_start..$chain_end}`; do
 		let next=ch+1
-		echo $ch $next | g_hbond -f $NAME -s $TPR -n chain.ndx -nonitacc -nomerge -num chain_${ch}_${next}_hbonds $TEST
+		echo $ch $next | g_hbond -f $NAME -s $TPR -n $DATA/chain.ndx -nonitacc -nomerge -num chain_${ch}_${next}_hbonds $TEST
 	done
 }
 
@@ -88,7 +88,7 @@ DATA="/rap/uix-840-ac/grace/abeta/42/glucose/xtc"
 # SYS=$SYSN
 # ANALYSIS=$ANALY
 SYS=1
-ANALYSIS=chain_hbonds
+ANALYSIS=dssp
 TEST="-dt 1000"
 TAG="nosol_whole"
 NAME="$DATA/sys${SYS}_${tag}.xtc"
