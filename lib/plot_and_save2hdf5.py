@@ -43,23 +43,27 @@ def initialize(h5_filename, groupName='/'):
 
 	return h5file
 
-def create_description(column_key, num_cols, format=tables.Int32Col(dflt=0)):
+def create_description(column_key, num_cols, format="float"):
 	descr = {}
 	for i in range(0, num_cols):
 		colname = column_key + str(i)
-		descr[colname] = tables.Int32Col(dflt=0.0, pos=i)
+		if format == "float":
+			descr[colname] = tables.Float64Col(dflt=0.0, pos=i)
+		else:
+			descr[colname] = tables.Int64Col(dflt=0.0, pos=i)			
 
 	return descr
 
-def save(h5file, data, table_path, table_struct=numpy.dtype(numpy.int32)):
+def save(h5file, data, table_path, format="float"):
 	"""	
 		save a numpy array into a given table with name table_name and 
 		description table_struct (no compression is used)
 	"""
 	if type(data) == numpy.ndarray:
 		nrows,ncols = data.shape
-		# table_struct = create_description("col", ncols)
+		table_struct = create_description("col", ncols, format="float")
 	else:
+		print data
 		print len(data[0])
 		print data[0]
 		print table_struct.keys()
@@ -75,7 +79,9 @@ def save(h5file, data, table_path, table_struct=numpy.dtype(numpy.int32)):
 			group = h5file.createGroup(root, name, filters=filters)
 
 		print "table does not exist; creating table at", table_path
-
+		print group_name
+		print table_name
+		print table_struct
 		table = h5file.createTable(group_name, table_name, table_struct, filters=filters)
 	else:
 		table = h5file.getNode(table_path)
@@ -84,7 +90,7 @@ def save(h5file, data, table_path, table_struct=numpy.dtype(numpy.int32)):
 	table.flush()
 	print "Successfully inserted data into", table_path
 
-def getTable(h5file,path):
+def getTable(h5file, path):
 	if h5file.__contains__(path):
 		return h5file.getNode(path)
 	else:

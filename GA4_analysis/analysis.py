@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
-import tables
-import numpy
 import math
-import plot_and_save2hdf5 as myh5
 import re
 import csv
 import glob
 import os
+import tables
+import numpy
 import utils
+import plot_and_save2hdf5 as myh5
 
 def intersect(polar, nonpolar):
 	nrows, ncols = nonpolar.shape
