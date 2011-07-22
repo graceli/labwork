@@ -10,6 +10,7 @@ def plot_settings(setting="default"):
 		pylab.rcParams['figure.figsize'] = [6,3]
 		pylab.rcParams['font.size'] = 9
 		pylab.rcParams['legend.fontsize'] = 'small'
+		pylab.rcParams['text.usetex'] = True
 	else:
 		pylab.rcParams['figure.figsize'] = [8,6]
 		pylab.rcParams['font.size'] = 12
@@ -43,7 +44,7 @@ def plot_eed(file_name="test.png"):
 	# figure sharing doesn't work -- don't know why ...
 	ax2 = fig.add_subplot(1,2,2)	
 	ax1.set_xlabel(r'End to end distance ($\AA$)')
-	ax1.set_ylabel("Probability")
+	ax1.set_ylabel(r'$P_{eed}$')
 	yticklabels = ax2.get_yticklabels()+ax2.get_xticklabels()
 	pylab.setp(yticklabels, visible=False)
 
@@ -61,13 +62,13 @@ def plot_eed(file_name="test.png"):
 			yerror = eed_data[:,i+1]
 			state = int(i/2)
 			if i+1 == 4:
-				ax = plot_with_error(x, y, '%(state)d hbonds' % vars(), yerror=yerror, axes=ax)			
+				ax = plot_with_error(x, y, 'n=%(state)d hbonds' % vars(), yerror=yerror, axes=ax)			
 			else:
-				ax = plot_with_error(x, y, '%(state)d hbonds' % vars(), yerror=None, axes=ax)			
+				ax = plot_with_error(x, y, 'n=%(state)d hbonds' % vars(), yerror=None, axes=ax)			
 				
 		nax += 1
 	ax2.legend()
-	fig.savefig('test.png')
+	fig.savefig('eed.pdf')
 
 def plot_timeseries(xlabel='', ylabel=''):
 	""" plot the time series for peptide-peptide nonpolar and polar contacts """
