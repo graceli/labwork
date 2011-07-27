@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import pickle
 import os
+import sys
 
 """
 	Class to keep track of files inside a data directory
@@ -10,7 +11,7 @@ class FileManager(object):
 	# dictionary containing the processed state of the files in the directory
 	
 	def __init__(self, dir):
-		print dir, " is now being managed"
+		print >> sys.stderr, dir, " is now tracked" 
 		self.__files = {}
 		self.__persistent_storage = 'file_manager.pkl'
 		self.__initialize_state(dir)
@@ -26,9 +27,9 @@ class FileManager(object):
 		return [ key for key in self.__files if not self.__files[key] ]
 			
 	def is_processed(self, filename):
-		return self.__files(filename)
+		return self.__files[filename]
 	
-	def process(self, filename):
+	def processed(self, filename):
 		"""docstring for process"""
 		self.__files[filename] = True
 		
@@ -63,7 +64,7 @@ def main():
 	import time
 	fm = FileManager('.')
 	for f in fm.unprocessed_files():
-		print "processing",f
+		print >> sys.stderr, "processing",f
 		fm.process(f)
 		time.sleep(10)
 	
