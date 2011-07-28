@@ -3,6 +3,7 @@ import sys
 import glob
 import tarfile
 
+import gromacs
 import file_manager
 
 # Example final output of the pytable file:
@@ -10,11 +11,15 @@ import file_manager
 # ...
 # ...
 
-def parse_name(xtc):
-	filename = os.path.basename(xtc)
+def get_base_xtc_name(name):
+	filename = os.path.basename(name)
 	basename,ext = os.path.splitext(filename)
 	first, second = basename.split('_')
-	rhalf, shalf = first.split('.')
+	return first
+	
+def parse_name(xtc):
+	name = get_base_xtc_name(xtc)
+	rhalf, shalf = name.split('.')
 	replica_num = rhalf[3:]
 	sequence = int(shalf)
 	return basename,replica_num,sequence
@@ -23,7 +28,14 @@ def xtc_files(members):
 	for tarinfo in members:
 		if os.path.splitext(tarinfo.name)[1] == '.xtc':
 			yield tarinfo
-
+			
+def average_temperature(name):
+	"""docstring for average_temperature"""
+	# find and process the edr file
+	rc,stdout,stderr = gromacs.g_energy(input='Temperature', f='name' + '.edr', stdout=False, failure='raise')
+	temperature = float(stdout.split('\n')[-3].split()[1])
+	return temperature
+	
 # open the directory to index
 f = open('list')
 dirs = f.readlines()
@@ -46,10 +58,12 @@ for d in dirs:
 		for xtc in trajectories:
 			#parse replica and sequence number
 			basename, replica_num, sequence = parse_name(xtc)
+
 			# calculate average temperature for the small xtc
-			# TODO
+			temp = average_temperature(xtc)
+			
 			# write a row to the h5 file
-			print f, basename, replica_num, sequence
+			print f, basename, replica_num, sequence, temp
 			os.remove(xtc)		
 			print >> sys.stderr, "removed", xtc
 
