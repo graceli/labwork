@@ -155,7 +155,9 @@ class SH3Tarfile():
 		
 def main():
 	"""docstring for main"""
-	SH3FileSystem('')
-
+	fs = SH3FileSystem('/scratch/grace/sha/test/PRIOR_TO_RESTART_Wed_Oct_27_04:27:47_EDT_2010')
+	for batch in fs.xtc_files():
+		print batch
+	
 if __name__ == '__main__':
 	main()
