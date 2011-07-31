@@ -92,7 +92,7 @@ class SH3Tarfile():
 		self.__location = source
 		self.__output = dest
 		self.__scratch = tempdest
-		self.__num_index = 0
+		self.__num_indexed = 0
 		self.__num_traj = 0
 	
 	def index(self):
@@ -116,7 +116,7 @@ class SH3Tarfile():
 			temp = self.__temperature(self.__temp_path(basename))
 
 			# TODO: write a row to the h5 file
-			print f, basename, replica_num, sequence, temp
+			print basename, replica_num, sequence, temp
 			self.__num_indexed += 1
 			processed.append(xtc)
 		
@@ -133,13 +133,13 @@ class SH3Tarfile():
 	def num_edr(self):
 		return self.__num_edr
 
-	def __temp_path(filename):
+	def __temp_path(self, filename):
 		return os.path.join(self.__scratch, filename)
 	
-	def __source_path(filename):
+	def __source_path(self, filename):
 		return os.path.join(self.__location, filename)
 	
-	def __output_path(filename):
+	def __output_path(self, filename):
 		return os.path.join(self.__output, filename)
 
 	def __unpack_tarfile(self):
