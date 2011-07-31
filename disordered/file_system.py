@@ -5,13 +5,14 @@ import sys
 import glob
 import logging
 import tarfile
+import gromacs
 
 class FileManager(object):
 	"""
 		Class to keep track of files inside a data directory
 	"""
 	def __init__(self, dir):
-		# print >> sys.stderr, dir, " is now tracked"
+		print >> sys.stderr, dir, " is now tracked"
 		# dictionary containing the processed state of the files in the directory
 		self.__files = {}
 		self.__persistent_storage = 'file_manager.pkl'
@@ -66,11 +67,11 @@ class SH3FileSystem(object):
 		self.fm = FileManager(root)
 	
 	def xtc_files(self):
-		"""docstring for files"""
-		for tar in fm.unprocessed_files():
-			tar_abs = os.path.join(root, tar)
+		for tar in self.fm.unprocessed_files():
+			tar_abs = os.path.join(self.root, tar)
+			print tar_abs
 			tar_manager = SH3Tarfile(tar_abs, '/dev/shm')
-			self.__index(tar_fm)
+			self.__index(tar_manager)
 			processed_files = tar_manager.index()
 			yield processed_files
 			
@@ -79,18 +80,18 @@ class SH3FileSystem(object):
 				tar_manager.processed(tar_abs)
 
 	def __index(self, tar_manager):
-		logging.info("Processing files in %s", d)
 		tar_manager.index()
 
 	def num_tarfiles(self):
 		return len(self.files)
 	
 class SH3Tarfile():
-	def __init__(self, filename, source, dest='results.h5'):
+	def __init__(self, filename, source, tempdest='/dev/shm', dest='results.h5'):
 		logging.basicConfig(filename='sh3tarfile.log',level=logging.DEBUG)
 		self.__tarfile = filename
 		self.__location = source
 		self.__output = dest
+		self.__scratch = tempdest
 		self.__num_index = 0
 		self.__num_traj = 0
 	
@@ -106,10 +107,14 @@ class SH3Tarfile():
 		
 		processed = []
 		for xtc in trajectories:
+			print "xtc", xtc
 			#parse replica and sequence number
 			basename, replica_num, sequence = self.__parse_name(xtc)
+			print "basename", basename
+
 			# calculate average temperature for the small xtc
-			temp = self.__temperature(xtc)
+			temp = self.__temperature(self.__temp_path(basename))
+
 			# TODO: write a row to the h5 file
 			print f, basename, replica_num, sequence, temp
 			self.__num_indexed += 1
@@ -128,8 +133,16 @@ class SH3Tarfile():
 	def num_edr(self):
 		return self.__num_edr
 
+	def __temp_path(filename):
+		return os.path.join(self.__scratch, filename)
+	
+	def __source_path(filename):
+		return os.path.join(self.__location, filename)
+	
+	def __output_path(filename):
+		return os.path.join(self.__output, filename)
+
 	def __unpack_tarfile(self):
-		logging.info("Extracting tarfile to /dev/shm:", f)
 		tf_handle = tarfile.open(os.path.join(self.__location, self.__tarfile), 'r:')
 		tf_handle.extractall("/dev/shm")
 
@@ -141,23 +154,25 @@ class SH3Tarfile():
 		return first
 	
 	def __parse_name(self, xtc):
-		name = __get_base_xtc_name(xtc)
+		name = self.__get_base_xtc_name(xtc)
 		rhalf, shalf = name.split('.')
 		replica_num = rhalf[3:]
 		sequence = int(shalf)
-		return basename,replica_num,sequence
+		return name,replica_num,sequence
 
-	def __temperature(self, xtc):
+	def __temperature(self, name):
 		# find and process the edr file
-		rc,stdout,stderr = gromacs.g_energy(input='Temperature', f=xtc + '.edr', stdout=False, failure='raise')
+		rc,stdout,stderr = gromacs.g_energy(input='Temperature', f=name + '.edr', stdout=False)
 		temperature = float(stdout.split('\n')[-3].split()[1])
 		return temperature
 		
 def main():
 	"""docstring for main"""
-	fs = SH3FileSystem('/scratch/grace/sha/test/PRIOR_TO_RESTART_Wed_Oct_27_04:27:47_EDT_2010')
+	fs = SH3FileSystem('/project/pomes/grace/test/PRIOR_TO_RESTART_Wed_Oct_27_04:27:47_EDT_2010/output/data')
 	for batch in fs.xtc_files():
+		print "extracted batch"
 		print batch
+		sys.exit(0)
 	
 if __name__ == '__main__':
 	main()
