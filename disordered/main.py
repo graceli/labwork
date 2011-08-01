@@ -3,18 +3,18 @@ import sh3_universe
 
 def main():
 	"""docstring for main"""
-	parser = OptionParser()
-	parser.add_option("-f", "--tarfile-root-dir", action="store_true", dest="root", default=False,
-	help="sets the root directory containing all the tarfiles with trajectories (xtcs) to analyze")
-																
-	(options, args) = parser.parse_args()
-	if len(args) < 1:
-		parser.error("Please specify a .h5 input file")
+	# parser = OptionParser()
+	# parser.add_option("-f", "--tarfile-root-dir", action="store_true", dest="root", default=False,
+	# help="sets the root directory containing all the tarfiles with trajectories (xtcs) to analyze")
+	# 															
+	# (options, args) = parser.parse_args()
+	# if len(args) < 1:
+	# 	parser.error("Please specify a .h5 input file")
 	
-	root = args[0]
+	root = '/project/pomes/grace/test/PRIOR_TO_RESTART_Wed_Oct_27_04:27:47_EDT_2010/output/data'
 
 	# initialize analysis
-	analyzer = Analyzer(root, index_output="index.h5", analysis_output="results.h5")	
+	analyzer = Analyzer(root)	
 	# queue up analysis tasks
 	analyzer.add(ContactMap())
 	analyzer.run()
