@@ -69,18 +69,15 @@ class SH3FileSystem(object):
 	def xtc_files(self):
 		for tar in self.fm.unprocessed_files():
 			tar_abs = os.path.join(self.root, tar)
-			print tar_abs
+			# print tar_abs
 			tar_manager = SH3Tarfile(tar_abs, '/dev/shm')
-			self.__index(tar_manager)
 			processed_files = tar_manager.index()
+
 			yield processed_files
 			
 			# Mark tarfile processed if all xtcs extracted were indexed
 			if tar_manager.done():
 				tar_manager.processed(tar_abs)
-
-	def __index(self, tar_manager):
-		tar_manager.index()
 
 	def num_tarfiles(self):
 		return len(self.files)
@@ -107,16 +104,16 @@ class SH3Tarfile():
 		
 		processed = []
 		for xtc in trajectories:
-			print "xtc", xtc
+			# print "xtc", xtc
 			#parse replica and sequence number
 			basename, replica_num, sequence = self.__parse_name(xtc)
-			print "basename", basename
+			# print "basename", basename
 
 			# calculate average temperature for the small xtc
 			temp = self.__temperature(self.__temp_path(basename))
 
 			# TODO: write a row to the h5 file
-			print basename, replica_num, sequence, temp
+			# print basename, replica_num, sequence, temp
 			self.__num_indexed += 1
 			processed.append(xtc)
 		
@@ -162,7 +159,7 @@ class SH3Tarfile():
 
 	def __temperature(self, name):
 		# find and process the edr file
-		rc,stdout,stderr = gromacs.g_energy(input='Temperature', f=name + '.edr', stdout=False)
+		rc,stdout,stderr = gromacs.g_energy(input='Temperature', f=name + '.edr', o=name, stdout=False)
 		temperature = float(stdout.split('\n')[-3].split()[1])
 		return temperature
 		
@@ -170,7 +167,7 @@ def main():
 	"""docstring for main"""
 	fs = SH3FileSystem('/project/pomes/grace/test/PRIOR_TO_RESTART_Wed_Oct_27_04:27:47_EDT_2010/output/data')
 	for batch in fs.xtc_files():
-		print "extracted batch"
+		logging.info("extracted batch")
 		print batch
 		sys.exit(0)
 	
