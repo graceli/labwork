@@ -50,7 +50,7 @@ class Result:
 			table = group._f_getChild(options['tableName'])
 			#print "table", options['tableName'], "already exists"
 		else:
-			table = self._h5file.createTable(group, options['tableName'], options['tableStruct'], options['tableTitle'], expectedrows=200)
+			table = self._h5file.createTable(group, options['tableName'], options['tableStruct'], options['tableTitle'], expectedrows=300000)
 			#print "table", options['tableName'], "created"
 		
 		table.append(data)
