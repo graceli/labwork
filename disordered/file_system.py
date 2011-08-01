@@ -164,7 +164,6 @@ class SH3Tarfile():
 		return temperature
 		
 def main():
-	"""docstring for main"""
 	fs = SH3FileSystem('/project/pomes/grace/test/PRIOR_TO_RESTART_Wed_Oct_27_04:27:47_EDT_2010/output/data')
 	for batch in fs.xtc_files():
 		logging.info("extracted batch")

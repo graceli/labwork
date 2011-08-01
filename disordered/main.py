@@ -13,10 +13,11 @@ def main():
 	
 	root = args[0]
 
-	# initialize universe
-	u = Universe(root, index_output="index.h5", analysis_output="results.h5")
-	# run stuff
-	u.analyze()
+	# initialize analysis
+	analyzer = Analyzer(root, index_output="index.h5", analysis_output="results.h5")	
+	# queue up analysis tasks
+	analyzer.add(ContactMap())
+	analyzer.run()
 
 if __name__ == '__main__':
 	main()
@@ -29,4 +30,5 @@ if __name__ == '__main__':
 # Files produced:
 # For each directory processed, the following is produced:
 # index.h5 file consisting a listing of all the xtc files processed
-# results.h5 consisting of all analysis attached to the system
+# analysis.h5 consisting of all analysis attached to the system
+# Cleans /dev/shm and copies all files to current working directory
