@@ -5,7 +5,11 @@ import sys
 import glob
 import logging
 import tarfile
-import gromacs
+
+import subprocess
+import shlex
+
+#import gromacs
 
 class FileManager(object):
 	"""
@@ -62,7 +66,8 @@ class FileManager(object):
 
 class SH3FileSystem(object):
 	"""docstring for SH3Filesystem"""
-	def __init__(self, root):
+	def __init__(self, root, index=True, index_output='index.h5'):
+		self.__perform_indexing = index
 		self.root = root
 		self.fm = FileManager(root)
 	
@@ -71,7 +76,7 @@ class SH3FileSystem(object):
 			tar_abs = os.path.join(self.root, tar)
 			# print tar_abs
 			tar_manager = SH3Tarfile(tar_abs, '/dev/shm')
-			processed_files = tar_manager.index()
+			processed_files = tar_manager.index(index=self.__perform_indexing)
 
 			yield processed_files
 			
@@ -92,7 +97,7 @@ class SH3Tarfile():
 		self.__num_indexed = 0
 		self.__num_traj = 0
 	
-	def index(self):
+	def index(self, index=True):
 		if not tarfile.is_tarfile(self.__tarfile):
 			return None
 		
@@ -102,18 +107,22 @@ class SH3Tarfile():
 		self.__num_traj = len(trajectories)
 		logging.info("%d trajectories found", self.__num_traj)
 		
+		if index:
+			f=open(os.path.join(self.__scratch, 'index.txt'), 'a')
+
 		processed = []
 		for xtc in trajectories:
 			# print "xtc", xtc
 			#parse replica and sequence number
 			basename, replica_num, sequence = self.__parse_name(xtc)
-			# print "basename", basename
-
 			# calculate average temperature for the small xtc
 			temp = self.__temperature(self.__temp_path(basename))
 
 			# TODO: write a row to the h5 file
-			# print basename, replica_num, sequence, temp
+		
+			if index:
+				print >> f, basename, replica_num, sequence, temp
+
 			self.__num_indexed += 1
 			processed.append(xtc)
 		
@@ -159,7 +168,13 @@ class SH3Tarfile():
 
 	def __temperature(self, name):
 		# find and process the edr file
-		rc,stdout,stderr = gromacs.g_energy(input='Temperature', f=name + '.edr', o=name, stdout=False)
+		#rc,stdout,stderr = gromacs.g_energy(input='Temperature', f=name + '.edr', o=name, stdout=False)
+		# use subprocess to grab average temperature instead ... messy read only home dir on compute nodes
+		selection = {'group1':'Temperature'}
+		logging.info('getting temperature for %s', name)
+		command = "g_energy -f %s -o %s" % (name, self.__temp_path(name))
+
+		(stdout, stderr) = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE, stderr=open(os.devnull,'w'), stdin=subprocess.PIPE).communicate(selection['group1'])
 		temperature = float(stdout.split('\n')[-3].split()[1])
 		return temperature
 		

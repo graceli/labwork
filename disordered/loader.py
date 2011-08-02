@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 import os
 import tables
 import xvgfile
@@ -82,7 +83,7 @@ class Loader:
 		# location is the execution path of this class
 		self._location = location
 		self._xvgfile = xvgfile.XVGFile()
-		self._result = result.Result(location)
+		self._result = Result(location)
 		self._analysis_group = analysis_group
 		logging.basicConfig(filename='loader.log',level=logging.DEBUG)
 

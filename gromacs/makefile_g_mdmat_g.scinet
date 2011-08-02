@@ -11,9 +11,9 @@
 #
 
 # Variables set by the configuration script:
-LIBS         = -lmd -lgmx  -lnsl -lm -lmpi  -lSM -lICE -lX11   
-LDFLAGS      = -L/home/grace/bin/gromacs-4.0.5//lib -L/usr/lib/lam/lib -L/home/grace/bin/fftw-3.1.2/lib  
-CFLAGS	     = -O3 -fomit-frame-pointer -finline-functions -Wall -Wno-unused -funroll-all-loops -std=gnu99   -I/home/grace/bin/gromacs-4.0.5//include -I/home/grace/bin/gromacs-4.0.5//include/gromacs	
+LIBS         = -lmd -lgmx -lnsl -lfftw3f  -lm
+LDFLAGS      = -L/project/pomes/cneale/GPC/exe/intel/gromacs-4.0.5/exec/lib -L/project/pomes/cneale/GPC/exe/intel/fftw-3.1.2/exec/lib  
+CFLAGS	     = -O3 -w -funroll-all-loops -std=gnu99  -I/project/pomes/cneale/GPC/exe/intel/gromacs-4.0.5/exec/include -I/project/pomes/cneale/GPC/exe/intel/gromacs-4.0.5/exec/include/gromacs	
 CC           = cc
 LD           = $(CC)
 
@@ -22,5 +22,4 @@ LD           = $(CC)
 # time, but we cannot count on it...
 
 g_mdmat_g: g_mdmat_g.o
-	$(LD) $(LDFLAGS) -o $@ g_mdmat_g.o $(LIBS)
-
+	$(LD) $(LDFLAGS) -o /home/grace/bin/$@ g_mdmat_g.o $(LIBS)

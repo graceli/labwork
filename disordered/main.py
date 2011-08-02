@@ -1,5 +1,7 @@
 from optparse import OptionParser
-import sh3_universe
+import os
+import file_system 
+import analysis
 
 def main():
 	"""docstring for main"""
@@ -10,13 +12,14 @@ def main():
 	# (options, args) = parser.parse_args()
 	# if len(args) < 1:
 	# 	parser.error("Please specify a .h5 input file")
-	
-	root = '/project/pomes/grace/test/PRIOR_TO_RESTART_Wed_Oct_27_04:27:47_EDT_2010/output/data'
+
+	cwd = os.getcwd()
+	data_root = '/project/pomes/grace/test/PRIOR_TO_RESTART_Wed_Oct_27_04:27:47_EDT_2010/output/data'
 
 	# initialize analysis
-	analyzer = Analyzer(root)	
+	analyzer = analysis.Analyzer(data_root, cwd, 'sh3.tpr')
 	# queue up analysis tasks
-	analyzer.add(ContactMap())
+	analyzer.add(analysis.ContactMap())
 	analyzer.run()
 
 if __name__ == '__main__':
