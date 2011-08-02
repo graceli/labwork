@@ -3,6 +3,9 @@ import os
 import file_system 
 import analysis
 
+def working_path(filename):
+	return os.path.join(os.getcwd(), filename)
+
 def main():
 	"""docstring for main"""
 	# parser = OptionParser()
@@ -13,12 +16,13 @@ def main():
 	# if len(args) < 1:
 	# 	parser.error("Please specify a .h5 input file")
 
-	cwd = os.getcwd()
 	data_root = '/project/pomes/grace/test/PRIOR_TO_RESTART_Wed_Oct_27_04:27:47_EDT_2010/output/data'
 
 	# initialize analysis
-	analyzer = analysis.Analyzer(data_root, cwd, 'sh3.tpr')
+	analyzer = analysis.Analyzer(data_root, os.getcwd(), 'sh3.tpr')
+
 	# queue up analysis tasks
+	#analyzer.add(analysis.ContactMap(working_path('sh3.tpr')))
 	analyzer.add(analysis.ContactMap())
 	analyzer.run()
 

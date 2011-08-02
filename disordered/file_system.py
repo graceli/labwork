@@ -82,7 +82,7 @@ class SH3FileSystem(object):
 			
 			# Mark tarfile processed if all xtcs extracted were indexed
 			if tar_manager.done():
-				tar_manager.processed(tar_abs)
+				self.fm.processed(tar_abs)
 
 	def num_tarfiles(self):
 		return len(self.files)
