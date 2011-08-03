@@ -46,7 +46,7 @@ class Result:
 		#print "group to be added to is", options['groupName']
 	
 		assert self._h5file.root.__contains__(options['groupName']) == True, "group is not found add the group first"
-			
+
 		group = self._h5file.root._f_getChild(options['groupName'])
 
 		if group.__contains__(options['tableName']):
@@ -76,8 +76,6 @@ class Result:
 
 
 # This class appends new data into underlying tables
-# does not yet implement /dev/shm
-
 class Loader:
 	def __init__(self, location, analysis_group='Protein'):
 		# location is the execution path of this class
@@ -87,11 +85,16 @@ class Loader:
 		self._analysis_group = analysis_group
 		logging.basicConfig(filename='loader.log',level=logging.DEBUG)
 
-	def load(self, filename, analysisName, TableStructure, fixed):
+	# def load(self, filename, analysisName, TableStructure, fixed):
+	def load(self, analysis):
 		# filename is the name of the analysis file
 		# analysisName is the name of the analysis eg. 'rg'
 		# TableStructure is the rowtype object to be created and inserted into the table
 		# fixed number of fixed data columns in table (ie. info is not read in from 'filename'
+		analysisName = analysis.name()
+		filename = analysis.filename()
+		fixed = analysis.num_columns()
+		table_type = analysis.table_structure()
 		
 		if analysisName.find(".") != -1:
 			name,ext=analysisName.split(".")
@@ -103,6 +106,6 @@ class Loader:
 		
 		logging.info("Loader.load: parsing %s", xvgfilepath)
 		
-		data = self._xvgfile.parse(TableStructure, fixed, xvgfilepath)
-		table = self._result.addToTable(data, self._analysis_group, tableName=analysisName, tableStruct=TableStructure)
+		data = self._xvgfile.parse(table_type, fixed, xvgfilepath)
+		table = self._result.addToTable(data, self._analysis_group, tableName=analysisName, tableStruct=table_type)
 

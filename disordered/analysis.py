@@ -16,6 +16,7 @@ class Analyzer(object):
 		self.__analyses = []
 		self.__working_dir = working_dir
 		self.__fs = file_system.SH3FileSystem(data_root, index=True, index_output=index_output)
+		self.__loader = loader.Loader(working_dir)
 		self.__task_queue = JoinableQueue(8)
 		self.__tpr = tpr
 
@@ -67,16 +68,27 @@ class Analyzer(object):
 class Analysis(object):
 	output = 'analysis.h5'
 	
-	def __init__(self, location='/dev/shm', name='analysis'):
+	def __init__(self, location='/dev/shm', name='analysis', table_type=None, cols=0):
 		self.__location = location
 		self.__analysis_name = name
-		#self.__aloader = loader.Loader(location, location)
-
-	def name(self):
-		return self.__analysis_name
+		self.__table_type = table_type
+		self.__num_columns = cols
+		self.__files = []
 	
 	def run(self, xtc='', tpr=''):
 		pass
+	
+	def name(self):
+		return self.__analysis_name
+	
+	def files(self):
+		return self.__files
+	
+	def num_columns(self):
+		return self.__num_columns
+
+	def table_structure(self):
+		return self.__table_type
 	
 	def _make_output_path(self, analysisName):
 		output = os.path.join(self.__location, self.__analysis_name)
@@ -86,7 +98,7 @@ class Analysis(object):
 	
 class ContactMap(Analysis):
 	def __init__(self):
-		super(ContactMap, self).__init__(name='contact_map')
+		super(ContactMap, self).__init__(name='contact_map', table_type=rowtypes.ContactMapTable)
 		
 	def run(self, xtc='', tpr='sh3.tpr'):
 		super(ContactMap, self).run(xtc, tpr)
@@ -103,10 +115,12 @@ class ContactMap(Analysis):
 		print "PID", os.getpid(), "is extracting:", xtc, tpr, "to", name
 
 		selection = {'group1':'C-alpha'}
+
 		command = "/home/grace/bin/g_mdmat_g -f %s -s %s -t 0.6 -mean %s -txt-dist %s.dist.txt -txt-contact %s.contact.txt -txt-native %s.q.txt" % (xtc, tpr, name, name, name, name)
 		(stdout, stderr) = subprocess.Popen(shlex.split(command),  stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE).communicate("%s" %(selection['group1']))
 
-		#print stderr
+		#print stderr		
+		self.__files = [ name + '.txt', name + '.dist.txt', name + '.contact.txt', name + '.q.txt' ]
 
 		return path
 
