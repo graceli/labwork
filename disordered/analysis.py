@@ -55,25 +55,15 @@ class Analyzer(object):
 				break
 			else:
 				analysis.run(xtc, self.__tpr)
+				aloader.load(analysis) 
 				self.__task_queue.task_done()
 
-	# def load(self):
-	# 	self.__aloader.load(base + '.xvg', 'rg', rowtypes.RGTable, 3)
-	# 	self.__aloader.load(base + '.xvg', 'sas', rowtypes.SASTable, 3)
-	# 	self.__aloader.load(base + '.xvg', 'eed', rowtypes.EETable, 3)
-	# 	self.__aloader.load(base + '.xvg', 'rama', rowtypes.RamaTable, 3)
-	# 	self.__aloader.load(base + '.q.txt', 'mdmat.q', rowtypes.QTable, 3)
-	# 	os.system("rm \#*")
-
 class Analysis(object):
-	output = 'analysis.h5'
-	
 	def __init__(self, location='/dev/shm', name='analysis', table_type=None, cols=0):
 		self.__location = location
 		self.__analysis_name = name
 		self.__table_type = table_type
 		self.__num_columns = cols
-		self.__files = []
 	
 	def run(self, xtc='', tpr=''):
 		pass
@@ -82,8 +72,11 @@ class Analysis(object):
 		return self.__analysis_name
 	
 	def files(self):
-		return self.__files
+		pass
 	
+	def types(self):
+		pass
+
 	def num_columns(self):
 		return self.__num_columns
 
@@ -98,31 +91,28 @@ class Analysis(object):
 	
 class ContactMap(Analysis):
 	def __init__(self):
-		super(ContactMap, self).__init__(name='contact_map', table_type=rowtypes.ContactMapTable)
-		
+		super(ContactMap, self).__init__(name='contact_map', table_type=rowtypes.ContactMapTable, cols=59)
+
+	def files(self, xtc):
+		return [ xtc + '.dist.txt', xtc + '.contact.txt', xtc + '.q.txt' ]
+
+	def types(self):
+		return [ rowtypes.ContactMapTable, rowtypes.ContactMapTable, rowtypes.QTable ]
+
 	def run(self, xtc='', tpr='sh3.tpr'):
 		super(ContactMap, self).run(xtc, tpr)
-		# extract
 		self.__extract(xtc, tpr)
 		base,ext = os.path.splitext(xtc)
-		#load
-		#self.__aloader.load(base + '.contact.txt', 'mdmat.contact', rowtypes.ContactMapTable, 3)
 		
-	def __extract(self, xtc, tpr):
-		path = self._make_output_path('mdmat')
-		name = os.path.join(path, xtc)
+	def __extract(self, xtc, tpr):		
+		name = os.path.join(self.__location, xtc)
 	
 		print "PID", os.getpid(), "is extracting:", xtc, tpr, "to", name
 
 		selection = {'group1':'C-alpha'}
-
 		command = "/home/grace/bin/g_mdmat_g -f %s -s %s -t 0.6 -mean %s -txt-dist %s.dist.txt -txt-contact %s.contact.txt -txt-native %s.q.txt" % (xtc, tpr, name, name, name, name)
 		(stdout, stderr) = subprocess.Popen(shlex.split(command),  stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE).communicate("%s" %(selection['group1']))
 
-		#print stderr		
-		self.__files = [ name + '.txt', name + '.dist.txt', name + '.contact.txt', name + '.q.txt' ]
-
-		return path
 
 
 

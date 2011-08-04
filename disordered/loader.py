@@ -91,21 +91,16 @@ class Loader:
 		# analysisName is the name of the analysis eg. 'rg'
 		# TableStructure is the rowtype object to be created and inserted into the table
 		# fixed number of fixed data columns in table (ie. info is not read in from 'filename'
-		analysisName = analysis.name()
-		filename = analysis.filename()
-		fixed = analysis.num_columns()
-		table_type = analysis.table_structure()
+		for filename, struct in zip(analysis.files(), analysis.types()):
+			xvgfilepath = os.path.join(self._location, filename)
+			logging.info("Loader.load: parsing and loading %s", xvgfilepath)
 		
-		if analysisName.find(".") != -1:
-			name,ext=analysisName.split(".")
-		else:
-			name = analysisName
+			data = self._xvgfile.parse(struct, analysis.num_columns(), xvgfilepath)
+			table = self._result.addToTable(data, self._analysis_group, tableName=filename, tableStruct=struct)
 
-		analysisRoot = os.path.join(self._location, name)
-		xvgfilepath = os.path.join(analysisRoot, filename)
-		
-		logging.info("Loader.load: parsing %s", xvgfilepath)
-		
-		data = self._xvgfile.parse(table_type, fixed, xvgfilepath)
-		table = self._result.addToTable(data, self._analysis_group, tableName=analysisName, tableStruct=table_type)
+
+
+
+
+
 
