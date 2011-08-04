@@ -22,7 +22,6 @@ class Analyzer(object):
 
 	def run(self):
 		# start a queue of size max 8, block if no empty slots
-		
 		# populate the task queue with (analysis, xtc) items 
 		for batch in self.__fs.xtc_files():
 			for xtc in batch:
@@ -55,7 +54,7 @@ class Analyzer(object):
 				break
 			else:
 				analysis.run(xtc, self.__tpr)
-				aloader.load(analysis) 
+				self.__loader.load(analysis) 
 				self.__task_queue.task_done()
 
 class Analysis(object):
@@ -114,7 +113,11 @@ class ContactMap(Analysis):
 		(stdout, stderr) = subprocess.Popen(shlex.split(command),  stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE).communicate("%s" %(selection['group1']))
 
 
+def main():
+	print "testing ..."
+	contact_test = ContactMap()
+	print "files", contact_test.files()
+	print "types", contact_test.types()
 
-
-
-
+if __name__ == '__main__':
+	main()

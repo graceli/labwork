@@ -19,16 +19,15 @@ def main():
 	data_root = '/project/pomes/grace/test/PRIOR_TO_RESTART_Wed_Oct_27_04:27:47_EDT_2010/output/data'
 
 	# initialize analysis
-	analyzer = analysis.Analyzer(data_root, os.getcwd(), 'sh3.tpr')
+	analyzer = analysis.Analyzer(data_root, os.getcwd(), 'sh3_native.tpr')
 
 	# queue up analysis tasks
-	#analyzer.add(analysis.ContactMap(working_path('sh3.tpr')))
 	analyzer.add(analysis.ContactMap())
 	analyzer.run()
 
 if __name__ == '__main__':
 	main()
-	
+
 
 # Setup:
 # ======
