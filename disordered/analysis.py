@@ -9,6 +9,7 @@ import sys
 #import gromacs
 import loader
 import file_system
+import rowtypes
 
 class Analyzer(object):
 	def __init__(self, data_root, working_dir, tpr, index=True, index_output='index.h5'):
@@ -75,7 +76,10 @@ class Analysis(object):
 	
 	def types(self):
 		pass
-
+	
+	def location(self):
+		return self.__location
+	
 	def num_columns(self):
 		return self.__num_columns
 
@@ -98,13 +102,16 @@ class ContactMap(Analysis):
 	def types(self):
 		return [ rowtypes.ContactMapTable, rowtypes.ContactMapTable, rowtypes.QTable ]
 
+	def type_names(self):
+		return ['contact_map_table', 'contact_map_table', 'q_table']
+
 	def run(self, xtc='', tpr='sh3.tpr'):
 		super(ContactMap, self).run(xtc, tpr)
 		self.__extract(xtc, tpr)
 		base,ext = os.path.splitext(xtc)
 		
 	def __extract(self, xtc, tpr):		
-		name = os.path.join(self.__location, xtc)
+		name = os.path.join(self.location(), xtc)
 	
 		print "PID", os.getpid(), "is extracting:", xtc, tpr, "to", name
 
@@ -116,8 +123,9 @@ class ContactMap(Analysis):
 def main():
 	print "testing ..."
 	contact_test = ContactMap()
-	print "files", contact_test.files()
-	print "types", contact_test.types()
+	print "files", contact_test.files('test.xtc')
+	print "types", contact_test.type_names()
+	contact_test.run(xtc='test.xtc', tpr='sh3_native.tpr')
 
 if __name__ == '__main__':
 	main()
