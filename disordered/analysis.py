@@ -54,7 +54,7 @@ class Analyzer(object):
 				break
 			else:
 				analysis.run(xtc, self.__tpr)
-				self.__loader.load(analysis) 
+				self.__loader.load(analysis)
 				self.__task_queue.task_done()
 
 class Analysis(object):

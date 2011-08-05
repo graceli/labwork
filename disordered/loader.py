@@ -91,7 +91,12 @@ class Loader:
 		# analysisName is the name of the analysis eg. 'rg'
 		# TableStructure is the rowtype object to be created and inserted into the table
 		# fixed number of fixed data columns in table (ie. info is not read in from 'filename'
+		print "loading ..."
+		print analysis.files()
+		
 		for filename, struct in zip(analysis.files(), analysis.types()):
+			print filename
+
 			xvgfilepath = os.path.join(self._location, filename)
 			logging.info("Loader.load: parsing and loading %s", xvgfilepath)
 		
