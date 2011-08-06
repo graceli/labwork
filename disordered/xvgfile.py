@@ -14,6 +14,7 @@ class XVGFile:
 
 	def parse(self, rowtype, fixed, filename):
 		#parse out information from file name for the 'fixed' columns
+		# lgw99.50936_small.xtc
 		stripped = os.path.basename(filename)
 		parts = stripped[2:].split(".")
 		self.replicanum = parts[0]

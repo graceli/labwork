@@ -24,6 +24,10 @@ class Analyzer(object):
 	def run(self):
 		# start a queue of size max 8, block if no empty slots
 		# populate the task queue with (analysis, xtc) items 
+		for i in range(0, 8):
+			p = Process(target=self.__worker)
+			p.start()
+
 		for batch in self.__fs.xtc_files():
 			for xtc in batch:
 				for analysis in self.__analyses:
@@ -33,9 +37,6 @@ class Analyzer(object):
 			print "waiting for these tasks to finish"
 			self.__task_queue.join()
 	
-		for i in range(0, 8):
-			p = Process(target=self.__worker)
-			p.start()
 
 	def add(self, analysis):
 		self.__analyses.append(analysis)
@@ -44,6 +45,7 @@ class Analyzer(object):
 		self.__analyses.append(analysis)
 
 	def __worker(self):
+		# TODO: use pool because it looks like the processes sometimes don't die if it fails
 		# get one item from queue
 		# block if queue is empty
 		print "worker process started"
@@ -64,14 +66,15 @@ class Analysis(object):
 		self.__analysis_name = name
 		self.__table_type = table_type
 		self.__num_columns = cols
+		self.file = ''
 	
 	def run(self, xtc='', tpr=''):
-		pass
+		self.file = xtc
 	
 	def name(self):
 		return self.__analysis_name
 	
-	def files(self):
+	def files(self, xtc):
 		pass
 	
 	def types(self):
@@ -96,8 +99,8 @@ class ContactMap(Analysis):
 	def __init__(self):
 		super(ContactMap, self).__init__(name='contact_map', table_type=rowtypes.ContactMapTable, cols=59)
 
-	def files(self, xtc):
-		return [ xtc + '.dist.txt', xtc + '.contact.txt', xtc + '.q.txt' ]
+	def files(self):
+		return [ self.file + '.dist.txt', self.file + '.contact.txt', self.file + '.q.txt' ]
 
 	def types(self):
 		return [ rowtypes.ContactMapTable, rowtypes.ContactMapTable, rowtypes.QTable ]
@@ -108,7 +111,7 @@ class ContactMap(Analysis):
 	def run(self, xtc='', tpr='sh3.tpr'):
 		super(ContactMap, self).run(xtc, tpr)
 		self.__extract(xtc, tpr)
-		base,ext = os.path.splitext(xtc)
+		# base,ext = os.path.splitext(xtc)
 		
 	def __extract(self, xtc, tpr):		
 		name = os.path.join(self.location(), xtc)

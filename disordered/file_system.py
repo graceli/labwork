@@ -72,17 +72,23 @@ class SH3FileSystem(object):
 		self.fm = FileManager(root)
 	
 	def xtc_files(self):
+		processed_files = []
 		for tar in self.fm.unprocessed_files():
 			tar_abs = os.path.join(self.root, tar)
-			# print tar_abs
-			tar_manager = SH3Tarfile(tar_abs, '/dev/shm')
+
+			print tar_abs
+			print self.root
+
+			tar_manager = SH3Tarfile(tar_abs, self.root)
 			processed_files = tar_manager.index(index=self.__perform_indexing)
 
 			yield processed_files
 			
 			# Mark tarfile processed if all xtcs extracted were indexed
+			# TODO: should mark individual xtc files?
 			if tar_manager.done():
 				self.fm.processed(tar_abs)
+		yield processed_files
 
 	def num_tarfiles(self):
 		return len(self.files)
@@ -90,36 +96,39 @@ class SH3FileSystem(object):
 class SH3Tarfile():
 	def __init__(self, filename, source, tempdest='/dev/shm', dest='results.h5'):
 		logging.basicConfig(filename='sh3tarfile.log',level=logging.DEBUG)
+		logging.info("initializing SH3Tarfile with filename=%s in source=%s", filename, source) 
 		self.__tarfile = filename
 		self.__location = source
 		self.__output = dest
-		self.__scratch = tempdest
+		self.__tempdest = tempdest
 		self.__num_indexed = 0
 		self.__num_traj = 0
 	
 	def index(self, index=True):
+		logging.info("SH3Tarfile: indexing ...")
+
 		if not tarfile.is_tarfile(self.__tarfile):
 			return None
 		
 		# open tarfile with no compression
 		self.__unpack_tarfile()
-		trajectories = glob.glob("/dev/shm/*.xtc")
+		trajectories = glob.glob(self.__tempdest + "/" + "*.xtc")
 		self.__num_traj = len(trajectories)
-		logging.info("%d trajectories found", self.__num_traj)
-		
+		logging.info("%d trajectories found in %s", self.__num_traj, self.__tempdest)
+	
+		assert self.__num_traj > 0, "SH3Tarfile: No trajectories were found"
+
 		if index:
-			f=open(os.path.join(self.__scratch, 'index.txt'), 'a')
+			f=open(os.path.join(self.__tempdest, 'index.txt'), 'a')
 
 		processed = []
 		for xtc in trajectories:
-			# print "xtc", xtc
 			#parse replica and sequence number
 			basename, replica_num, sequence = self.__parse_name(xtc)
 			# calculate average temperature for the small xtc
 			temp = self.__temperature(self.__temp_path(basename))
 
 			# TODO: write a row to the h5 file
-		
 			if index:
 				print >> f, basename, replica_num, sequence, temp
 
@@ -140,7 +149,7 @@ class SH3Tarfile():
 		return self.__num_edr
 
 	def __temp_path(self, filename):
-		return os.path.join(self.__scratch, filename)
+		return os.path.join(self.__tempdest, filename)
 	
 	def __source_path(self, filename):
 		return os.path.join(self.__location, filename)
@@ -150,7 +159,7 @@ class SH3Tarfile():
 
 	def __unpack_tarfile(self):
 		tf_handle = tarfile.open(os.path.join(self.__location, self.__tarfile), 'r:')
-		tf_handle.extractall("/dev/shm")
+		tf_handle.extractall(self.__tempdest)
 
 	
 	def __get_base_xtc_name(self, name):
