@@ -13,15 +13,10 @@ class XVGFile:
 		del self.data
 
 	def parse(self, rowtype, fixed, filename):
-		#parse out information from file name for the 'fixed' columns
-		# lgw99.50936_small.xtc
-		stripped = os.path.basename(filename)
-		parts = stripped[2:].split(".")
-		self.replicanum = parts[0]
-		self.seqnum = parts[1]
-		self.temp = parts[2]
-		
-		#read in the contents from the flat xvg file
+		# parse out information from file name for the 'fixed' columns
+		# refactored meta data extraction from filename into indexing system
+
+		# read in the contents from the flat xvg file
 		data = []
 		colsDescription = rowtypes.Description(rowtype)
 		colNamesInOrder = colsDescription._v_names[fixed:]	
@@ -38,13 +33,7 @@ class XVGFile:
 					key = colNamesInOrder[i]
 					rowdict[key] = line[i]
   				
-				rowdict['temp'] = int(self.temp)
-				rowdict['replicanum'] = int(self.replicanum)
-				rowdict['seqnum'] = int(self.seqnum)
-				
-				newrow = [ rowdict['temp'], rowdict['replicanum'], rowdict['seqnum'] ]
-				readinrow = self._converted(colsDescription._v_types, colNamesInOrder, rowdict)
-				newrow.extend(readinrow)	
+				newrow = self._converted(colsDescription._v_types, colNamesInOrder, rowdict)
 
 				numappended+=1
 				data.append(tuple(newrow))
