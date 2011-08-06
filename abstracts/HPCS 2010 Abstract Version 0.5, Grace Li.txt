@@ -1,0 +1,44 @@
+﻿Molecular Mechanism of Amyloid Inhibition by Inositol 
+
+
+Grace Li1,2, Régis Pomès1,2. 
+1Hospital for sick children, Toronto, ON, Canada, 2University of toronto, Toronto, ON, Canada. 
+
+
+
+
+
+
+One out of eight people aged 65 or older has Alzheimer’s Disease (AD) [1].  With the increasing longevity of our population, AD is approaching epidemic proportions with no cure or preventative therapy available.  A pathological hallmark of Alzheimer’s is the presence of extracellular deposition of amyloid in the brain - fibrillar deposits (plaques) formed from the self-aggregation of the β-amyloid (Aβ) peptide.  Amyloid aggregates formed from other proteins are also found in other neurodegenerative diseases such as Parkinson’s, Huntington’s, and prion-related disease. 
+
+
+
+Currently, there is no available treatment to prevent or stop the progression of the AD.  One therapeutic approach is the development of small-molecule inhibitors of Aβ aggregation.  Recently, one such molecule, scyllo-inositol, has emerged as a promising compound for treatment of AD.  It is one of eight stereoisomers of inositol found in nature and exhibits stereochemistry-dependent activity [2]. Scyllo-inositol is effective at reversing the established disease state as well as preventing the onset of AD-like symptoms in a transgenic mouse model of AD, whereas chiro-inositol is inactive [3].  Currently, scyllo-inositol is in phase two of clinical trials, which evaluates its dose-related safety and efficacy in human participants with mild to moderate AD. 
+
+
+Although scyllo-inositol was successful in treating AD in mice, obtaining a drug with a similar efficacy in humans will likely require subsequent rational design and modification.  Currently, the mechanism of action of scyllo-inositol at the molecular level is not understood. The primary objective of my research is to use molecular dynamics (MD) simulations to elucidate the molecular basis for the activity of inositol.  We want to obtain a quantitative understanding of not only how inositol binds, but also the effect of inositol binding on the formation of amyloid aggregates implicated in AD.   In collaboration with experimental research groups at the University of Toronto, this computational study will provide insight into developing novel higher-efficacy derivatives with the ability to effectively prevent the onset and progression of AD. 
+
+
+
+In order to elucidate the structure and activity relationship of inositol, we need to both identify all the binding partners, binding sites and binding modes of scyllo-inositol (active isomer) and chiro-inositol (inactive isomer).   Aggregated Aβ species implicated in the disease  ranges from 1 (small) to 100 nm (large) and have various morphologies from disordered to very ordered crystalline structures.  Furthermore, a single peptide of Aβ, an intrinsically disordered protein, has many different disease relevant conformational states.  In AD, it is not completely clear what kind of amyloid β peptide (monomers, oligomeric aggregates, or fibrillar aggregates) is responsible for the onset of disease, and thus we must take into consideration of every possible type of binding species with inositol.  A molecular dynamics simulation study of this scale necessitates the use of high performance computing systems. 
+
+
+If we are able to simulate an ideal system closest to an in vitro experiment, with full atomistic description of the aqueous solution, each system would have sizes on the order of millions and billions of number of interacting atoms.   Unfortunately many such systems at exact experimental conditions to long-time scales is not yet computationally feasible.  Therefore, we study the activity of inositol with the peptide KLVFFAE or Aβ(16-22),  one of the shortest fibril forming subsequence of the full-length protein and is thought to be the initiatior region of aggregation. 
+
+
+Using GROMACS, one of the fastest and efficient molecular dynamics simulation package available, I have carried out a systematic comparative MD simulation study of KLVFFAE and different types of its self-aggregated states in combination with scyllo- and chiro-inositol to determine the stereochemical basis of the activity of inositol.   Simulation studies of scyllo- and chiro-inositol were performed with  (1) single peptides; (2) small aggregates; (3) large aggregates;  In addition, control simulations were also done in the absence of inositol.  
+
+
+Our systems contain an all-atom description of the protein and inositol in explicit aqueous solution.  We use a combination of conventional molecular dynamics simulations and the approach of running multiple independent replicas of our systems to obtain sampling statistics at timescales of microseconds .  Using such an approach, we are not only able to obtain equilibrium binding modes, and binding affinities of inositol, but also the kinetics and mechanism of binding. Importantly, with the recent availability of SciNet, the 16th largest computing cluster in North America at its inception, we have increased the sizes of our simulations to experimentally comparable drug:protein molar ratios (20:1) and concentrations, from which we have obtained cooperative binding modes and bulk binding properties for both stereoisomers. 
+
+Over the past two years, using over 8 million cpu hours from the combined computational resources provided by the Center for Computational Biology at SickKids, SHARCNET, and more recently SciNet, we have identified putative binding partners of inositol:  inositol acts on ordered aggregates of Aβ and does not bind the monomer of KLVFFAE, and therefore, not likely to act as a drug on the monomer of Aβ. Furthermore, we have predicted binding modes, binding affinities and generated multiple experimentally-testible hypotheses that is currently being validated by the lab of Dr. Simon Sharpe at the University of Toronto using a variety of biophysical methods including solid-state NMR. 
+
+
+
+References 
+
+
+
+1. 2010 Alzheimer’s Disease Facts and Figures: http://www.alz.org/documents_custom/report_alzfactsfigures2010.pdf 
+2. McLaurin, J., et al., Inositol stereoisomers stabilize an oligomeric aggregate of Alzheimer amyloid β peptide and inhibit aβ -induced toxicity.  J Biol Chem, 2000. 275 (24) pp. 18495-502 
+3. McLaurin, J., et al., Cyclohexanehexol inhibitors of Aβ aggregation prevent and reverse Alzheimer's phenotype in a mouse model. Nat Med, 2006. 12(7):pp. 801-8

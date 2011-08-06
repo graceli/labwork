@@ -1,0 +1,106 @@
+﻿HPCS 2010  Abstract
+
+Submissions for oral presentations are due April 19; submissions should be of the form of extended abstracts (~500-1000 words) with a problem description, methods, conclusions (possibly preliminary), key references, and optionally figures
+
+- Explain the biology simply
+- Get across the point why we need this much CPU, why we need HPF
+- Mention SciNet
+
+=====
+
+
+Points to get across in this abstract: 
+
+
+AD is a very important disease that we need to find a cure for, now. 
+High performance computing can help cure Alzheimer’s disease. 
+--------- 
+
+
+
+
+Title - keywords (make it sound sexy) 
+
+
+Computational nanomedicine 
+Tackling Alzheimer's Disease with High Performance Computing 
+Molecular Mechanism of Inhibition of amyloid formation by Inositol 
+
+
+Problem 
+
+
+One out of eight people age 65 or older has Alzheimer’s Disease (AD).  With the increasing longevity of our population, AD is approaching epidemic proportions with no cure or preventative therapy available.  A pathological hallmark of Alzheimer’s is the presence of extracellular deposition of amyloid in the brain - fibrillar deposits (plaques) formed from the self-aggregation of the beta-amyloid (Abeta) peptide.  Amyloid aggregates formed from other proteins are also found in other neurodegenerative diseases such as Parkinson’s, Huntington’s, and prion-related disease. 
+
+
+
+Currently, there is no available treatments to prevent or stop the progression of the AD.  One therapeutic approach is the development of small-molecule inhibitors of Abeta aggregation.  Recently, one such molecule, scyllo-inositol, has emerged as a promising  compound for treatment of AD.  It is one of eight stereoisomers of inositol found in nature and exhibits stereochemistry-dependent activity. Scyllo-inositol was found to be effective at reversing the established disease state as well as preventing the onset of AD-like symptoms in a transgenic mouse model of AD, whereas chiro-inositol is inactive [1].  Currently, scyllo-inositol is in phase two of clinical trials, which evaluates its dose-related safety and efficacy in human participants with mild to moderate AD. 
+
+
+Although scyllo-inositol was successful in treating AD in mice, obtaining a drug with a similar efficacy in humans will likely require subsequent rational design and modification.  Currently, the mechanism of action of scyllo-inositol at the molecular level is not understood. 
+
+
+
+
+
+The primary objective of my research is to use molecular dynamics (MD) simulations to elucidate the molecular basis for the activity of inositol.  We want to obtain a quantitative understanding of the effect of inositol binding on the formation of amyloid aggregates implicated in AD.   In collaboration with experimental research groups at the University of Toronto, this computational study will provide insight into developing novel higher-efficacy derivatives with the ability to effectively prevent the onset and progression of AD. 
+
+
+
+
+Rationale and Methods 
+
+
+
+In AD, it is not completely clear what kind of amyloid β peptide (monomers, oligomeric aggregates, or fibrillar aggregates) is responsible for the onset of disease.  In addition to amyloid fibrils, numerous neurotoxic morphologically distinct aggregates of Abeta ranging in size from 1 to 100 nm thought to underly neurotoxicity in AD have been detected. 
+
+
+- Disordered aggregates - many conformational states 
+- Not only find a binding target, but as well as a binding pocket 
+- Tackling such a problem computationally is non-trivial and require high performance computers to achieve the time-scales  that we need to figure out all the binding modes and binding partners. 
+
+
+
+
+Tackling such a problem computationally is non-trivial and require high performance computersTherefore, a challenge in this study  presence of multiple possible drug binding targets. 
+
+
+
+
+
+
+
+
+I will carry out a systematic comparative study using KLVFFAE and different types of self-aggregated states in combination with active and inactive forms of inositol (scyllo- and chiro-inositol) to determine the stereochemical basis of the activity of inositol.   I will perform simulation studies of scyllo- and chiro-inositol with: (1) single peptides; (2) small aggregates; (3) large aggregates; (4) KLVFFAE peptides at high concentrations.  Simulation (4) will study the effect of inositol on the aggregation and amyloid formation of KLVFFAE.  In addition, simulations will be repeated in the absence of inositol as controls.  Furthermore, for a particular type of peptide or aggregate, multiple independent simulations will be performed in order to improve conformational sampling. From my simulations, I will determine the binding equilibria of inositol and the effect of inositol on the aggregation and conformational equilibria of each of the proposed peptides and their aggregates. 
+
+
+
+*   
+* Choose model peptide KLVFFAE, the aggregation initiating region of Abeta; short amyloid forming segment 
+* Simulating inositol interacting with aggregated states in bulk 
+
+* Various aggregates, means different sizes of systems ranging from small, very disordered to large ordered structures, at different molar ratios, and concentrations of the drug 
+* Computationally challenging as we need to obtain sampling of both stereoisomers with many monomeric and aggregate states of KLVFFAE 
+
+
+* We are doing all-atom MD simulations with explicit solvent 
+* Need to perform systematic molecular dynamics simulations on multiple-cpus 
+* The recent establishment of Scinet allowed us to get closer to experimental conditions in our simulations leading to experimentally  testible hypotheses. 
+
+Timescales at which a quantitative understanding of the molecular mechanism of inositol can be obtained from these biologically complex systems will be made feasible with the dedicated resources provided by .....
+
+
+Conclusions 
+
+- Inositol does not act on monomer 
+- Inositol acts on aggregates 
+- Inositol favors beta- structure 
+- We have predicted binding constants in the experimental ball park 
+- We are currently simulating seeding of amyloid formation and the effect of inositol. 
+- We have generated experimentally testible hypothesis (in collaboration with Dr. Simon Sharpe) 
+
+
+References: 
+1. 2010 Alzheimer’s Disease Facts and Figures: http://www.alz.org/documents_custom/report_alzfactsfigures2010.pdf 
+2. JoAnne’s nature paper 
+3. JoAnne’s in vitro paper

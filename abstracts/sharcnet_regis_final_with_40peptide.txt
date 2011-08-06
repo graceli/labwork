@@ -1,0 +1,51 @@
+﻿Grace Li SHARCNET Dedicated Resource Proposal Round IX (Final)              September 23, 2008 
+Deadline: September 30, 2008 
+Max. Number of cpus: 124 
+Max Number of concurrent jobs to run: 103 
+System on which allocation is requested: Whale 
+CPU time requested: 385,000 
+Storages required: 1 TB 
+Time storage required: 6 months 
+ 
+Title: Inhibition of amyloid peptide aggregation 
+ 
+Description of Research Project (Describe the research project, justifying its significance and potential impact.  The online form will permit a maximum of 500 words) 
+ 
+              Alzheimer's Disease (AD) is a progressive neurodegenerative disease which is the most common form of dementia in persons of age 65 or older.  With the increasing longevity of our population, AD is approaching epidemic proportions with no cure or preventative therapy available.  A key pathological feature of AD is the presence of extracellular neuronal fibrillar deposits formed from the self-aggregation of beta-amyloid (Abeta), a 38 to 42 residue peptide that is  produced from the cleavage of the amyloid precursor protein (APP).   
+ 
+              Currently, there is no available treatments to prevent or stop the progression of the AD.  One therapeutic approach is the development of small-molecule inhibitors of Abeta aggregation.  Recently, one such molecule, scyllo-inositol, has emerged as a promising  compound for treatment of AD.  It is one of eight stereoisomers of inositol found in nature and exhibits stereochemistry-dependent activity. Scyllo-inositol was found to be effective at reversing the established disease state as well as preventing the onset of AD-like symptoms in a transgenic mouse model of AD, whereas chiro-inositol is inactive [1].  Currently, scyllo-inositol is in phase two of clinical trials, which evaluates its dose-related safety and efficacy for the treatment of AD. 
+ 
+              Although scyllo-inositol raises hope for the development of a cure for AD, it is likely that effective therapies for patients with AD will require rational modification of this compound. Understanding the molecular basis for the action of inositol and in particular, its effect on Abeta aggregation will aid in the effective development of inositol derivatives with higher efficacy.  At present, however, experimental approaches lack the ability to determine the precise mechanistic modes of action of inositol as the molecular structures of various intermediates in the Abeta aggregation pathway are not known. 
+ 
+              The primary objective of my research is to use molecular dynamics (MD) simulations to elucidate the molecular basis for the activity of inositol, a novel and promising therapeutic candidate for AD,  by determining its effect on the structure, thermodynamics, and kinetics of Abeta aggregation.  Our central hypothesis is that inositol displaces the aggregation equilibrium by binding to one or more of the monomeric, aggregated, or fibrillar forms of Abeta and other amyloidogenic peptides and proteins. Our goal is to obtain a quantitative understanding of the effect of inositol on the formation of amyloid aggregates implicated in AD and other amyloid diseases. I will carry out MD simulation studies using amyloidogenic peptide models of Abeta: KLVFFAE (from Abeta), SNNFGAIL(implicated in type II diabetes), and poly-Q (Huntington's disease).  In collaboration with experimental research groups at the University of Toronto, this computational study will provide insight into developing novel higher-efficacy derivatives with the ability to effectively prevent the onset and progression of AD.  
+ 
+[1] McLaurin, J., et al., Cyclohexanehexol inhibitors of Abeta aggregation prevent and reverse Alzheimer's phenotype in a mouse model. Nat Med, 2006. 12(7):p.801-8. 
+ 
+Research Methodology (Describe the computational techniques and methodology to be exploited to do the research. Estimate the total computational requirements (cpu hours & storage), justifying what is needed and how long storage is required. Indicate if the computational needs are for serial or parallel computation. Applicants should clarify if code will be parallelized, and if so, what will be the method for doing so. When known, describe how other SHARCNET researchers might benefit from the development and use of the techniques that you will implement. The online form will permit a maximum of 500 words.) 
+ 
+              In addition to amyloid fibrils, morphologically distinct aggregates of Abeta thought to underly neurotoxicity in AD have been detected, but their structure is presently unknown.  Thus, a meaningful study of the effect of inositol on Abeta aggregation requires different self-aggregated peptide states, from monomeric to fibrillar aggregates to be examined.  I have performed extensive all-atom molecular dynamics simulations of simplified models of Abeta with inositol using single and 4-cpu nodes on SHARCNET. 
+ 
+              We found that inositol binds the backbone of amyloid-like peptides and their aggregates. In addition, we have derived inositol backbone binding modes and binding constants from studies of the simplified models.  However, the action of inositol as a drug is not entirely due to interactions with the backbone.  Thus, studies with peptides of higher sequence complexity will be required.   Timescales at which a quantitative understanding of the molecular mechanism of inositol can be obtained from these biologically complex systems will be made feasible with the dedicated resources provided by SHARCNET. 
+ 
+              I will carry out a systematic comparative study using KLVFFAE, SNNFGAIL, and poly-Q peptides and different types of self-aggregated states in combination with active and inactive forms of inositol (scyllo- and chiro-inositol) to determine the stereochemical basis of the activity of inositol.   I will perform simulation studies of scyllo- and chiro-inositol with: (1) single peptides; (2) small aggregates; (3) large aggregates; (4) KLVFFAE peptides at high concentrations.  Simulation (4) will study the effect of inositol on the aggregation and amyloid formation of KLVFFAE.  In addition, simulations will be repeated in the absence of inositol as controls.  Furthermore, for a particular type of peptide or aggregate, multiple independent simulations will be performed in order to improve conformational sampling. From my simulations, I will determine the binding equilibria of inositol and the effect of inositol on the aggregation and conformational equilibria of each of the proposed peptides and their aggregates. 
+ 
+              The size of simulation systems varies with the aggregation state of the peptides, from O(10^3) to O(10^4) number of atoms.  Systems with 2000 to 3000 atoms will best suit serial computation while larger systems with O(10^4) atoms will require parallel computation.   A total of 385,000 cpu-hours with 325,000 cpu-hours on Whale and 60,000 cpu-hours on Narwhal is requested with 1.0 TB of storages for 6 months. 
+ 
+              The parallel version of GROMACS, the most efficient MD simulation package available, will be used to perform all simulations requiring parallel computation. Maximal multiprocessor scaling will be maintained throughout the entire simulation using tools developed within our lab. Furthermore, Gromacs  can output the simulation data in a compressed binary format and offers tools to effectively recover erroneous jobs with minimal data loss.  To analyze the data output, I will develop C programs utilizing the Gromacs C libraries to efficiently extract the relevant data.  All outputs from my analysis tools will be stored as compressed plain text to optimize disk space usage. 
+ 
+Detailed Allocation Justification (250 words): 
+              
+              For study (1), I will simulate a set of 1,200 peptide conformations to obtain the effect of inositol stereoisomers on the conformational equilibrium of the 3 proposed peptides.  There will be a total of 7,200 systems.  Each system requires 24 cpu hours. For (2), for each peptide, for each isomer and control,  2 types of small aggregates, and 5 independent simulations per type will be simulated yielding a total of 3*2*5*3 = 90 systems. For (3),  2 types of large aggregate, 3 independent simulation per type yielding a total of 3*2*3*3 = 54 systems.  A total of 7344 jobs will be run on whale serially for a total 325,000 cpu hours. A maximum of 100 cpus/day is requested. 
+ 
+              In study (4), systems with 40 KLVFFAE peptides with chiro-, scyllo-inositol and without inositol (a total of 3 systems) will be run on Narwhal.  These systems have approximately 80,000 atoms and I will run each system on on 8 cpus (scaling of 83%) on Narwhal for  200ns per system. 24 cpus/day is requested to run all three systems at once. Each will complete 200 ns in 105 days, for a total of 60,000 cpu hours on Narwhal. 
+ 
+              The total cpu hours requested (Whale and Narwhal) is 385,000, with 1.0 TB (0.75 TB on Whale and 0.25 TB on Narwhal) with 124 cpu / day allocation. 
+ 
+ 
+ 
+Suggested Reviewers: 
+ 
+Peter Tieleman              tieleman@ucalgary.ca                            (403) 220-2966 
+Pierre-Nicolas Roy              pnroy@uwaterloo.ca                                          ??? 
+Patrick Lague                            Patrick.Lague@rsvs.ulaval.ca              (418) 656-2311 
+              3
