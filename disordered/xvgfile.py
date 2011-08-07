@@ -27,7 +27,7 @@ class XVGFile:
 	def __del__(self):
 		del self.data
 
-	def parse(self, rowtype, fixed, filename):
+	def parse(self, rowtype, filename, xtc, fixed=3):
 		# parse out information from file name for the 'fixed' columns
 		# refactored meta data extraction from filename into indexing system
 
@@ -42,7 +42,8 @@ class XVGFile:
 		print colNamesInOrder
 		print fixed
 		print filename
-		
+		print "file params", xtc.params()	
+
 		for line in r:
 			if self._find('#', line) or self._find('@', line) or not line:
 				continue
@@ -52,11 +53,12 @@ class XVGFile:
 				for i in range(0, len(colNamesInOrder)):
 					key = colNamesInOrder[i]
 					rowdict[key] = line[i]
-  				
-				newrow = self._converted(colsDescription._v_types, colNamesInOrder, rowdict)
 
-				numappended+=1
-				data.append(tuple(newrow))
+				row = self._converted(colsDescription._v_types, colNamesInOrder, rowdict)
+				new_row = xtc.params()
+				new_row.extend(row)
+				data.append(tuple(new_row))
+				numappended += 1
 
 		return data
 
@@ -84,13 +86,14 @@ class XVGFile:
 				pos = colnames.index(key) 
 			
 			if pos > -1:	
-				if vtypes[key] == 'int32':
+				if vtypes[key] == 'int64' or vtypes[key] =='int32':
 					newrow[pos] = int(line[key])
-				elif vtypes[key]== 'float32':
+				elif vtypes[key]== 'float64' or vtypes[key] == 'float32':
 					newrow[pos] = float(line[key])
 				else:
 					# note inserting value of unknown type
 					# might cause an error
+					print "WARNING: inserting a value of unknown type into table"
 					newrow[pos] = line[key]
 
 		return newrow

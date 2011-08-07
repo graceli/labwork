@@ -38,7 +38,7 @@ class FileManager(object):
 	def processed(self, filename):
 		"""docstring for process"""
 		self.__files[filename] = True
-		
+		 
 	def reset(self):
 		"""docstring for reset"""
 		for key in unprocessed:

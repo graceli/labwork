@@ -52,7 +52,7 @@ QTable = {
 }
 
 ContactMapTable = {
-	'temp' : Int64Col(dflt=0, pos=0),
+	'temp' : Float64Col(dflt=0, pos=0),
 	'replicanum' : Int64Col(dflt=0,pos=1),
 	'seqnum' : Int64Col(dflt=0, pos=2),
 	'res1' : Int64Col(dflt=0, pos=3), 'res2' : Int64Col(dflt=0, pos=4), 'res3' : Int64Col(dflt=0, pos=5),

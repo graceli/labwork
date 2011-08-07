@@ -32,10 +32,18 @@ class Analyzer(object):
 			for xtc in batch:
 				for analysis in self.__analyses:
 					print "queuing", analysis.name(), "and", xtc.name()
-					self.__task_queue.put([analysis, xtc.full_path()], True, None)
+					self.__task_queue.put([analysis, xtc], True, None)
 
 			print "waiting for these tasks to finish"
 			self.__task_queue.join()
+			print "tasks have finished"
+
+			print "PID", os.getpid(), "loading analysis"
+			#print self.__analyses
+			#for xtc in batch:
+			#	for a in self.__analyses:
+			#		print xtc
+			#		print a
 	
 
 	def add(self, analysis):
@@ -56,7 +64,6 @@ class Analyzer(object):
 				break
 			else:
 				analysis.run(xtc, self.__tpr)
-				self.__loader.load(analysis)
 				self.__task_queue.task_done()
 
 class Analysis(object):
@@ -65,9 +72,9 @@ class Analysis(object):
 		self.__analysis_name = name
 		self.__table_type = table_type
 		self.__num_columns = cols
-		self.file = ''
+		self.file = None
 	
-	def run(self, xtc='', tpr=''):
+	def run(self, xtc=None, tpr=''):
 		self.file = xtc
 	
 	def name(self):
@@ -99,26 +106,29 @@ class ContactMap(Analysis):
 		super(ContactMap, self).__init__(name='contact_map', table_type=rowtypes.ContactMapTable, cols=59)
 
 	def files(self):
-		return [ self.file + '.dist.txt', self.file + '.contact.txt', self.file + '.q.txt' ]
+		return [ self.file.name() + '.contact.txt', self.file.name() + '.q.txt' ]
 
 	def types(self):
-		return [ rowtypes.ContactMapTable, rowtypes.ContactMapTable, rowtypes.QTable ]
+		return [ rowtypes.ContactMapTable, rowtypes.QTable ]
 
 	def type_names(self):
-		return ['contact_map_table', 'contact_map_table', 'q_table']
+		return ['contact_map', 'q_native']
 
-	def run(self, xtc='', tpr='sh3.tpr'):
+	def xtc_file(self):
+		return self.file
+	
+	def run(self, xtc=None, tpr='sh3.tpr'):
 		super(ContactMap, self).run(xtc, tpr)
 		self.__extract(xtc, tpr)
 		# base,ext = os.path.splitext(xtc)
 		
 	def __extract(self, xtc, tpr):		
-		name = os.path.join(self.location(), xtc)
+		name = os.path.join(self.location(), xtc.name())
 	
-		print "PID", os.getpid(), "is extracting:", xtc, tpr, "to", name
+		print "PID", os.getpid(), "is extracting:", xtc.name(), tpr, "to", name
 
 		selection = {'group1':'C-alpha'}
-		command = "/home/grace/bin/g_mdmat_g -f %s -s %s -t 0.6 -mean %s -txt-dist %s.dist.txt -txt-contact %s.contact.txt -txt-native %s.q.txt" % (xtc, tpr, name, name, name, name)
+		command = "/home/grace/bin/g_mdmat_g -f %s -s %s -t 0.6 -mean %s -txt-dist %s.dist.txt -txt-contact %s.contact.txt -txt-native %s.q.txt" % (xtc.full_path(), tpr, name, name, name, name)
 		(stdout, stderr) = subprocess.Popen(shlex.split(command),  stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE).communicate("%s" %(selection['group1']))
 		print "PID", os.getpid(), "done extracting"
 
