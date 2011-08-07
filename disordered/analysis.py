@@ -31,8 +31,8 @@ class Analyzer(object):
 		for batch in self.__fs.xtc_files():
 			for xtc in batch:
 				for analysis in self.__analyses:
-					print "queuing", analysis.name(), "and", xtc
-					self.__task_queue.put([analysis, xtc], True, None)
+					print "queuing", analysis.name(), "and", xtc.name()
+					self.__task_queue.put([analysis, xtc.full_path()], True, None)
 
 			print "waiting for these tasks to finish"
 			self.__task_queue.join()
@@ -48,7 +48,6 @@ class Analyzer(object):
 		# TODO: use pool because it looks like the processes sometimes don't die if it fails
 		# get one item from queue
 		# block if queue is empty
-		print "worker process started"
 		while True:
 			try:
 				# timeout after 30 seconds
@@ -121,7 +120,7 @@ class ContactMap(Analysis):
 		selection = {'group1':'C-alpha'}
 		command = "/home/grace/bin/g_mdmat_g -f %s -s %s -t 0.6 -mean %s -txt-dist %s.dist.txt -txt-contact %s.contact.txt -txt-native %s.q.txt" % (xtc, tpr, name, name, name, name)
 		(stdout, stderr) = subprocess.Popen(shlex.split(command),  stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE).communicate("%s" %(selection['group1']))
-
+		print "PID", os.getpid(), "done extracting"
 
 def main():
 	print "testing ..."

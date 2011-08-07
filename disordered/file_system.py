@@ -133,7 +133,7 @@ class SH3Tarfile():
 				print >> f, basename, replica_num, sequence, temp
 
 			self.__num_indexed += 1
-			processed.append(xtc)
+			processed.append(SH3XtcFile(os.path.basename(xtc), self.__tempdest, replica_num, sequence, temp))
 		
 		return processed
 
@@ -186,7 +186,38 @@ class SH3Tarfile():
 		(stdout, stderr) = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE, stderr=open(os.devnull,'w'), stdin=subprocess.PIPE).communicate(selection['group1'])
 		temperature = float(stdout.split('\n')[-3].split()[1])
 		return temperature
-		
+
+class File(object):
+	def __init__(self, name, location, type='txt'):
+		self._name = name
+		self._location = location
+		self._type = type
+	
+	def type(self):
+		return self._type
+
+	def name(self):
+		return self._name
+
+	def location(self):
+		return self._location
+	
+	def params(self):
+		pass
+
+	def full_path(self):
+		return os.path.join(self._location, self._name)
+
+class SH3XtcFile(File):
+	def __init__(self, name, location, replica, sequence, temperature):
+		super(SH3XtcFile, self).__init__(name, location) 
+		self.__replica = replica
+		self.__sequence = sequence
+		self.__temperature = temperature
+
+	def params(self):
+		return [self.__replica, self.__sequence, self.__temperature]
+
 def main():
 	fs = SH3FileSystem('/project/pomes/grace/test/PRIOR_TO_RESTART_Wed_Oct_27_04:27:47_EDT_2010/output/data')
 	for batch in fs.xtc_files():
