@@ -88,7 +88,8 @@ class SH3FileSystem(object):
 			# TODO: should mark individual xtc files?
 			if tar_manager.done():
 				self.fm.processed(tar_abs)
-		yield processed_files
+
+		yield []
 
 	def num_tarfiles(self):
 		return len(self.files)
