@@ -2,8 +2,23 @@ import rowtypes
 import csv
 import os
 
-class XVGFile:
+# Strategy pattern to implement parsing of multiple file formats
+class FileFormat(object):
+	"""docstring for FileFormat"""
+	def __init__(self, arg):
+		super(FileFormat, self).__init__()
+		self.arg = arg
 	
+	def parse(self):
+		"""docstring for parse"""
+		pass
+
+	def get_as_matrix(self):
+		"""docstring for get_as_matrix"""
+		pass
+
+	
+class XVGFile:	
 	"""This class represents the flat xvg file containing data pertaining to a type of analysis (an output of a gromacs analysis tool). The data from the xvg file is represented as an M by N-tuple, where M is the number of rows in the xvg file and N is the number of columns in the row"""
 	
 	def __init__(self):
