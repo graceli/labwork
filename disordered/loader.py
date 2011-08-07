@@ -96,7 +96,7 @@ class Loader:
 		# TableStructure is the rowtype object to be created and inserted into the table
 		# fixed number of fixed data columns in table (ie. info is not read in from 'filename'
 		
-		for filename, struct, analysis_name in zip(analysis.files(), analysis.types(), analysis.type_names()):
+		for filename, struct, analysis_name in zip(analysis.files(xtc=xtc), analysis.types(), analysis.type_names()):
 			xvgfilepath = os.path.join('/dev/shm', filename)
 			logging.info("Loader.load: parsing and loading %s", xvgfilepath)
 	
@@ -104,14 +104,7 @@ class Loader:
 
 			data = self._xvgfile.parse(struct, xvgfilepath, xtc)
 
-			new_data_vector = xtc.params()	
+			new_data_vector = xtc.params()
 			new_data_vector.append(data)
 			# print new_data_vector
 			table = self._result.addToTable(data, groupName=self._analysis_group, tableName=analysis_name, tableStruct=struct)
-
-
-
-
-
-
-

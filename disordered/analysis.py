@@ -29,6 +29,7 @@ class Analyzer(object):
 			p.start()
 
 		for batch in self.__fs.xtc_files():
+			print "batch", batch
 			for xtc in batch:
 				for analysis in self.__analyses:
 					print "queuing", analysis.name(), "and", xtc.name()
@@ -39,12 +40,9 @@ class Analyzer(object):
 			print "tasks have finished"
 
 			print "PID", os.getpid(), "loading analysis"
-			#print self.__analyses
-			#for xtc in batch:
-			#	for a in self.__analyses:
-			#		print xtc
-			#		print a
-	
+			for xtc in batch:
+				for a in self.__analyses:
+					self.__loader.load(a, xtc)	
 
 	def add(self, analysis):
 		self.__analyses.append(analysis)
@@ -72,11 +70,10 @@ class Analysis(object):
 		self.__analysis_name = name
 		self.__table_type = table_type
 		self.__num_columns = cols
-		self.file = None
 	
 	def run(self, xtc=None, tpr=''):
-		self.file = xtc
-	
+		pass	
+
 	def name(self):
 		return self.__analysis_name
 	
@@ -104,9 +101,10 @@ class Analysis(object):
 class ContactMap(Analysis):
 	def __init__(self):
 		super(ContactMap, self).__init__(name='contact_map', table_type=rowtypes.ContactMapTable, cols=59)
+		self.__file = None
 
-	def files(self):
-		return [ self.file.name() + '.contact.txt', self.file.name() + '.q.txt' ]
+	def files(self, xtc):
+		return [ xtc.name() + '.contact.txt', xtc.name() + '.q.txt' ]
 
 	def types(self):
 		return [ rowtypes.ContactMapTable, rowtypes.QTable ]
@@ -115,11 +113,12 @@ class ContactMap(Analysis):
 		return ['contact_map', 'q_native']
 
 	def xtc_file(self):
-		return self.file
+		return self.__file
 	
 	def run(self, xtc=None, tpr='sh3.tpr'):
 		super(ContactMap, self).run(xtc, tpr)
 		self.__extract(xtc, tpr)
+		self.__file = xtc
 		# base,ext = os.path.splitext(xtc)
 		
 	def __extract(self, xtc, tpr):		
