@@ -38,6 +38,11 @@ class XVGFile:
 		r = csv.reader(open(filename), delimiter=' ', skipinitialspace=True)
 		numappended = 0
 
+		print "XVGFile.parse():"
+		print colNamesInOrder
+		print fixed
+		print filename
+		
 		for line in r:
 			if self._find('#', line) or self._find('@', line) or not line:
 				continue

@@ -100,8 +100,8 @@ class Loader:
 			logging.info("Loader.load: parsing and loading %s", xvgfilepath)
 		
 			data = self._xvgfile.parse(struct, analysis.num_columns(), xvgfilepath)
-			print data
-			#table = self._result.addToTable(data, groupName=self._analysis_group, tableName='analyis', tableStruct=struct)
+			# print data
+			table = self._result.addToTable(data, groupName=self._analysis_group, tableName='analyis', tableStruct=struct)
 
 
 
