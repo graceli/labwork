@@ -1,0 +1,32 @@
+July 26 2010
+
+Problem:
+- Large number of small trajectories
+- Large number of small outputs with different flat file formats (from analysis programs 
+written in C that persist data in unstructured ASCII form)
+
+Let analysis outputs be called "results"
+
+Want:
+- association of meta-data with results
+- to store and retrieval of columnar data 
+- to easily and cleanly execute data aggregation functions on results
+
+Solution:
+- Perform data integration and unify data into pytables
+	- this allows us to perform queries using python (rather than using grep, awk and random linux tools)
+- can then use the numpy framework to aggregate data - eg distributions, averages
+
+Python implementation:
+- result.py -- class which represents the data; the core data structure is the pytable
+- xvgfile.py -- class representing the file type .xvg and converts a given xvg into python data structure
+- loader.py -- class that modifies the pytables in result
+- main.py -- driver script that calls the loader on datasets on disk
+ 
+Reference:
+
+http://www.pytables.org/docs/manual/ch03.html#id328398
+(very helpful in getting started with pytables)
+
+http://sbcb.bioch.ox.ac.uk/oliver/software/GromacsWrapper/html/index.html
+Oliver Beckstein implements a xvg parser in his GromacsWrapper module
