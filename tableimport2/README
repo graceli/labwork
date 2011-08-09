@@ -1,0 +1,7 @@
+
+Processes all the tar files containing thousands of small binary trajectory files
+See readme of tableimport for the description of the problem
+
+Allows quick plugins to be written for further analysis
+
+This is the add-analysis branch
