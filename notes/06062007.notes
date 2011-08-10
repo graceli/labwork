@@ -1,0 +1,85 @@
+get charge on the heme:
+
+cat cytochrome_p450_protein.itp | grep HEM | awk 'BEGIN {sum=0} {sum+=$7} END {print sum}'
+
+charge:  -1.60002
+
+get charge on the camphor:
+cat 2cpp_prm_withLJ_corrected.gtop | grep CAM | awk 'BEGIN {sum=0} {sum+=$7} END {print sum}'
+6e-05
+
+minimization of the system:
+
+grompp -f em.mdp -c system_fixport.gro -p system.top -o system.tpr
+	reported: 
+		System has non-zero total charge: -1.059996e+01
+
+mdrun -s system.tpr
+see md.log in protein_cam_min/min/
+
+added in ions
+grompp -f ../em.mdp -c system_min_ions.gro  -p system_ions.top -o system_ions.tpr               
+NOTE:
+  System has non-zero total charge: -5.991578e-01
+
+minimize  the system + ions:
+mdrun -s system_ions.tpr
+
+visually inspected the system + ions structure
+no obvious blowups, ions looks spread. looked at resid 1 - intact
+
+solvate the system + ions:
+
+genbox -cp system_min_ions_min.gro -cs ffamber_tip3p.gro -p system_ions.top
+
+a line was automatically added to the system_ions.top with the total number of water molecules added to the system
+
+the current structure file is entire_system.gro
+
+do energy minimization on the entire system (protein, camphor, ions, water):
+output from grompp
+
+grompp -f ../em.mdp -c entire_system.gro -p entire_system.top -o entire_system_min.tpr  
+system total charge now: -5.991578e-01
+
+mdrun -s entire_system_min.tpr
+
+On the whole system, I ran 100 steps of Steepest Descent, and no convergence was reached
+Steepest Descents did not converge to Fmax < 1000 in 101 steps.
+Potential Energy  = -7.3652800e+05
+Maximum force     =  7.1649551e+03 on atom 6412
+Norm of force     =  3.4547285e+04
+
+Increasing the number of minimization to 500
+converged:
+Steepest Descents converged to machine precision in 158 steps,
+but did not reach the requested Fmax < 1000.
+Potential Energy  = -7.4966962e+05
+Maximum force     =  6.4593296e+03 on atom 6412
+Norm of force     =  4.8978145e+04
+
+
+smart move grace... you are missing some bond parameters for the heme... and the heme is all blown apart inside the protein!  The heme was already all messed up in system_min.gro. REMEMBER to check all parts of your protein, you can minimize your system and not detect structural problems until the end.
+
+redoing the above steps after adding some missing heme hydrogen bond information.
+for each subsequent structures generated after some minimization calculations
+
+after minimizing the entire_system.gro
+Steepest Descents converged to machine precision in 88 steps,
+but did not reach the requested Fmax < 1000.
+Potential Energy  = -7.0995856e+05
+Maximum force     =  8.1947900e+03 on atom 6378
+Norm of force     =  1.0276894e+05
+
+HA! while examining the minimized entire_system.gro, noticed that residues 404 and 405 DO NOT SEEM TO BE BONDED! WHAT THE FUCK....
+
+well... it doesn't seem to be a problem now...was it just a VMD rendering bug? we'll might never know
+HOwever, vmd does issue this warning:  Unusual bond between residues:  404 (protein) and 405 (none)
+
+this occurs even loading the structure that I had after Chris fixed all the namings and added teh hydrogens automatically using pdbgmx
+
+Running PR dynamics now
+grompp -f pr.mdp -c entire_system_min.gro -p entire_system.top -o entire_system_pr.tpr
+mdrun -s entire_system_pr.tpr
+
+...

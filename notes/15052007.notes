@@ -1,0 +1,19 @@
+Came in around 10:30 or so; coffee
+Talked to Carrie for a bit 
+	She wanted her biochem book to check up on some basic things about salt bridges
+	what is the normal distance between two salt bridges?  Can water be near the salt bridges?  
+	This is exactly what I was studying with MD!!!
+
+started working on cs240 assignment 2; ran into all sorts of problems:
+	- first the statement ...new Monomial(..) wouldn't compile; 
+	  vadim pointed out that you might not have included the class ... and that was precisely why
+	- then I tried to declare a static member function, but I got the error message 
+		error: cannot declare member function ‘static Poly* Poly::add(Poly*, Poly*)’ to have static linkage
+	  because, I put the keyword static in front of the member function definition. But you're not allowed to do this!
+
+	- in summary:
+		- talk to people who knows better really helps
+		- learn specific syntax ... probably will get better with experience
+		- think before you code - design!  So you have a clear head with what you're trying to achieve.
+
+OK now on to my research !!!  There is also spiderman 3 this evening and it's free!!! I'm excited!!!

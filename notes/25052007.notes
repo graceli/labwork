@@ -1,0 +1,17 @@
+- CCB meeting today - not entirely useful for me, but increasing the amount of documentation is brought up which should be useful
+
+- what are the nonbonded LJ parameters for each of the heme atom types?
+- the pairs section are the 1-4 interactions and thus that is why I don't get the same A, C when I use the LJ parameters from CHARMM
+- I think other nonbonded interactions are calculated on the fly (double check this)
+
+- so now the question is, should I still define the atom types using parameters from CHARMM?
+	- the answer would "yes" to me now
+  - and also go through all the pairs to create a pairtypes section for 1-4 interactions
+
+to do for the rest of the day:
+
+0) read through the gromacs topology chapter again ( look at the folding@home help again)
+1) create a pairs section
+2) write a script to convert the parameters that needs conversion
+3) extraneous conversions and formatting
+4) run minimization in vacuo .. how to do this?

@@ -1,0 +1,27 @@
+- finished the angle parameters for the HEME
+- copied and pasted CHARMM LJ parameters into the p450cam.itp file
+
+write_top_pairs_notpert(s_atop* atop)
+ - this is where the [pairs] for the system are printed
+
+Question: how to print out AMBER LJ 6-12 parameters A,C ?
+	
+	ambconv.h - contains definition of s_atop struct
+	
+	- I wrote a program called decipher_LJ weeks ago to see if I can print out the A, C parameters
+	for alanine top. Going to finish it now.
+		- this program is now done and it work correctly. Previously it wasn't working because the indexing was off by one
+	- Also check that the A, C parameters for an atom pair are combinations of the individual parameters for atoms		- they check out!
+
+Q: what are the AMBER LJ combination rules?
+
+arithmetic for vanderwaals radius
+geometric for well-depth
+
+the formula to calculate A, C :
+(found on the AMBER newgroup posting website - see google notebook)
+
+C = 2eij*(r1+r2)^6
+A = eij*(r1+r2)^12
+
+- reorganized the cyto_p450cam directory - see individual directory readmes

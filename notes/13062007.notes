@@ -1,0 +1,44 @@
+
+- running heme min starting from 2cpp_277.gro structure ...
+- recreated a heme itp from the protein itp --> need script for renumbering, but my perl is not skilled enough !
+so used awk hacky renumbering ... (subtract 6375 from 1st column, copy out atoms, etc..)
+
+WANT: script for renumbering itp files
+
+for the cutoff is checked by grompp; outputs warning if exceeding half the smaller side of the box.
+for invacuo, I'm just giving an arbitrary box, with 1 nm cut off(this is gromacs default)
+
+took many iterations to copy out the correct itp file for heme.
+
+after 100 steps of steepest descent (convergence 25 steps)
+rmsd from heme.gro (original structure) 0.017 A
+
++ 100 steps of conjugate gradient (convergence in 2 steps)
+rmsd from heme.gro - 0.02 A
+
+
+Camphor has positive potential energy 
+- this maybe because the angles are very constrained and far from equilibrium.
+- generally if my parameters are near the equilibrium parameters, the energy is negative since LJ and coloumbic forces would dominated the system energy
+
+Minimized entire system:
+- negative potential energy
+- structure in tact
+- did not go below the Fmax threshold
+
+Superimpose minimized entire system heme with original heme from 2cpp_227.pdb (ring atoms only)
+RMSD from VMD: 0.069933460732
+
+superimpose minimized ent. sys. camphor with original camphor (all atoms in CAM, incl. hydrogens):
+RMSD : 0.0790502978273
+Carbons only: 0.0429437949796
+
+now will run with all-bonds constrained, and position of the protein and camphor constrained
+- this run is done:  the outputted 10ps equilibrated structure is
+	entire_system_min_pr.gro
+this is the starting struct for further equilibration or production...
+But I will be changing parameters around
+
+-Now would be a good time to start translate all the parameters for the MD calculations from AMBER to gromacs
+and see if basic properties are reproduced, energetic differences etc...
+

@@ -1,0 +1,11 @@
+Trying to get the minimization done today:
+
+I used some LJ parameters that may be wrong so that I just get the grompp output a binary file for energy minimization
+( Regis did some mix and matching for united (extended) atom (carbons) and non-united - just figure it out from the AMBER topology don't lose sleep
+over it)
+
+
+errors encountered:
+
+- numbering of atoms, bonds, angles, etc must have started from 1
+- declare [ molecules ] in either the itp or the top not both because grompp will count the system twice

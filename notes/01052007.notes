@@ -1,0 +1,23 @@
+- Beck, Dagget, 2007 paper
+- worked on converting charmm heme parameters for a bit just now (1 1/2)
+	- some more problems: found that for the BONDS parameters, the equilibrium bond length from
+	regis's amber top and the charmm 22 heme parameter is not equal. They are very close, but not exactly the same
+	- this is going to be messy
+		- I will need to translate CHARMM names to REgis named types
+		- I will need to write regis named types for bonds, angles, dihedrals, improper dihedrals
+		- Charmm uses a different functional form for improper dihedrals than gromacs
+		  I will have to first, trust that the amber -> gromacs conversion was correct -> then copy 
+	      	  those dihedral parameters to define the new topology needed for heme
+		- repeat all these steps for Camphor
+		- if I work a few hours a day on this I 'll make at least some progress
+- now 3 PM, going back to paper reading - actually I'll grab a coffee :)
+- read 1 paper on comparisons of REMD with MD (Dagget, 2007)
+- read a few pages of the gen - ensemble paper; got stuck on details
+- improved sampling paper:
+	- decided to more or less follow their classification (should I modify things accordingg
+		to my own readings?) 
+		1) modification of the potential energy landscape 
+		2) reducing the degree of freedom
+		3) multiple copy RE variant algorithms
+- email ryan if unsure, but try to use my own judgement
+	

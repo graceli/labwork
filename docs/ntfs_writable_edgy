@@ -1,0 +1,95 @@
+Accessing an NTFS partition in read/write mode from Kubuntu Linux
+
+By ADONIS BUTUFEI
+Abstract
+
+This article describes how to use an NTFS partition in read/write mode from Kubuntu Linux.
+For this example I used Kubuntu v. 6.10 Edgy; if other version is intended it is necessary to replace the edgy from repositories with the name you are using. Also for older versions the package (ntfs-3g) may not be available.
+
+For Ubuntu the same package is needed and the same repository should be used but it will be necessary to use Synaptic package manager
+http://www.debianadmin.com/simple-package-management- with-synaptic-package-manager-in-ubuntu.html
+instead of Adept Manager Manage Packages.
+
+For command line editor could be used gedit instead of kate.
+
+More detailed information about installing and configuring Ubuntu / Kubuntu could be found on the following addresses:
+1) http://ubuntuguide.org/wiki/Ubuntu_Edgy
+2) http://www.ubuntuforums.org/index.php
+
+Installing ntfs-3g package
+
+For accessing a NTFS partition in read/write mode it is neceassary to use ntfs-3g package for mounting the partition in a folder. The ntfs-3g must be installed by the user because it is not included on the installation CD.
+
+GUI mode
+
+1) Adding the repository for ntfs-3g.
+- Start Adept Manager from K-menu / System / Adept Manager Manage Packages.
+- Select View / Manage Repositories menu.
+- In the new repository edit insert deb http://archive.ubuntu.com/ubuntu edgy main restricted universe
+- Press Add button.
+- Repeat previous two steps for deb-src http://archive.ubuntu.com/ubuntu edgy main restricted universe repository.
+- Press Apply button.
+- Press Close button.
+- From Fetch Updates button from the toolbar.
+
+2) Installing ntfs-3g
+- Type ntfs-3g in the search edit.
+- Expand the package from the list and press Request Install button.
+- Press Apply Changes from the toolbar.
+
+Command line mode
+1) Adding the repository for ntfs-3g.
+- Open a console from K-menu / System / Konsole Terminal Program
+- Type sudo kate /etc/apt/sources.list
+- In the editor append the following lines:
+deb http://archive.ubuntu.com/ubuntu edgy main restricted universe
+deb-src http://archive.ubuntu.com/ubuntu edgy main restricted universe
+- Save the file and close the editor.
+
+2) Installing ntfs-3g
+- Type apt-get install ntfs-3g.
+Mount partition
+
+For mounting partitions it is necessary to open a console as described in the previous paragraph.
+- Type sudo ntfs-3g /dev/[partition] [mount-point]
+
+It is necessary to substitute the [partition] and [mount-point] with the desired values.
+
+For displaying names of all partitions from the system it is necessary to type:
+cat /proc/partitions
+
+The partition names are composed from drive-type , drive-letterand partition-number.
+For drive type are used:
+- hd for IDE
+- sd for SATA, USB and SCSI.
+
+For drive letter is used a for first drive, b for second etc.
+
+For partition numbering are used digits from 1 - 4 for primary partitions and from 5 upward for logical drives.
+
+For example the first primary partition from second IDE drive is hdb1, first logical drive from third drive on USB drive is sdc5.
+
+The mount point is the folder in the Linux file system from where it is accessed the partition. Usually it could be a subfolder of /mnt or /media but also it could be mounted in a subfolder of home folder.
+
+It is necessary to provide proper rights (user,group) for this folder to be accessible after mount.
+
+Notes
+Mounting fails if the journal file of the partition is corrupted. For repairing journal files follow the following steps:
+1) boot in windows
+2) run chkdsk [drive]
+3) reboot in windows
+Unmounting partition
+
+After finishing working it is recommended to unmount the partition.
+For USB drives it is also necessary to unmount the partitions before removing them from the computer otherwise the files could be corrupted.
+
+It is possible to unmount the partitions from desktop by right click.
+If the mounted partitions are not displayed on the desktop it is necessary to open a console as described in previous paragraphs.
+
+Type sudo fusermount -u [mount-point] or
+sudo umount [mount-point] or
+sudo umount [partition]
+
+Notes
+1) It is necessary to close all the files from the partition before unmounting.
+2) During the shut down process the operating systems unmount all the partitions automatically.

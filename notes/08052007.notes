@@ -1,0 +1,28 @@
+Back to work on research:
+
+- learn to work on things in tandem. Multitask.  How do you do that? Organization must be key.
+
+list of things to do:
+-  ion pair paper
+    - check on the population of "bridging conformers"
+    - compute the errors on various quantities.
+    - all results to regis
+    - write draft of paper
+
+- start running simulations with AMBER first
+- learn to visualize p450cam
+- learn background
+	- learn about the ion pairs in p450cam
+- get p450 simulations to run on Gromacs (by end of May)
+	- learning forcefields for charmm, gromacs, amber (by end of May)
+
+==========================================================================
+- Learn to visualize p450 the protein
+  - spent a few hours staring at the structure
+	I helix, long helix that goes right through the protein; usually view the protein down the axis of this helix
+ 	vmd has a salt bridge tool, and it recovered 27 salt bridges from the original pdb file of p450cam (2cpp.pdb) the ones that werent recovered were ones involving the heme atoms and 2 more that were farter apart than 3.2 A.
+	the numbering for each residue follows the one from the original pdb 
+
+- terminology:
+	which is the distal, proximal side of the heme?
+		distal - where the active site of the enzyme is	

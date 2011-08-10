@@ -1,0 +1,5 @@
+$output=`command`;
+$output2 = qx{wc test};
+
+spawns a child process and saves the output the child process in $output
+ **slow**

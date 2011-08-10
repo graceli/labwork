@@ -1,0 +1,65 @@
+Jan 21,2008
+Grace Li
+
+Compilation / installation of Gromacs (3.3.1) with MPI support
+on Kubuntu linux 6.10 
+
+################
+# 0 Install LAM#
+################
+
+Install lam-mpi binaries (gromacs-lam package in Kubuntu 6.10) and libraries (lam4-dev package in kubuntu 6.10 repositories). Both must be present on system
+
+set the following environment variables (according to Gromacs FAQ (http://www.gromacs.org/documentation/reference/gmxfaq.html#MPI)
+This step must be done before compilation of Gromacs 
+
+setenv CPPFLAGS "-I/path/to/your/mpi/include"
+setenv LDFLAGS "-L/path/to/your/mpi/lib"
+setenv LIBS "-lmpi"
+setenv MPICC "cc" 
+(adapt as neccessary to bash shell using export)
+
+##################################################################
+#1 Compile FFTW with MPI support with double and single precision#
+##################################################################
+
+1) single precision install
+./configure --enable-float --enable-mpi
+make;make install
+
+2)install double on top of single
+
+make distclean            # remove stale binaries from previous compile
+./configure --enable-mpi  # default installation config
+make;make install
+
+3) Go back to the directory with the source of fftw and run
+make check
+this does a basic check on the compilation that was just done
+
+###############################
+#2 Compile and install Gromacs#
+###############################
+Note: Steps 0 and 1 should be completed before this step (although I completed installation in this order only)
+Also, if fftw was installed in a non-standard location (ie, not in /usr/local -- assumed by configure)
+modifiy CPPFLAGS and LDFLAGS in .bashrc file to include the location of fftw/include (CPPFLAGS) and fftw/lib (LDFLAGS)
+eg CPPFLAGS = "-Idir1 -Idir2"; export CPPFLAGS
+this is done so that configure for gromacs can find the fftw libraries
+
+1) First compile only mdrun (single precision) with MPI support (you only need MPI support for mdrun)
+./configure --enable-mpi --program-suffix=lam --prefix=/home/grace/bin/gromacs-3.3.1/
+make mdrun;make install-mdrun
+a binary will be will be generated in $prefix/bin/mdrunlam
+2)Compile Gromacs without MPI support (with float as precision -- this is by default)
+make distclean
+./configure --prefix=/home/grace/bin/gromacs-3.3.1/
+make;make install
+3)Compile and install Gromacs without MPI support but with double precision
+make distclean
+./configure --prefix=/home/grace/bin/gromacs-3.3.1/ --enable-double --program-suffix=_d
+make;make install
+
+note that a mdrun binary with double precision and MPI support will not be generated
+by this procedure (and not that I would need it anyways since it is recommended to run
+with only single precision -- see Gromacs FAQ on www.gromacs.org)
+

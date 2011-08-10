@@ -1,0 +1,18 @@
+- starting over from 2cpp_227.pdb
+- stripping of all waters, I'm not accounting for the crystallographic waters because, they will eventually exchange with bulk when equilibrated (assuming no extremely tightly bound waters)
+- I will leave in the K+ ion that is substituted for crystal water 515, since in this pdb (after equilibration) it is still coordinated by the same ligands and 2 waters (approximately within 3 A from K+) 
+
+system_start.gro is my starting structure containing protein + camphor + Pot 408
+ ( had to regenerate structure all over again NOTE: gro file formatting matters !! have every column line up or else gromacs will distort your system when converting 
+to gro files from gro files )
+
+Note: editconf will rename residues and atom numbers of a gro file 
+
+made the box, it is bigger as a R. Dodec  (slightly than the box I made with 2cpp_010) -- I won't care about this...
+
+need to make tpr before running genion to put ions in the box....
+
+I got the ions generated (30 pot, 21 chloride) and combined the original pot with the generated ones
+
+now I'm ready for minimization, and so on...
+

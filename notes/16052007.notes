@@ -1,0 +1,14 @@
+Brief chat with Regis:
+He gave me some suggestions for getting P450 up and running:
+
+- try parameterizing for alanine (or a smaller molecule first)
+- do energy minimization of heme in vacuo (delete everything else) and superimpose with the structure before
+to see if there are major changes; groups on the rings can tolerate some changes but the heme should be planar
+
+-CH (methlyene), CH3 (methyl) should be different types. Maybe Regis made a mistake, but maybe you can get away with them being the same in AMBER ? (why?)
+
+- charge on the Fe maybe important to get more accurate movement of the ligand inside the protein ..
+
+- this should be done by this week?
+
+- I could read some Fe charge calculation papers and discuss this with Eliza

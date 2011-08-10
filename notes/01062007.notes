@@ -1,0 +1,35 @@
+- tried to generate a top file for just the protein using pdb2gmx
+tried the pdb from regis (with heme, camphor and waters removed) and tried pdb from pdb databank
+both complained of missing atoms
+somehow because of using the amber ports, gromacs does not know how to add the hydrogens
+
+
+- chris suggested to make system. itp : containing protein & heme
+(take original gtop file and delete out the waters and camphors)
+- make file containing only heme atom types
+- make camphor.itp (self contained parameter file for camphor)
+
+- move system.itp and camphor.itp to gromacs/share/top directory so that can be used to include in the future
+
+- technical note about gromacs
+all atomtypes directives must be before moleculetypes directive for grompp to work
+
+- to include the ions in the protein + camphor system
+created amber_ions.itp following the format of ion.itp in /usr/share/gromacs/top/
+and under [ molecules ] directive in the system topology specified how many ions of each type to 
+include the system
+
+for now I am using the K, CL parameters found in AMBER.  I'm not sure which parameters Regis is talking about ... will check on this later. Goal is to get things to push through with the calculation with gromacs.
+
+- another detail is the ionization states of residues. The system is suppose to have a net charge of -11e but has about -10e instead. There is a small net charge on the system after adding 50 counterions. (presence of small net charge - does this matter for ewald?)
+
+- I did minimization on the system again after the ions were included - no blow ups or changes were seen - which means this is good 
+
+- I solvated the system. Noticed that some waters were placed inside the protein - is this what I want? (ignore this for now)
+
+- minimized the system with solvent
+
+NEXT:
+- now, use position restraints on the protein + camphor and allow water to relax around the protein ( 10 ps should be sufficient)
+
+

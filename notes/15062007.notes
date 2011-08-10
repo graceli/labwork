@@ -1,0 +1,10 @@
+- wrote a qsub script to submit to CCB
+testing out with qrsh (interactive queue) as suggested on the CCB documentation website
+when using ....cneale....fftw-3.1.2/bin/mdrun
+kept getting the error:
+	 error while loading shared libraries: libXm.so.2 ... file not found
+
+located libXm.so in /hpf/tools/local/lib and /tools/local/lib (by browsing teh directories randomly..)
+sarah had /tools/...
+but even after include these in -v LD_LIBRARY_PATH  qrsh didn't work!
+but qsub did...why???

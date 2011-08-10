@@ -1,0 +1,20 @@
+- didn't make a to-do list for today
+
+Goal : To setup P450cam system to run on gromacs (Achieve by Monday)
+
+subgoal 1:  make sure that the topology file of the system is correctly constructed
+	- naming conventions - doing comparisons to understand how to modify ambconv to take care of this automatically
+	- itp files to clean up the topology file (for heme, camphor, ions, water) - chris says can take the heme, cam parameters and do
+	copy and paste into itp files. Make sure to get everythign though
+	- ions - any problems?
+
+subgoal 2: create a gro structure file for  a starting structure - this is just a change in format. Stephanie says it's simple
+
+- run grompp this will verify whether my topology is correct 
+
+subgoal 3: specify simulation parameters
+
+- run a baby simulation and evaluate simulation health (what are the protocols for this?)
+
+other:
+- talk to Eliza about the Fe charge distribution

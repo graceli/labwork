@@ -1,0 +1,21 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{fullpage}
+
+\begin{document}
+
+\section{Survival probabilities}
+The function that we want to calculate is as follows:
+
+\[P_{surv}(t)=\frac{1}{N(t)}\sum_{\tau =1}^{T} N(\tau,\tau+t)\]
+
+Where $T$ is the number of time steps, $N(t)$ is the number of
+time intervals with length t, $N(\tau,\tau+t)$ is the number of
+times state $s$ survived a length of time $(\tau, \tau+t)$
+
+Note that $P(0)=1$. How is this related to the survival function?
+(see Wolfram).
+
+
+\end{document}

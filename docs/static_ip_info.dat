@@ -1,0 +1,14 @@
+September 04, 2007
+Static IP address information:
+IP address: 142.20.137.94
+
+(obtained from Tom's computer)
+gateway:    142.20.137.1
+subnet:     255.255.255.0
+
+DNS: 	    142.20.66.52
+	    142.20.67.52
+
+WINS: 	    142.20.81.80
+	    142.20.82.100
+(For windows ipconfig - not needed?)

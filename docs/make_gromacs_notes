@@ -1,0 +1,30 @@
+Gnu autotools triplet: automake autoconf libtool
+see autobook : http://sources.redhat.com/autobook/
+see gromacs development_tools : http://wiki.gromacs.org/index.php?title=Development_Tools&printable=yes
+Gromacs requires autoconf version >=2.5 and automake >=1.4f
+
+configure.ac --> autoconf --> creates "configure" script 
+Makefile.in --> configure --> creates final Makefiles
+
+Makefile.am --> automake --> Makefile.in --> configure --> Makefile
+
+Makefile.am - automake template
+
+According to the gromacs development FAQ
+
+- to Add to or edit the standard package Makefile, always edit Makefile.am and only add logical dependencies.  Configure.ac is used for system dependences
+
+copied g_mydist.c and gmx_mydist.c to ~/gromacs-3.3.1/src/tools
+go to the top level ~/gromacs-3.3.1
+automake (must get the right version automake 1.4-p6 did not work, but worked after updating to automake 1.9) -- no output were generated -- I assume that means success
+./configure
+make (this is at the top level)
+This worked and generated the g_mydist binary (along with the rest of the binaries that came with the package)
+
+However
+
+cd src/tools
+make 
+
+does not work and I get an make error of "no rule to make target '../mdlib/libmd.la' needed by average"
+Not sure why this is so.

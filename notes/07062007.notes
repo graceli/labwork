@@ -1,0 +1,52 @@
+position restraint dynamics finished on the entire system
+( note that PR is really just letting the water equilibrate around the protein)
+
+- inspecting the movement of the system at the binding pocket where the heme and the camphor are
+
+	observations:
+		- there are water molecules near the camphor in the binding pocket
+		- structure of the heme: the iron is poking out slightly out of the proximal side of the heme - remember to look into why this occurs
+
+	- reorganized files - put all the include files into the folder itp/
+	  now may need to change the top files in each folder (min, posre_md) for grompp to work
+
+Reading on the structure of cytochrome p450cam, heme, and the camphor :
+
+-P450 class of b-type heme proteins 
+-catalyze the hydroxylation of a wide variety of aliphatic and aromatic molecules
+-current system we look at is the P450cam camphor hydroxylase from Pseudomonas putida
+
+- Cys357 provids the axial ligand in both bound and unbound forms of the enzyme.
+- high spin camphor-bound state - iron atom is PENTA coordinated
+- low spin state - heme iron is HEXA coordinated 
+- with no camphor, the substrate pocket is filled with hydrogen bonded solvent molecules
+
+overall topography:
+
+- residues 1-9 are disordered and not included in the PDB
+
+- protein divides into helix poor, helix rich domain 
+- the camphor interacts with both domains
+
+Chris : 
+
+- showed me how to reduce the size of my system
+use a rhombus dodecahedron - reduces the length of the longest distance between any two protein images - so this saves waters;  I can now increase the largest distance between two protein images (from 1.3 --> 2 nm) by using this type of a box rather than a cubic
+
+editconf does all this
+- regis's box is not 8.3 A cubed.. this was probably a typo 
+the actual box size is  8.294  7.517  5.634 (nm)
+can use editconf to get this, outputs the measured size of the system when converting pdb to gro
+
+the way he setup his box is a way that no one does anymore.
+- use genions to generate random positions for the ions instead of using the old positions from regis's pdb
+
+
+----
+redox -
+
+oxidation - loss of electrons.
+reduction - gain in electrons
+
+
+

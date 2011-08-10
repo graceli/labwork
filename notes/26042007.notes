@@ -1,0 +1,36 @@
+- lab meeting today: will be asked of what you've been doing
+- get into lab work on the topology file should be able to get as far as 
+outputting the same topology files as what would be outputted by gromacs
+for the protein at least. DON'T get stuck on details !!
+	-look at the ambconv code
+====================
+- modified the ambconv code to output the gromacs amber naming
+
+- ****I need to write a program to replace all the atom types with amber94_* in 
+the original amber topology and then have the ambconv read that ****
+	- beware of N terminal and C terminal amino acid atoms, they have different charges
+	  (they don't have different interactions right? other than the charges ?)
+
+- the plan now:
+need parallel maps for 4 different things:
+	- course project topics:
+		Protein folding studies using Molecular simulation algorithms
+		
+	- work on topology file modification
+	- think about how to analyze the p450 trajectories - probe the system ? Questions?
+	- ion pair paper:
+		- print out a list of results for Regis
+		- get those grouped RDFs
+		- get errors for RDFs, PMFs
+		- summary of key conclusions, big picture
+
+=====================
+Lab meeting points raised:
+
+- who will take over DR?
+- documentation for DR use doxygen to create HTML pages
+- setup CVS (for what? useful scripts src?)
+- set up a distributed env. @ the hospital; hire a summer student from Waterloo - something like
+Sharcnet, Folding@home
+- talk to Howard Feldman FoldTraj
+

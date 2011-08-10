@@ -1,0 +1,8 @@
+C printf format
+%-6s
+
+- is left justify, 6 is the field width and s is the specifier to print string
+
+%-9.2f
+leave 9 spaces, but only print 2 places after the decimal
+

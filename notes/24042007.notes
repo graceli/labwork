@@ -1,0 +1,43 @@
+TO DO: arrived around 10:30 PM
+- regarding amber top conversion - figure THIS OUT! (2 hours switch gears after):
+	-perhaps the order of the bond types stored is in the order that appears in
+	the parameter set file (*.dat) - check for this
+	- ask Joseph - asked him, he doesn't really know ...
+
+	- keep search on google
+
+	- read around in amber manual
+
+	- look at the tleap code which does the prmtop output
+	answer: I've done all of the above, and I've concluded that it's too complicated,tedious and NOT worthwhile
+	to reproduce this conversion.  I'm going to trying adapting the code already written by some guy call ambconv 
+	
+	the code: 
+	-first I commented out all the unneccessary stuff such as trajectory conversion etc, leaving only the topology reading
+and gromacs top output.  so after playing around with the C code, I realized that s_top* atop did not have memory allocated for it
+	and of course calling anythign like atop-> .. will give segmentation faults. Chris Neale pointed out to declare a s_top struct on
+the stack and give the address of this stack to the pointer as a quick way to seeing if the seg fault will go away. It did. He's good.
+	- so finally it outputted a gromacs top file for 2cpp_prm - good stuff
+
+	- I imported teh amber forcefields into gromacs and did a test to see if gromacs saw them by running pdb2gmx -f villin.pdb; it did see them.
+	6:27 pm I am now going home.
+	- as a side note, this is very unproductive for 8 hours of work (minus the eating and talk which took up less than 2 hours)
+
+- look at the grouped RDFs ... (2 hours)
+
+- learn more about forcefields: which forcefields are good for what? (2 hours)
+	specifically, which force field could I use to test that my water mediated states aren't
+	a artifact of the force field (maybe an artifact because some forcefields are optimized to work well with water some are not)
+        - are charges independent of the force field? preliminarily No - you need to fit charges for your coulombic potential term in the force field function to account for electrostatics
+
+	a phd thesis discussing ffs - http://cmt.dur.ac.uk/sjc/thesis_dlc/node6.html
+
+- reading for csc2431 ( 2 - 3 hours + 2 hours on the bus)
+
+
+- to do this evening:
+ - read folding @ home FAQ
+- think of ways to test ambconv
+- think of how to do w/o the conversion - doing is better than thinking here
+- look at how to import molecules into gromacs (chapter 5)
+- read papers for csc2431

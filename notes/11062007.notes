@@ -1,0 +1,23 @@
+Discussion with Regis at 2:45 PM:
+
+Update on what I've been doing with the P450 system:
+- FE and cysteine -- either a harmonic or a holonomic constraint... (Regis has a bonded term for the SG - Fe)
+
+- charge problems - protonation states - in order to determine which Nitrogen was protonated on the Histidines, looked at 
+the nearby amino acid structures and waters and based on distances and common sense, decide whether a proton should exist there or not.
+Repeat this exercise;
+This has to be done whenever your starting with a crystallographic structure of a protein before you're modelling
+Protein has a charge of -10 overall
+- the waters -- what do you mean by bound waters?  Read Garcia 1999 paper
+  Why not keep the crystallogrpahic waters in there. When the paper is being reviewed, people might wonder why you didn't just keep the waters there...
+  Waters inside the active site might be really tightly bound to the proteins..might be important
+- model high spin state ... Regis didn't know how to do it at the time so he just ignored it.  However, he said, it's not really important for what we're trying to do anyways.
+People don't really know what the active site looks like anyways. But talk to Elisa about this...she can do this in her sleep
+- how did you check that you have the heme group correctly modelled?  Redo superimposition of heme molecule with an already energy minimized structure from a previous simulation
+but using JUST the ring, don't include the side groups. Regis says that if it's 1 angstrom, he would say that the deviations are too large already
+
+This is the command to only select the ring atoms:
+resname HEM and mass > 11 and mass < 15 and not name "CA.*"  and not name "CB.*" and not name "CG.*" and not name "CM.*"
+
+put this in the box in the RMSD calculator -> align -> RMSD ( select top)
+the reported RMSD = 0.163955269322

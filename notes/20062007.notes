@@ -1,0 +1,7 @@
+- decided to read about stochastic dynamics when Chris said "you should be using the sd integrator in gromacs for in vacuo simulations" (Leach, 2001,chap7)
+stochastic dynamics basically integrates one form of equation of motion with a frictional drag force, and random fluctuations...
+my thoughts are that the EoMs approximates the presence of solvent
+molecular dynamics is different and probably has different set of assumptions and different equations.
+
+- started reading about hard sphere simulations -- this is basically what that sphere bouncing program attempted to emulate. the Engine does exactly this while the graphical
+front end draws and updates the rendering. *** try as a side project 

@@ -1,0 +1,14 @@
+In an attempt to sort out all the confusion among all the different formats and units of the same / different forcefields across different packages I worked on making a summary chart for AMBER, GROMACS, and the CHARMM package
+for each function describing an interaction, I listed out the parameters, and their corresponding units in gromacs, amber, charmm (packages) to avoid confusion when convert from one to another.
+
+I also list out the different but equivalent functional forms. eg. vanderwaals, in AMBER it's A,B, and in gromacs could sometimes be sigma, epsilon.
+
+At the same time I am learning more about the AMBER, and gromacs topology file formats, which is beyond confusing to me
+for some reason, but I assume it is natural to be confused and pretty soon, I'll be over it 
+
+My plan for the weekend:
+- read the newly printed papers
+- understand more about the heme's structure
+- learn about inositol's structure
+- get up to the point where you can begin working with gromacs editing topology files
+- organize files on home computer so that I can rsync everything with work computer

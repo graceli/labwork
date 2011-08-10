@@ -1,0 +1,54 @@
+today's plan:
+
+A clear path for me for the project has formed:
+
+- first is the reading of already existing review papers to get perspective of the field
+- now it's following the references from these review papers, get the recommended papers, and speed reading through them to find:
+	1) methods: physics based? or just generating possible conformations?
+	2) applications: 
+		- tests done 
+		- comparisons with other existing similar techniques
+		- comparisons with experimental (NMR, xray results)?
+
+	3) what "framework" does it best fall under?
+		1) define what you really mean by molecular simulation
+			-there is Monte carlo, and Molecular Dynamics
+
+		these are NOT mutually exclusive frameworks:
+		2) exchange approaches
+		3) scaling/adding a term to the PE energy landscape
+		4) based on assuming that proteins aren't that flexible
+		5) reaction coordinates
+		6) equilibrium (ST/DR/RE); nonequilibrium (steered MD)
+		7) high temperature approaches
+
+=============================================================
+- p450 force field:
+- the path :
+	- For the heme:
+		1) take each parameter from CHARMM (nonbon, bon, angle, dihedral, etc) ---convert--> gromacs
+			- Units
+			- format
+			- some parameters maybe able to copied from the current AMBER converted gromacs topology
+
+		2) double check with the parameters in the AMBER converted gromacs top if possible
+			- so far, I can't check the nonbonded epsilon, sigma (this information is not directly found in
+			  the AMBER top, so not in the AMBER convert gromacs top)
+		3) others: 
+			- are there virtual sites on the heme ?
+		
+		4) look for papers that have done molecular dynamics on p450
+================================================================
+- talked to Chris some more about this force field stuff
+	- he says IF you have a self contained top file in AMBER, then you should be able to get a gromacs topology file
+	  that has everything explicitly stated where you don't need any includes
+	- ambconv was not making a faithful conversion - the nonbonded terms are not being outputted , but everything else is (?)
+	- also: 1) with forcefields, you are not giving yourself a realistic time expectation 2) say to yourself, you will have this 
+		by the end of the month of May, otherwise, you will get down on yourself.
+		3) You can run in AMBER, so you can test to reduce cutoffs, you can compile in single precision to reduce the run time
+		   You should just setup a script to run AMBER simulations while you work on this Gromacs conversion.  This way you will
+		   at least feel a bit more productive than what you are doing now.  Shooting in the dark.
+		4) Also you have some data from Regis already, you CAN start doing some analysis on that data. So start thinking about
+		   what kinds of analysis that you will be doing and start setting that up instead of stuck on one thing, not making 
+		   progress.
+===============================================================

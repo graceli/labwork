@@ -1,0 +1,42 @@
+=====================
+at home:
+
+tried to run grompp
+-even though it said that grompp.mdp (MD input parameters) were optional, the darn thing wouldn't read
+the rest of the commandline with out the file.
+-need to use gromacs with amberffs installed
+-try again at the lab on abel
+=====================
+at the lab:
+
+-found out : OWT3 is the Oxygen atom type for tip3p.itp - gromacs forcefield tip3p?
+I had to copy over ffamber_tip3p.itp to /usr/share/gromacs/top
+and #include "ffamber_tip3p.itp" for the waters to be recognized by grompp
+-also had to rename WAT to HOH in the pdb
+
+editconf -f 2cpp_296.pdb converts a pdb to .gro file
+
+grompp -f grompp.mdp -c out.gro -p 2cpp_prm_renamed.gtop.top 
+	- grompp is now going through all the unrecognized atom types
+
+- after bumming around, chatting with vadim, I flipped through the topology chapter
+of gromacs and saw that:
+	- can add new atom types in the topology file (see last page of chap 5 in gromacs manual)
+-also downloaded and printed a training tutorial for parameterizing a novel residue
+
+================================
+gray binder clean out:
+
+Charmm on ivan: /home/cneale/exe/charmm_c28_unmodified/toppar/
+gromacs on CCB: /projects/pomes/cneale/gromacs-3.3.1/exec/fftw-3.1.2/bin/
+-d means double
+mdrun -mpi = lamMPI
+      -openmpi = openMPI
+
+setup sickkids email:
+sickkids email: gli@sickkids.ca pwd: orange
+http://wayne
+lefthand window adora step by step
+call 8427 for help
+
+-doing helps you learn faster linux, gromacs than just reading about them

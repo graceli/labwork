@@ -1,0 +1,6 @@
+- start a run on CCB using default PME param. and LJ cutoff of 10 A
+	NPT, with position restraint on the heavy atoms of the protein, solute, heme
+
+
+
+

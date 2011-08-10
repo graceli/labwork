@@ -1,0 +1,82 @@
+June 19, 2008
+
+ !!!!!!!!!!!!!!!!!!!! BACK UP EVERYTHING FIRST !!!!!!!!!!!!!!!!!!!!!!
+
+- Repartitioning harddrive
+- Installing fresh copy of Kubuntu Hardy Heron (I think its the RC version)
+- mounting file systems appropriately
+- Post installation : setting up drivers 
+
+Repartitioning harddrive:
+
+The following was done using the partition editor that was provided with the Kubuntu Hardy heron desktop 
+CD:
+
+1) Deleted the linux partition
+2) Resized Windows partition down 
+3) Created the following partitions
+- Primary for mounting "/" (280 gigs)
+- Logical for mounting "/home" (22 gigs)
+
+Mounting information 
+
+Primary /dev/sda1 20 gigs ntfs
+Primary /dev/sda2 275 gigs ext3 "/"
+Logical /dev/sda5 23 gigs ext3 "/home"
+Logical /dev/sda6 swap
+
+
+... Then I started to reconfigure my desktop setting to what it was before ...
+then realizing that I hadn't left space for all my data!! So, then
+1) made a live CD of gparted
+2) booted off of the live CD - this is important because the partition you are editing has to be unmounted
+3) resized the "/" mounted partition to 50 gigs
+4) made the freed space a primary partition with ext3 FS
+5) booted into Kubuntu with no problems
+6) sudo mkdir /work 
+7) manually edited /etc/fstab to mount /work automatically
+and  Windows partition (Was not mounted automatically)
+[Note: the fstab file is the specification file for how to mount the various partitions at boot up] 
+
+The following is the current /etc/fstab file contents:
+
+# /etc/fstab: static file system information.
+#
+# <file system> <mount point>   <type>  <options>       <dump>  <pass>
+proc            /proc           proc    defaults        0       0
+# /dev/sda1
+UUID=8EC48DD2C48DBCC9                     /media/windows  ntfs-3g defaults,nls=utf8,umask=007,gid=46 0 1
+# /dev/sda2
+UUID=af828193-9c8c-4ced-9473-fd252f3b8b7c /               ext3    relatime,errors=remount-ro 0       1
+# /dev/sda5
+UUID=beb2176c-a785-4fcd-93b6-9ad82e7c3a30 /home           ext3    defaults        0       2
+# /dev/sda4
+UUID=fa833d99-1188-49ad-9ee6-5cbed4c7173a /work           ext3    defaults        0       2
+# /dev/sda6
+UUID=4d08b698-1f00-46ae-b269-4a30b801f644 none            swap    sw              0       0
+/dev/scd0       /media/cdrom0   udf,iso9660 user,noauto,exec,utf8 0       0
+/dev/fd0        /media/floppy0  auto    rw,user,noauto,exec,utf8 0       0
+
+the mounting options for sda1 I copied from some random blog about how to mount windows parition under 
+ubuntu (I think)
+
+defaults is a good enough setting for /home and /work
+the "relatime" option makes both non-permissible for users to make modification. I have no idea
+what this option stands for.
+
+[ Note: UUIDs are used instead of /dev/name_of_device for uniqueness.  To get the UUID of a device
+use: sudo vol_info /dev/name_of_device or udevinfo -q env -n /dev/name_of_device ]
+
+Post-installation:
+- Fonts: turning on anti-aliasing seems to have made the fonts look like the way I had it with 6.10
+- Nvidia drivers
+	- use apt-get to get a script called "envy" - automatically gets ATI or NVIDIA drivers based on the card it auto detects from your computer
+- compiling Gnuplot with readline, and x11 terminal
+  - need to specify where the X libraries are to the configure script !!  The default configure script is not looking where Kubuntu puts it
+  - specify --with-x
+  - need to install readline libraries
+  essentially running ./configure will tell you what you need to do to get gnuplot compiled in the way you want it
+- need PDFlite if what pdf terminal - this is not opensource
+
+- adding the printer (no color)
+ 142.20.137.141:631/printers/lp

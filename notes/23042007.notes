@@ -1,0 +1,56 @@
+TO DO:
+- convert amber topology to gromacs topology
+- is p450 thermostable
+- have they found a substrate entrance pathway; verified by experiment?
+- (unfolding of p450?)
+___________
+
+- created pdb trajectory to get SDFs of ACT and GND
+- what is going on with the grouped rdf counts? (not done)
+- read about ffs: OPLS for the ion pair
+============
+What happened:
+
+Misc:
+- set pm3d map corners2color c1
+in gnuplot to get rid of averaging for a pixel 
+
+- looked up amber prmtop file format to learn how to read it in
+- looked up gromacs top file format
+- read about forcefields in Leach 1996 Molecular Modeling
+   - QM used to provide the data for parametrization of MMFF
+   - charge distribution of a molecule using multipole expansion (this is difficult to understand)
+   - forcefield should be thought of as a whole not energy divided into parts
+   -    create: 1) choose function form 2) determine data to be used for parameterization
+   - difficulties: parameters often have dependencies, can't treat in isolated manner.
+
+- Goal: created a gromacs top file from amber top file
+- problems: gromacs top file variable depending on the forcefield and it's naming convention
+- need gromacs top file for whatever forcefield that was used for P450cam ( I think it's parm94.dat )
+
+step 1: determine which forcefield was used
+	soln: find a residue that have different parameters between teh various amber forcefields and look it up
+	OK, I'm getting nowhere with this because: I don't know the order in which teh bond types are listed
+	is it listed in a certain order for each amino acid in the order of the pdb file? 
+	- Start small, grab a couple of amino acids, create pdb and output a top file using parm94 using leap
+		outputted a amber top file for the ASN, LEU dipeptide pdb file; conclusion: bond types seems to be outputted
+		in some specific order, because parameters don't match up when compared with 2cpp_prm.top file
+		emailed amber people through mailing list asking about this.
+	- ask Joseph
+	- keep search on google
+	- read around in amber manual
+	- look at the tleap code which does the prmtop output
+
+step 2: import the forcefield into gromacs using folding@home methods
+step 3a: write a top file of ala dipeptide using amber
+step 3: write out an alanine dipeptide top file gromacs format to learn what the naming convention is like
+step 4: write program to convert top files test on the dipeptide top; check line by line
+step 5: run on the existing P450cam amber top file to gromacs top format
+step 6: create molecule.itp files for both camphor and heme groups in gromacs
+if all this is done by this week, start simulations
+Prepare set of questions for Eliza regarding the charge of Fe on the heme
+
+- found Science paper on catalytic pathway of P450. It looks like they already know what is the pathway
+for substrate entrance. through crystallography.
+- I don't think p450cam is thermostabily, but people have created mutations that are thermostable
+- AMBER ptraj trajout does not output the box dimensions

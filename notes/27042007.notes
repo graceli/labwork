@@ -1,0 +1,27 @@
+to do:
+
+- replace all current AMBER atom types with renamed Gromacs amber94* atom types (1 hour)
+	DONE
+
+- change N term and C term amino acid residue names
+
+- delete waters include tip3p.itp
+- produce a gro file using some pdb as the starting structure: (2 hours)
+	NO, the same program which produced a gro top file does not accurately produce a .gro file
+	INSTEAD use ambpdb to create a PDB file from the .rst file and then I will convert this file to 	gro file
+
+  possible way:
+	1 - hack the ambconv program to output a gro
+	2 - write a program myself to convert pdb to a gro file
+
+total time 3 hours
+
+This here will be left to Saturaday!
+- create a gromacs simulation parameter file (1 hour)
+- run grompp (iterate) 
+- debugging (2 hours?)
+
+total time 6 hours
+
+- 2 hours for lunch  - lunch was 2:30 hours
+- movie at 7:30 or 8:00 ?  movie was at 7:00

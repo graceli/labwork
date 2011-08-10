@@ -1,0 +1,173 @@
+Realized that adding in the ions manually, I did not account for the fact that some solvent molecules must be deleted.
+
+setup amber ions to work with genion
+
+- ok not really, I added teh counterions first then water. I don't think there is anything wrong with this as I think Gromacs will make sure not to place waters on top of ions
+
+solvating with ions in the box already
+- first change the box size to 8.3 nm cubed
+ editconf -f 2cpp_010_ions.gro -box 8.3 8.3 8.3
+
+Read 6525 atoms
+Volume: 512000 nm^3, corresponds to roughly 230400000 electrons
+No velocities found
+    system size :  7.801  7.104  5.459 (nm)
+    center      :  3.985  4.219  2.794 (nm)
+    box vectors : 80.000 80.000 80.000 (nm)
+    box angles  :  90.00  90.00  90.00 (degrees)
+    box volume  :512000.00               (nm^3)
+    shift       :  0.165 -0.069  1.356 (nm)
+new center      :  4.150  4.150  4.150 (nm)
+new box vectors :  8.300  8.300  8.300 (nm)
+new box angles  :  90.00  90.00  90.00 (degrees)
+new box volume  : 571.79               (nm^3)
+
+
+genbox -cp 2cpp_010_ions_resized.gro -cs ffamber_tip3p.gro   
+*** genbox
+Opening library file /usr/share/gromacs/top/aminoacids.dat
+Opening library file /usr/share/gromacs/top/atommass.dat
+Opening library file /usr/share/gromacs/top/vdwradii.dat
+Opening library file /usr/share/gromacs/top/dgsolv.dat
+#Entries in atommass.dat: 82 vdwradii.dat: 29 dgsolv.dat: 7
+Reading solute configuration
+Getting the Right Output Means no Artefacts in Calculating Stuff
+Containing 6525 atoms in 457 residues
+Initialising van der waals distances...
+Reading solvent configuration
+"TIP3P "
+solvent configuration contains 1536 atoms in 512 residues
+
+Initialising van der waals distances...
+Will generate new solvent configuration of 4x4x4 boxes
+Generating configuration
+Sorting configuration
+Found 1 molecule type:
+    SOL (   3 atoms): 32768 residues
+Calculating Overlap...
+box_margin = 0.315
+Removed 34770 atoms that were outside the box
+Neighborsearching with a cut-off of 0.48
+Table routines are used for coulomb: FALSE
+Table routines are used for vdw:     FALSE
+Cut-off's:   NS: 0.48   Coulomb: 0.48   LJ: 0.48
+System total charge: 0.000
+Grid: 34 x 34 x 34 cells
+Succesfully made neighbourlist
+nri = 138865, nrj = 5590016
+Checking Protein-Solvent overlap: tested 123837 pairs, removed 6570 atoms.
+Checking Solvent-Solvent overlap: tested 562953 pairs, removed 6549 atoms.
+Added 16805 molecules
+Generated solvent containing 50415 atoms in 16805 residues
+Writing generated configuration to out.gro
+Getting the Right Output Means no Artefacts in Calculating Stuff
+
+Output configuration contains 56940 atoms in 17262 residues
+Volume                 :     571.787 (nm^3)
+Density                :     1016.89 (g/l)
+Number of SOL molecules:  16805
+
+
+- looked at the final solvated and counterionized structure file to see if waters were indeed on top of the ions and visually there was NO overlap
+commands in vmd:  waters within X of resname PO
+	  	  waters within X of resname CH
+******
+- reran grompp to generate the new tpr file with ions, waters
+- ran minimization  (em.mdp has the flag -DFLEXIBLE) 
+	mdrun -s protein_solvated.tpr
+	(see md.log)
+
+- position restrained dynamics
+	- spent like an hour writing a perl script that generates a posre.itp file from a given PDB for all the heavy atoms in the system
+
+perl protein_cam_min/make_posres.pl < protein_cam_min/2cpp_010.pdb > temp2
+
+similarly had to make posre file for camphor since, it's not part of the same itp file as the protein and the heme.
+
+grompp -f pr.mdp -c 2cpp_010_ions_solvated_minimized.gro -p cytochrome_p450_protein_water.top -o pr/pr.tpr   
+
+*** grompp pr output 
+creating statusfile for 1 node...
+
+Back Off! I just backed up mdout.mdp to ./#mdout.mdp.5#
+checking input for internal consistency...
+calling /usr/bin/cpp...
+In file included from cytochrome_p450_protein_water.top:8:
+/usr/share/gromacs/top/ffamber94bon.itp:426:22: warning: missing whitespace after the macro name
+/usr/share/gromacs/top/ffamber94bon.itp:428:22: warning: missing whitespace after the macro name
+/usr/share/gromacs/top/ffamber94bon.itp:429:22: warning: missing whitespace after the macro name
+/usr/share/gromacs/top/ffamber94bon.itp:432:21: warning: missing whitespace after the macro name
+/usr/share/gromacs/top/ffamber94bon.itp:441:19: warning: missing whitespace after the macro name
+processing topology...
+Generated 3828 of the 3828 non-bonded parameter combinations
+Generating 1-4 interactions: fudge = 0.8333
+Generated 3828 of the 3828 1-4 parameter combinations
+Excluding 3 bonded neighbours for protein 1
+turning all bonds into constraints...
+Excluding 3 bonded neighbours for CAM 1
+turning all bonds into constraints...
+Excluding 1 bonded neighbours for K+ 30
+turning all bonds into constraints...
+Excluding 1 bonded neighbours for CL- 20
+turning all bonds into constraints...
+Excluding 1 bonded neighbours for SOL 16805
+turning all bonds into constraints...
+NOTE:
+  System has non-zero total charge: 3.625326e-03
+
+processing coordinates...
+double-checking input for internal consistency...
+Velocities were taken from a Maxwell distribution at 300 K
+Reading position restraint coords from 2cpp_010_ions_solvated_minimized.gro
+renumbering atomtypes...
+converting bonded parameters...
+#     ANGLES:   11897
+#      PDIHS:   21320
+#       LJ14:   17059
+#     POSRES:   3192
+#     CONSTR:   6563
+#     SETTLE:   16805
+Walking down the molecule graph to make shake-blocks
+initialising group options...
+processing index file...
+Analysing residue names:
+Opening library file /usr/share/gromacs/top/aminoacids.dat
+There are: 16858      OTHER residues
+There are:   404    PROTEIN residues
+There are:     0        DNA residues
+Analysing Protein...
+Analysing Other...
+Making dummy/rest group for Acceleration containing 56940 elements
+Making dummy/rest group for Freeze containing 56940 elements
+Making dummy/rest group for Energy Mon. containing 56940 elements
+Making dummy/rest group for VCM containing 56940 elements
+Number of degrees of freedom in T-Coupling group Protein is 12650.67
+Number of degrees of freedom in T-Coupling group Non-Protein is 101188.34
+Making dummy/rest group for User1 containing 56940 elements
+Making dummy/rest group for User2 containing 56940 elements
+Making dummy/rest group for XTC containing 56940 elements
+Making dummy/rest group for Or. Res. Fit containing 56940 elements
+Making dummy/rest group for QMMM containing 56940 elements
+T-Coupling       has 2 element(s): Protein Non-Protein
+Energy Mon.      has 1 element(s): rest
+Acceleration     has 1 element(s): rest
+Freeze           has 1 element(s): rest
+User1            has 1 element(s): rest
+User2            has 1 element(s): rest
+VCM              has 1 element(s): rest
+XTC              has 1 element(s): rest
+Or. Res. Fit     has 1 element(s): rest
+QMMM             has 1 element(s): rest
+Checking consistency between energy and charge groups...
+Calculating fourier grid dimensions for X Y Z
+Using a fourier grid of 70x70x70, spacing 0.119 0.119 0.119
+writing run input file...
+
+Back Off! I just backed up pr/pr.tpr to pr/#pr.tpr.1#
+
+gcq#45: "You Try to Run the Universe" (Tricky)
+
+running md... system blew up!  How to debug this?
+
+
+
