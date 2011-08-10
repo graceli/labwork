@@ -1,0 +1,47 @@
+A not for dummies getting started with Gromacs Guide
+
+Note: Please refer to all the references when learning how to run with Gromacs 
+
+#get a parameter file (top file)
+#-ter is interactively select terminii.  This is because for adp you have special terminii caps not recognized by pdb2gmx
+# pdb2gmx will also automatically output a posre.itp. This are extra harmonic functions to position restrain your protein for
+# the initial equilibration run
+pdb2gmx -f adp.gro -ter -p yourtopol.top -o yournewgrofile.gro  
+
+
+#solvate the system with water
+#then make sure to add #include "tip3p.itp" or whatever water model you are using to your topology file
+genbox -cp adp.gro -cs /path/to/grofile.gro -p yourtopol.top -o adp_water.gro
+
+#Energy minimization step
+#create the tpr file; all you need is the tpr file for the simulation (its a bundle of your system and topology for the simulator engine to initiate your simulations)
+grompp -f em.mdp -c adp_water.gro -p yourtopol.top -o em.tpr
+mdrun -s em.tpr -deffnm em    #-deffnm just defines the same file name "em" for all output files
+
+#equilibration and "production" MD steps follow the exact same executable work flow steps 
+#grompp to make tpr
+#mdrun to run simulation
+# if you want to position restraint the protein
+# you can use "genposres" to generate a itp for a selection of atoms
+
+
+#Analysis
+#Useful analysis tools
+#Very useful to go through the list of the utility programs that gromacs comes with
+#before you start coding anything - saves you a lot of time!
+http://www.gromacs.org/Documentation/Gromacs_Utilities
+
+some notable ones that lab members use:
+g_rms - calculates rmsd of protein
+g_rdf - calculations radial distribution functions
+g_analyze - various analysis tools (averages, error bars .. etc)
+g_energy - extracts Thermodynamic parameters from your system
+
+pretty much you name it gromacs has it ... just make sure to look first.
+
+
+Resources
+- Google for "query + gromacs", should get lots of help from Gromacs Mailing List
+- website links (useful)
+http://www.gromacs.org/Documentation/How-tos
+http://www.gromacs.org/Documentation/Manual
