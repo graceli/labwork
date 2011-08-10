@@ -1,0 +1,11 @@
+set grid
+
+set term png
+set output "klvffae_end2end_withError_0.2ang.png"
+set xlabel "End to End distance in Angstroms"
+set ylabel "Probability"
+
+plot [4:21] 'scyllo_eed_withError.histo' w l lw 2 t 'scyllo-', '' u 1:2:3 w errorbars t '', 'chiro_withError_0.2ang.histo1000' w l lw 2 t 'chiro-', '' u 1:2:3 w errorbars t '', 'water_eed_withError_0.2ang.histo1000' w l lw 2 t 'no inositol', '' u 1:2:3 w errorbars t ''
+
+set output "klvffae_end2end_noError_0.2ang.png"
+plot [4:21] 'scyllo_eed_withError.histo' w l lw 2 t 'scyllo-', 'chiro_withError_0.2ang.histo1000' w l lw 2 t 'chiro-', 'water_eed_withError_0.2ang.histo1000' w l lw 2 t 'no inositol', '' u 1:2:3 w errorbars t ''
