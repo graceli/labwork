@@ -1,0 +1,34 @@
+9
+
+dir
+33
+svn+ssh://hpf.ccb.sickkids.ca/hpf/projects1/pomes/grace/src/repos
+svn+ssh://hpf.ccb.sickkids.ca/hpf/projects1/pomes/grace/src/repos
+
+
+
+2009-07-06T22:36:19.385037Z
+33
+grace
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+dc534bbf-5465-0410-8aa7-5dcbdac282c1
+
+nonpolar
+dir
+
+sidechains
+dir
+

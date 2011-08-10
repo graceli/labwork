@@ -1,0 +1,39 @@
+# Generated automatically from Makefile.in by configure.
+#
+# This is a Gromacs 3.0 g_parse_index makefile for your own utility programs.
+#
+# Copy this file to whatever directory you are using for your own
+# software and add more targets like the g_parse_index one below.
+#
+# If you are using gmake it is relatively straightforward to add
+# an include based on environment variables (like previous Gromacs versions)
+# to select compiler flags and stuff automatically, but below it is static:
+#
+
+# Variables set by the configuration script:
+LIBS         = -lmd -lgmx -lnsl -lfftw3f -lm   
+LDFLAGS      = -L/usr/lib   
+CFLAGS	     = -g -O3 -fomit-frame-pointer -finline-functions -Wall -Wno-unused -funroll-all-loops  -I/usr/include/gromacs	
+CC           = g++
+LD           = $(CC)
+OBJS	     = g_parse_index.o HB.o peptide.o hbgroup.o AminoAcid.o
+# The real make targets - note that most make programs support
+# the shortcut $^ instead of listing all object files a second
+# time, but we cannot count on it...
+
+g_parse_index: $(OBJS)
+	$(LD) $(LDFLAGS) -o /home/grace/bin/$@ $(OBJS) $(LIBS)
+
+
+HB.o: HB.cpp HB.h
+	$(CC) -c -I/usr/include/gromacs HB.cpp
+
+peptide.o: peptide.cpp peptide.h AminoAcid.h HB.h
+	$(CC) -c -I/usr/include/gromacs peptide.cpp
+
+hbgroup.o: hbgroup.cpp hbgroup.h
+	$(CC) -c -I/usr/include/gromacs hbgroup.cpp
+
+AminoAcid.o: AminoAcid.cpp AminoAcid.h
+	$(CC) -c -I/usr/include/gromacs AminoAcid.cpp
+

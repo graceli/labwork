@@ -1,0 +1,22 @@
+# Generated automatically from Makefile.in by configure.
+# This is a Gromacs 3.0 makefile for your own utility programs.
+#
+# If you are using gmake it is relatively straightforward to add
+# an include based on environment variables (like previous Gromacs versions)
+# to select compiler flags and stuff automatically, but below it is static:
+#
+
+# Variables set by the configuration script:
+LIBS         = -lmd -lgmx -lnsl -lfftw3f -lm   
+LDFLAGS      = -L/usr/lib   
+CFLAGS	     = -O3 -fomit-frame-pointer -finline-functions -Wall -Wno-unused -funroll-all-loops  -I/usr/include/gromacs	
+CC           = g++ 
+LD           = $(CC)
+
+# The real make targets - note that most make programs support
+# the shortcut $^ instead of listing all object files a second
+# time, but we cannot count on it...
+
+g_inositol_residue_nonpolar_v2:	g_inositol_residue_nonpolar_v2.o
+		$(LD) $(LDFLAGS) -o /work/grace/bin/$@ g_inositol_residue_nonpolar_v2.o $(LIBS)
+

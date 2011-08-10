@@ -1,0 +1,28 @@
+# For compiling on abel
+#
+# Variables set by the configuration script:
+LIBS         = -lmd -lgmx -lnsl -lfftw3f -lm   
+LDFLAGS      = -L/home/grace/bin/gromacs-3.3.1/lib 
+CFLAGS	     = -g -O3 -fomit-frame-pointer -finline-functions -Wall -Wno-unused -malign-double -funroll-all-loops  -I/home/grace/bin/gromacs-3.3.1/include/gromacs
+CC           = g++
+LD           = $(CC)
+OBJS	     = g_parse_index.o HB.o peptide.o hbgroup.o AminoAcid.o
+
+g_parse_index: $(OBJS)
+	$(LD) $(LDFLAGS) -o ../bin/$@ $(OBJS) $(LIBS)
+
+HB.o: HB.cpp HB.h
+	$(CC) -c -I/home/grace/bin/gromacs-3.3.1/include/gromacs HB.cpp
+
+peptide.o: peptide.cpp peptide.h AminoAcid.h HB.h
+	$(CC) -c -I/home/grace/bin/gromacs-3.3.1/include/gromacs peptide.cpp
+
+hbgroup.o: hbgroup.cpp hbgroup.h
+	$(CC) -c -I/home/grace/bin/gromacs-3.3.1/include/gromacs hbgroup.cpp
+
+AminoAcid.o: AminoAcid.cpp AminoAcid.h
+	$(CC) -c -I/home/grace/bin/gromacs-3.3.1/include/gromacs AminoAcid.cpp
+
+clean:
+	rm $(OBJS)
+
