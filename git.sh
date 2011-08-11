@@ -4,3 +4,4 @@ git
 
 # add a global ignore file to git
 git config --global core.excludesfile ~/.gitignore_global
+
