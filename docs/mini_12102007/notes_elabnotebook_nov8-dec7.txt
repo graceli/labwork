@@ -1,0 +1,94 @@
+Grace Li <fullofgrace88@gmail.com> 	Fri, Dec 7, 2007 at 11:25 AM
+To: "Me, myself and I" <fullofgrace88@gmail.com>
+- this is something we over looked for these systems which is to look at whether inositol binding with peptides replaces an intra, inter or and water-peptide hydrogen bond.
+Another way of looking at this is,  do inositol intercalate/bridge (ie. binding and replacing inter or intra peptide-peptide HBs) or "add", ie, bind to edges/exposed backbone to water.
+
+Essentially we want to do the same analysis that we will do for the fibril system.
+Grace Li <fullofgrace88@gmail.com> 	Fri, Dec 7, 2007 at 3:02 PM
+To: "Me, myself and I" <fullofgrace88@gmail.com>
+
+
+[Quoted text hidden]
+This is going into more of a mechanistic analysis.  That is, what are the sequence of events leading up to disaggregation.  Essentially, the analysis Regis asked me to do for the anecdotal event of disaggregation - for this it would be nice to plot the hydrogen bonding distance between the peptide groups and inositol peptide groups over time. 
+
+
+Grace Li <fullofgrace88@gmail.com> 	Mon, Dec 3, 2007 at 5:32 PM
+To: "Me, myself and I" <fullofgrace88@gmail.com>
+->Systems to run, possibly:
+
+- What is the effect of inositol on the partitioning of GAGAGAGA at the octane interface ?
+- Take GAGAGAGA globby (finite monomeric and sheet) systems and place
+1) far away from slab
+2) on the slab
+on both sides.  Then, add inositols.  what happens ???
+This will require 2 controls: 1) inositol with slab and 2) peptides with slab
+
+- Take Ana's structures with (GV)4, which has both monomers and aggregates and add inositols.
+Can test whether inositol is more likely to bind monomers or aggregates. Effect of inositol on the conformational equilibrium of (GV)4 ?
+
+-> Difficult to directly compare the globby systems with ordered sheets(infinite)
+Run simulations with 16 GAGAGAGA peptides (16 peptides in infinite sheet systems) to compare binding to ordered (infinite sheet) vs. disordered aggregates
+
+-> Is there an (anti) correlation between # of inter-peptide HB and # of inositol-peptide hydrogen bonds?
+(contact map of #inter HB vs # inos-pep)
+
+
+Grace Li <fullofgrace88@gmail.com> 	Tue, Nov 27, 2007 at 7:04 PM
+To: "Me, myself and I" <fullofgrace88@gmail.com>
+Lab meeting: discussion of path ensemble for sampling bistable Go model of Calmodulin
+method basically assumes that you know your starting and end points of the simulation, but you have no idea what is the reaction coordination or pathway to get from start to end and that there are a large number of ways to get from the start to the end.   This technique could be applicable for my system where I know the start (fibrils with inositol) and end (disaggregated state ... which "end" point would I be choosing?)
+Keep this idea in mind. This is definitely something I could try
+
+- I could also try to increase the temperature of my simulations (to 310 K)
+- change current simulations to constant pressure instead of constant volume. Use semiisotropic where the z pressure coupling is not correlated with the xy pressure coupling
+- easiest thing to do is to switch to anisotropic pressure coupling;  maybe there will be large deformations.
+Maybe the fact that I'm using constant volume is preventing my sheet from dissolving....
+
+Ana: 
+-We want to systematically test the effect of the presence of the octane slab on the conformational equilibrium of various peptides.  To do this, take many (40 total peptides of different conformation, put 8 per box, 4 on each side of the slab) starting conformations of peptides from various states (determined through discretization of End-end distance distributions - get from sarah gro files).  Determine a concentration where they would not clump together in solution before being absorbed to the interface. After absorption, can then trim the thickness of waters to speed up runs because the peptides will not come off of the slab once bound to the slab.
+We expect that the presence of octane will drive the equilibrium to favor extended conformers of these peptides (tau, GV*4 etc)
+-Continue aggregation runs, where Ana seeds Beta sheet formation by throwing in large concentration of peptides in extended starting conformation
+-separately analyze populations at the interface and populations in solution
+
+Grace Li <fullofgrace88@gmail.com> 	Fri, Nov 23, 2007 at 6:10 PM
+To: "Me, myself and I" <fullofgrace88@gmail.com>
+We want to place a "checkpoint" along each pathway of aggregation to learn about how inositol would behavior
+We don't know how inositol interacts with various species along the aggregation pathway.  There isn't just one mechanism by which inositol operates
+Inositol might exist with aggregates, but the aggregates might be in a different conformation
+
+It is still important to understand how inositol effects the conformational equilibrium of a single GAGAGAGA monomer.  We can actually do this by determining a minimal set of conformations of GAGAGAGA from equilibrium (Sarah already has this) which gives the avg properties (or close to it) at equilibrium, then I can use this set of conformations and run molecular dynamics with inositol (what concentration? how big should the box be?)
+Sarah said she can easily find compute the set for me.  The set might be 100 or 200 conformations, and I can just run long enough for each conformation so that enough binding and unbinding events will be observed.   In the end, using this method, I can in fact find out HOW inositol displaces the equilibrium of a monomer of GAGAGAGA! And this is a significant question to answer. 
+
+Grace Li <fullofgrace88@gmail.com> 	Wed, Nov 21, 2007 at 1:37 PM
+To: "Me, myself and I" <fullofgrace88@gmail.com>
+- Next committee meeting in March 2008
+- provide quantitative analysis for all GAGA with scyllo and chiro
+- complete the analysis with both perfect and imperfect fibril of GAGA
+- Can't predict when I'll have enough for a thesis
+- So far: Very good progress, and knowledge of research and general knowledge
+- They can't predict when I'll finish
+
+BE MORE PREPARED FOR PRESENTATION
+QUANTITATIVE RESULTS
+- compare and contrast the systems -- this part of what regis meant was to see the logical connection and hierarchy of the systems
+- the new systems are exciting to run (I could, but I don't have to do that)
+- place the results in the context of the field, cite experimental papers relevant to the work (Avi would like that)
+- compare the other stereoisomers on the model
+- think about what other compounds of similar structure may have similar properties (Mark)
+- start looking at some of Dennis Selkoe's data ( Annuals Neuro December 2006, showed that no disaggregation of cell-derived oligomers even with long incubation times, but somehow neutralized all their toxicity )
+- Ana's slab membrane systems formation of beta sheet by adding large concentrations of peptides!!  What happens if we add inositol, do we still observe beta-sheet formation?
+
+Grace Li <fullofgrace88@gmail.com> 	Thu, Nov 8, 2007 at 5:34 PM
+To: "Me, myself and I" <fullofgrace88@gmail.com>
+Regis would like to see the hydrogen bonding analysis of inositol to the sheet  BEFORE the orientational analysis of inositol on sheet.
+Are inositols making any hydrogen bonds to the sheet? 
+We looked at the trajectory of my GAGAGAGA antiparallel (parallel stacked) sheets. 
+From my mindist (inositol, sheet surf) analysis, we saw that in about the first 7 ns of the simulation, one of the inositol has mindist about 4 Angstroms away.
+Looking in the first 5ns of this trajectory, it was observed THAT
+inositols can 1 and 2 hydrogen bonds by donating (to the carbonyl C=O group) and accepting from (the N-H)
+accepting from N-H is observed to occur much less than donating to CO due to the restricted N-H being conformationally restricted and N-H has to rearrange to reach the acceptor (inositol)
+However, inositol can donate in any conformation  (Gramicidin analogy)
+
+Just from observation, the more likely "mode" of backbone hydrogen binding is when 2 adjacent OH groups of inositol (Z shaped : where diagonal is inositol) cross donate to two CO groups sitting on adjacent (in-register) residues of peptides.  However, many other possible modes can also exist, but was not visually verified in the time-restricted viewing of the trajectory.
+As well, inositols are found in the "pizza-cutter" orientation when bidentate binding occurs.
+Systematic analysis must be done on each of the trajectories to identify dominant modes of binding.

@@ -1,0 +1,72 @@
+DR Programmer's Guide (Draft, August 23rd 2010)
+
+DR files
+
+input
+.script -- a text configuration file that the server app uses to setup and manage a run
+
+output
+.forcedatabase  -- a binary file containing replica information and additional data sent to the server by the user
+
+
+DR core data structures
+
+DR core algorithm
+
+Key functions implementing the DR algorithm
+
+In DR_server.cpp:
+	float replica_linearizing_function(float w, const struct script_struct *script)
+	double replica_potential(const struct script_struct *script) -- computes the DRPE
+	float calculate_monte_carlo_move(float w, const struct script_struct *script)
+	float determine_new_replica_position_monte_carlo_or_vre(struct client_struct *client, int replicaN, const float *energy_data, const struct script_struct *script, const struct server_variable_struct *var)
+
+Key functions implementing the server/client interactions:
+
+In DR_server.cpp:
+	void *client_interaction(struct client_bundle *B)
+	void *wait_for_clients(struct client_bundle *B)
+
+Overview of files in the source/ folder of the repository
+
+DR_client_comm.cpp
+- does a bunch of send and receives (presumably with the server)
+
+DR_commander.cpp
+- sends either a Exit message or Snapshot message to a server at some IP address and socket number
+
+DR_server.cpp
+
+
+DR_tester.cpp
+getTPROffsets.cpp
+modTPR_absolutesteps.cpp
+
+
+DR_protocol.h
+ -- enums of keywords used in various places within the code; this file is included whenever those keywords are used
+
+analyse_force_database.cpp
+	- processes the .forcedatabase file
+
+calcMSD.c
+extractDatabase.c
+extractDatabse_replica.c
+ 	- stand-alone C program that processes a text database extracted from a .forcedatabase file; these programs attempts to emulate
+	database queries on a flat text file.
+
+
+get_simulation_package.c
+
+manipulate_force_database.h
+
+string_double.h
+	double string_double(string s) -- a function that converts a string containing a double to a double type
+
+vre.h
+
+force_database_class.h
+
+getallocleft
+drsub
+
