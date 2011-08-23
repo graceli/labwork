@@ -1,0 +1,316 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
+#include "Dipeptide.h"
+#include "Inositol.h"
+
+
+using namespace std;
+
+const int MAX=100;
+const int NUM_LINES=61;
+const int SIZE_RAMA = 60000;
+bool readGroFile(ifstream& gro, double** dipepCoords, vector<Inos*>& inositols){
+	string title, numAtoms;
+	string line;
+	//ifstream gro(grofile.c_str());
+
+	//get a line and parse each line using the stringstream
+	int lineNum=0;
+	string resname, atomname;	
+	int atomnum;
+	double x,y,z;
+	int inosIndex=0;
+	double** inosCoords;
+	inosCoords=new double*[12];
+	for(int i=0; i<12; i++){
+		inosCoords[i]=new double[3];
+	}
+
+	while(getline(gro,line)){
+		//ignore comments the number of atoms
+		if(lineNum  < 2){
+			cerr<<lineNum<<" ignored: "<<line<<endl;
+			lineNum++;
+			continue;
+		}
+		//read body: read in dipeptide coordinates
+		istringstream ist(line);
+		ist>>resname>>atomname>>atomnum>>x>>y>>z;
+
+		//cerr<<resname<<" "<<atomname<<" "<<atomnum<<" "<<x<<" "<<y<<" "<<z<<endl;
+		if(lineNum < 12) {
+			cerr<<lineNum<<":recording dipeptide coordinates"<<endl;
+			dipepCoords[lineNum-2][0]=x; dipepCoords[lineNum-2][1]=y; dipepCoords[lineNum-2][2]=z;
+		}else if(lineNum >= 12 && lineNum < 60){
+			if(lineNum == 12){
+				cerr<<lineNum<<":read one dipeptide"<<endl;
+			}
+			//read in inositol coordinates
+			inosCoords[inosIndex%12][0]=x; inosCoords[inosIndex%12][1]=y; inosCoords[inosIndex%12][2]=z;
+			inosIndex++;
+			if(inosIndex % 12 == 0){
+				cerr<<"read 1 inositol"<<endl;
+				Inos* inos = new Inos(inosCoords);
+				inositols.push_back(inos);
+				
+				inosCoords=new double*[12];
+				for(int i=0; i<12; i++){
+					inosCoords[i]=new double[3];
+				}
+			}
+		}else if(lineNum == 60){
+			cerr<<lineNum<<" "<<line<<endl;
+			cerr<<"ignored box dimensions.Read "<<lineNum<<". Finished reading one frame. "<<endl;
+			return true;
+		}
+		lineNum++;
+	}
+	return false;
+}
+
+void print_state(int state[3][3]){
+	for(int i=0; i<3; i++){
+		for(int j=0; j<3; j++){
+			cout<<state[i][j]<<" ";
+		}
+		cout<<endl;
+	}
+}
+void readRamaFile(ifstream& rama, double** ramaHistogram){
+	string line;
+	int lineNum=0;
+	double phi, psi;
+	while(getline(rama,line)){
+		string first = line.substr(0,1);
+		if(first == "#" || first == "@"){
+			continue;
+		}
+	
+		cerr<<line<<endl;
+
+		istringstream ist(line);
+		ist>>phi>>psi;
+		ramaHistogram[lineNum][0]=phi;
+		ramaHistogram[lineNum][1]=psi;
+		lineNum++;
+	}
+}
+int main(int argc, char* argv[]){
+
+	if(argc < 3){
+		cerr<<"Usage: classify <grofile-name> <rama-file>"<<endl;
+		return 0;
+	}
+	
+	vector<Inos*> inositols;
+	string grofile(argv[1]);
+	string rama(argv[2]);
+	double** dipep=new double*[10];
+	for(int i=0; i<10; i++){
+		dipep[i]=new double[3];
+	}
+	ifstream gro(grofile.c_str());
+	ifstream rama_total(rama.c_str());
+	int period_pos = rama.rfind('.',rama.size()-1);
+	int slash_pos = rama.rfind('/',rama.size()-1);
+	string rama_fname = rama.substr(slash_pos+1,period_pos-slash_pos-1);
+	string rama12_fname = rama_fname+"12bid.dat";
+	string rama13_fname = rama_fname+"13bid.dat";
+	string rama14_fname = rama_fname+"14bid.dat";
+	string mono_fname = rama_fname + "_mono.dat";
+	string none_fname = rama_fname + "_none.dat";
+	ofstream rama12NHNH((rama_fname+"_NHNH_"+"12bid.dat").c_str());
+	ofstream rama13NHNH((rama_fname+"_NHNH_"+"13bid.dat").c_str());
+	ofstream rama14NHNH((rama_fname+"_NHNH_"+"14bid.dat").c_str());
+
+	ofstream rama12CONH((rama_fname+"_CONH_"+"12bid.dat").c_str());
+	ofstream rama13CONH((rama_fname+"_CONH_"+"13bid.dat").c_str());
+	ofstream rama14CONH((rama_fname+"_CONH_"+"14bid.dat").c_str());
+
+	ofstream rama12COCO((rama_fname+"_COCO_"+"12bid.dat").c_str());
+	ofstream rama13COCO((rama_fname+"_COCO_"+"13bid.dat").c_str());
+	ofstream rama14COCO((rama_fname+"_COCO_"+"14bid.dat").c_str());
+
+	ofstream monorama(mono_fname.c_str());
+	ofstream none(none_fname.c_str());
+	
+	double CO1coords[3], CO2coords[3];
+	double OHcoords[3];
+	int inosHbonds[6];	
+	int time=0;
+
+	double** ramaHistogram = new double*[SIZE_RAMA];
+	for(int i=0; i<SIZE_RAMA; i++){
+		ramaHistogram[i] = new double[2];
+	}
+
+	readRamaFile(rama_total,ramaHistogram);
+
+
+	while(readGroFile(gro,dipep,inositols)){
+		bool bid=false;
+		bool mono=false;
+		Dipeptide ala(dipep);
+		ala.getCO(0,CO1coords);
+		ala.getCO(1,CO2coords);
+		cout<<"time/frame = "<<time<<endl; 
+		int state[4][3]={{0,0,0},{0,0,0},{0,0,0},{0,0,0}};
+		for(int ins=0; ins<inositols.size(); ins++){
+			cout<<"Inositol #"<<ins<<endl;
+			for(int g=0; g<6; g++){
+				inositols[ins]->getOH(g,OHcoords);
+				bool inosDonor0 = inositols[ins]->isHbonded(g,CO1coords);
+				bool inosDonor1 = inositols[ins]->isHbonded(g,CO2coords);
+				bool inosAccept0 = ala.isHbonded(0,OHcoords);
+				bool inosAccept1 = ala.isHbonded(1,OHcoords);
+
+				if(inosDonor0 || inosDonor1){
+					if(inosDonor0){
+						cout<<"CO-0 ";
+						inosHbonds[g]=-1;
+					}else{
+						cout<<"CO-1 ";
+						inosHbonds[g]=-2;
+					}
+				}else if(inosAccept0 || inosAccept1){
+					if(inosAccept0){
+						cout<<"NH-0 ";
+						inosHbonds[g]=1;
+					}else{
+						cout<<"NH-1 ";
+						inosHbonds[g]=2;
+					}
+				}else{
+					cout<<"N ";
+					inosHbonds[g]=0;
+				}
+			}
+			cout<<endl;
+			//characterize bidentate, monodentate conformations
+			//check 1,2
+
+			//accumulate the number of 12, 13, 14 type binds over all inositols in snapshot
+			//12,13,14 type mono does not make sense
+			for(int i=0; i<6; i++){
+				//check 1,2 groups of inositol
+				if((inosHbonds[i] != inosHbonds[(i+1)%6] ) && inosHbonds[i]!=0 && inosHbonds[(i+1)%6]!=0 ){
+					//cout<<"bidentate,1-2"<<inosHbonds[i]<<" "<<inosHbonds[(i+1)%6]<<endl;
+					if(inosHbonds[i] < 0 && inosHbonds[(i+1)%6]<0) {
+						//CO-CO pair
+						state[1][1]++;
+					}else if(inosHbonds[i] > 0 && inosHbonds[(i+1)%6]>0){
+						//NH-NH pair
+						state[1][0]++;
+					}else {
+						state[1][2]++;
+					}
+					bid=true;
+				}
+			
+				//check 1,3 groups of inositol
+				if(inosHbonds[i] != inosHbonds[(i+2)%6] && inosHbonds[i] !=0 && inosHbonds[(i+2)%6]!=0){
+					if(inosHbonds[i] < 0 && inosHbonds[(i+2)%6]<0) {
+						//CO-CO pair
+						state[2][1]++;
+					}else if(inosHbonds[i] > 0 && inosHbonds[(i+2)%6]>0){
+						//NH-NH pair
+						state[2][0]++;
+					}else {
+						state[2][2]++;
+					}
+					bid=true;
+				}
+
+				if(inosHbonds[i] != inosHbonds[(i+3)%6] && inosHbonds[i] !=0 && inosHbonds[(i+3)%6] !=0){
+					if(inosHbonds[i] < 0 && inosHbonds[(i+3)%6]<0) {
+						//CO-CO pair
+						state[3][1]++;
+					}else if(inosHbonds[i] > 0 && inosHbonds[(i+3)%6]>0){
+						//NH-NH pair
+						state[3][0]++;
+					}else {
+						state[3][2]++;
+					}
+					bid=true;
+				}
+/*
+				else if(inosHbonds[i]!=0){
+					if(inosHbonds[i] < 0){
+						state[0][0]++;
+					}else if(inosHbonds[i] > 0){
+						state[0][1]++;
+					}
+					mono=true;
+				}//none
+*/
+			}
+		}
+		//print_state(state);
+		//sort dihedrals into different files according to 12, 13, 14, mono, none
+		
+		
+		
+		if(bid) {
+			if(state[1][0]){
+				rama12NHNH<<ramaHistogram[time][0]<<"\t"<<ramaHistogram[time][1]<<endl;
+				cout<<"bid 12 NH-NH"<<endl;
+			}
+			
+			if(state[2][0]){
+				rama13NHNH<<ramaHistogram[time][0]<<"\t"<<ramaHistogram[time][1]<<endl;
+				cout<<"bid 13 NH-NH"<<endl;
+			}
+			
+			if(state[3][0]){
+				rama14NHNH<<ramaHistogram[time][0]<<"\t"<<ramaHistogram[time][1]<<endl;
+				cout<<"bid 14 NH-NH"<<endl;
+			}
+
+			if(state[1][1]){
+				rama12COCO<<ramaHistogram[time][0]<<"\t"<<ramaHistogram[time][1]<<endl;
+				cout<<"bid 12 CO-CO"<<endl;
+			}
+			
+			if(state[2][1]){
+				rama13COCO<<ramaHistogram[time][0]<<"\t"<<ramaHistogram[time][1]<<endl;
+				cout<<"bid 13 CO-CO"<<endl;
+			}
+			
+			if(state[3][1]){
+				rama14COCO<<ramaHistogram[time][0]<<"\t"<<ramaHistogram[time][1]<<endl;
+				cout<<"bid 14 CO-CO"<<endl;
+			}		
+	
+			if(state[1][2]){
+				rama12CONH<<ramaHistogram[time][0]<<"\t"<<ramaHistogram[time][1]<<endl;
+				cout<<"bid 12 NH-CO"<<endl;
+			}
+			
+			if(state[2][2]){
+				rama13CONH<<ramaHistogram[time][0]<<"\t"<<ramaHistogram[time][1]<<endl;
+				cout<<"bid 13 NH-CO"<<endl;
+			}
+			
+			if(state[3][2]){
+				rama14CONH<<ramaHistogram[time][0]<<"\t"<<ramaHistogram[time][1]<<endl;
+				cout<<"bid 14 NH-CO"<<endl;
+			}
+		}else if(mono){
+			monorama<<ramaHistogram[time][0]<<"\t"<<ramaHistogram[time][1]<<endl;
+			cout<<"mono"<<endl;
+		}else{
+			none<<ramaHistogram[time][0]<<"\t"<<ramaHistogram[time][1]<<endl;
+			cout<<"none"<<endl;
+		}
+		inositols.resize(0);
+		time++;
+	}
+}
+
+
+
+
+
+
