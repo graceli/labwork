@@ -81,9 +81,9 @@ def read_and_save_data():
 			for i in range(0,4):			
 				# put all inositol analysis in a single table per system
 				# have separate tables for angles and distances_from_sheet
-				angle_name = 'GA4_perfect_' + iso + str(sys) + '_nosol.xtc_angle' + '_inos' + str(i) + '.xvg'
-				mindist_name = 'GA4_perfect_' + iso + str(sys) + '_nosol.xtc_mindist' + '_inos' + str(i+14) + '.xvg'
-				
+				angle_name = os.path.join('analysis', 'GA4_perfect_' + iso + str(sys) + '_nosol.xtc_angle' + '_inos' + str(i) + '.xvg')
+				mindist_name = os.path.join('analysis', 'GA4_perfect_' + iso + str(sys) + '_nosol.xtc_mindist' + '_inos' + str(i+14) + '.xvg')	
+
 				angle_all = read_helper(angle_name, angle_all)				
 				mindist_all = read_helper(mindist_name, mindist_all)
 				
@@ -93,8 +93,41 @@ def read_and_save_data():
 			if angle_all is not None and mindist_all is not None and angle_all.shape[0] > 0 and mindist_all.shape[0] > 0:
 				paths = [ '/angle/%(iso)s%(sys)d' % vars(), '/mindist/%(iso)s%(sys)d' % vars() ]
 				save_helper(h5file, [angle_all, mindist_all], paths)
+
 	return h5file
-	
+
+
+def read_and_save_data2():
+	h5file = tables.openFile('GA4_angles_analysis.h5', mode='a')
+	for iso in ["scyllo", "chiro"]:
+		for sys in range(0,3):
+			angle_all = numpy.array([])
+			mindist_all = numpy.array([])
+			for i in range(0,4):
+				# create a multicolumn array where first column is time, and the subsequent columns
+				# are the angles corresponding to each inositol with increasing molecule id			
+				angle_name = os.path.join('analysis', 'GA4_perfect_' + iso + str(sys) + '_nosol.xtc_angle' + '_inos' + str(i) + '.xvg')
+				results = numpy.array
+				if os.path.exists(angle_name):
+					results = numpy.genfromtxt(angle_name)
+				else:
+					print angle_name, "does not exist"
+					continue
+				
+				if angle_all == None or angle_all.shape[0] == 0:
+					angle_all = results
+				else:
+					print "angle_all", angle_all.shape
+					print "results", results.shape
+					angle_all = numpy.append(angle_all, results, axis=1)
+			
+			if angle_all is not None and angle_all.shape[0] > 0:
+				paths = [ '/angle/inf_perfect_%(iso)s_sys%(sys)d' % vars() ]
+				save_helper(h5file, [ angle_all ], paths)
+
+	return h5file
+
+		
 def get_angle_matrix(h5file, sys):
 	"""docstring for get_angle"""
 	path = os.path.join('/angle', sys)
@@ -163,9 +196,9 @@ def analysis(h5file):
 
 def main():
 	"""docstring for main"""
-	# h5file = read_and_save_data()
-	h5file = tables.openFile('GA4_angles_analysis.h5')
-	analysis(h5file)
+	h5file = read_and_save_data2()
+	# h5file = tables.openFile('GA4_angles_analysis.h5')
+	# analysis(h5file)
 	# for iso in ["scyllo", "chiro"]:
 	# 	fname = iso + '_data' + '_' + '0.35'
 	# 	plot_hist2d(fname)
