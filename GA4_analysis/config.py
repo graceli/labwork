@@ -27,4 +27,5 @@ def configure_plot():
 	pylab.rcParams['legend.fontsize'] = 8
 	#subplots_adjust(left=0, bottom=0, right=0.001, top=0.001, wspace=0, hspace=0)
 	pylab.rcParams['figure.figsize'] = [3.5,3.5]
+	pylab.rcParams['savefig.dpi'] = 300
 
