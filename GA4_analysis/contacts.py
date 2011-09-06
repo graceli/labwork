@@ -154,19 +154,20 @@ def polar():
 
 				repacked = numpy.array(repacked)
 				average = numpy.average(repacked, axis=0)
+				numpy.savetxt('%(system)s_%(iso)s_average.txt' % vars(), average, fmt='%0.3f')
+				
 				stddev = numpy.std(repacked, axis=0)
 				# average over time for each system
 				# print repacked.shape
 				average_over_time = numpy.average(repacked[:, 10000:, :], axis=1)
 				# print average_over_time.shape
-				average = numpy.average(average_over_time, axis=0)
+				average2 = numpy.average(average_over_time, axis=0)
 				std_error = numpy.std(average_over_time, axis=0)
 				# print std_error.shape
 				
-				numpy.savetxt('%(system)s_%(iso)s_average.txt' % vars(), average, fmt='%0.3f')
+				numpy.savetxt('%(system)s_%(iso)s_average2.txt' % vars(), average2, fmt='%0.3f')
 				numpy.savetxt('%(system)s_%(iso)s_std.txt' % vars(), stddev,fmt='%0.3f')
 				numpy.savetxt('%(system)s_%(iso)s_time_average.txt' % vars(), average_over_time, fmt='%0.3f')
-				numpy.savetxt('%(system)s_%(iso)s_average.txt' % vars(), average, fmt='%0.3f')
 				numpy.savetxt('%(system)s_%(iso)s_std_error.txt' % vars(), std_error, fmt='%0.3f')
 				
 			

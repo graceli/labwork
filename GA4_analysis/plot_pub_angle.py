@@ -2,12 +2,17 @@ import pylab
 import numpy
 import analysis_config
 
-def plot_bound_angles(fname, color, label):
+def plot_bound_angles(fname, color, line_type, label):
 	data = numpy.genfromtxt(fname+'.txt')
 	x = data[:, 0]
 	y = data[:, 1]
 	result, bins = numpy.histogram(y, bins=30, normed=True)
-	pylab.plot(bins[0:bins.shape[0]-1], result, color=color, label=label)
+	
+	lw = 1.0
+	if line_type == '--':
+		lw = 2.0
+	
+	pylab.plot(bins[0:bins.shape[0]-1], result, linewidth=lw, linestyle=line_type, color=color, label=label)
 	
 def plot_hist2d(fname):
 	data = numpy.genfromtxt(fname + '.txt')
@@ -24,15 +29,18 @@ def main():
 	analysis_config.plot_settings(setting="pub")
 	# pylab.ylabel(r'P($\alpha$)')
 	# pylab.xlabel(r'$\alpha(\deg)$')
+	
+	line_type = {'scyllo':'solid' , 'chiro': '--'}
 	for iso in ["scyllo", "chiro"]:
 		fname = iso + '_data' + '_' + '0.35'
-		color = analysis_config.LINE_COLOR[iso]
-		plot_bound_angles(fname, color, iso)
+		#color = analysis_config.LINE_COLOR[iso]
+		lt = line_type[iso]
+		plot_bound_angles(fname, 'black', lt, iso)
 		# plot_hist2d(fname)
 	
 	pylab.legend()
 	pylab.grid(True)
-	pylab.savefig('pub_angle_distribution.png', dpi=300)
+	pylab.savefig('pub_angle_distribution.pdf', dpi=1200)
 	
 	
 if __name__ == '__main__':

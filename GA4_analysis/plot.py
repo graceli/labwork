@@ -120,7 +120,7 @@ def plot_timeseries(xlabel='', ylabel=''):
 
 		# pylab.ylabel(ylabel)
 		# pylab.xlabel(xlabel)
-		pylab.savefig('%(system)s.png' %vars())
+		pylab.savefig('%(system)s.pdf' %vars(), dpi=300)
 		pylab.clf()
 
 def plot_timeseries_single(xlabel='', ylabel=''):
@@ -164,7 +164,7 @@ def plot_timeseries_single(xlabel='', ylabel=''):
 		
 		# pylab.ylabel(ylabel)
 		# pylab.xlabel(xlabel)
-		pylab.savefig('%(system)s.png' %vars())
+		pylab.savefig('%(system)s.pdf' %vars(), dpi=300)
 		pylab.clf()
 	
 def main():
