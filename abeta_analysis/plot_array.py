@@ -1,0 +1,86 @@
+import numpy
+import pylab
+import glob
+import sys
+import os
+
+# files = glob.glob("*.xvg")
+# print files
+def plot_rmsd(iso, ratio, fig, subplot_num):
+	filename="ab_%(iso)s_%(ratio)s_%(subplot_num)s_nosol_whole_rmsd_backbone.xvg" % vars()
+	if os.path.exists(filename):
+		data=numpy.genfromtxt(filename)
+		nrows,ncols=data.shape
+		ax=fig.add_subplot(3, 4, subplot_num)
+		fig.subplots_adjust(bottom=0.05, top=0.95, left=0.05, right=0.95, wspace=0.4, hspace=0.4)
+		ax.set_xlim(0, 200)
+		ax.set_ylim(0, 0.8)
+		# ax.axis('tight')
+		ax.plot(data[:,0]/1000.0, data[:,1], label=subplot_num)
+		ax.plot(data[:,0]/1000.0, [0.5]*nrows, 'g')
+		ax.set_title(subplot_num)
+
+def plot_rmsf(iso, ratio, fig, subplot_num):
+	filename="%(iso)s_%(ratio)s_%(subplot_num)d_rmsf.xvg" % vars()
+	if os.path.exists(filename):
+		print filename
+		data=numpy.genfromtxt(filename)
+		nrows,ncols=data.shape
+		values = data[:,1]
+		values_chain_matrix = values.reshape(-1, len(values)/5)
+		rows, cols = values_chain_matrix.shape
+		# average_rmsf_per_residue = numpy.average(values_chain_matrix, axis=0)
+		# pylab.axis('off')
+
+		ax=fig.add_subplot(3, 4, subplot_num)
+		fig.subplots_adjust(bottom=0.05,top=0.95,left=0.05,right=0.95,wspace=0.4, hspace=0.4)
+		for i in range(0, rows):
+			# pylab.plot(values_chain_matrix[i], label=nameslist[fig_num-1]+' chain %(i)d' % vars())
+			ax.plot(values_chain_matrix[i], label='chain %(i)d' % vars())
+	
+		# pylab.xticks(numpy.arange(0,26), matshow_axis_polar())
+		# ax.set_yticks()
+		ax.grid(True)
+		ax.set_xlim(0,26)
+		ax.set_ylim(0,0.8)
+		ax.set_title(subplot_num)
+		# pylab.xlabel('Abeta1-42 residues')
+		# pylab.ylabel('RMSF (nm)')
+		# pylab.legend(loc=0)
+		return 0
+	else:
+		print "WARNING: %(filename)s is not found in the current directory" % vars()
+		return 1
+		
+pylab.clf()
+pylab.rcParams['xtick.labelsize']='8'
+pylab.rcParams['ytick.labelsize']='8'
+pylab.rcParams['legend.fontsize']='8'
+pylab.rcParams['figure.figsize'] = [8,6]
+pylab.rcParams["axes.titlesize"]='small'
+
+if len(sys.argv) < 3: 
+	print "plot_array.py ratio iso analysis"
+
+ratio=sys.argv[1]
+# isomerList = ["scyllo", "chiro", "water"]
+iso = sys.argv[2]
+analysis = sys.argv[3]
+
+num_plotted = 0
+fig = pylab.figure()
+for i in range(1,11):
+	# plot_rmsd(fig, i)
+	if analysis == "rmsf":
+		print "plotting rmsf"
+		num_plotted += plot_rmsf(iso, ratio, fig, i)
+	elif analysis == "rmsd":
+		print "plotting rmsd"
+		num_plotted += plot_rmsd(iso, ratio, fig, i)
+	else:
+		print "no support for this option"
+
+if num_plotted > 0:
+	fig.savefig("%(iso)s.png" % vars())
+else:
+	print "A figure was not saved because some files were not found."
