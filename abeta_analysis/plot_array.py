@@ -4,8 +4,9 @@ import glob
 import sys
 import os
 
-# files = glob.glob("*.xvg")
-# print files
+# my module
+import utils
+
 def plot_rmsd(iso, ratio, fig, subplot_num):
 	filename="ab_%(iso)s_%(ratio)s_%(subplot_num)s_nosol_whole_rmsd_backbone.xvg" % vars()
 	if os.path.exists(filename):
@@ -51,36 +52,69 @@ def plot_rmsf(iso, ratio, fig, subplot_num):
 	else:
 		print "WARNING: %(filename)s is not found in the current directory" % vars()
 		return 1
+
+# Plots the number of chain-chain hydrogen bonds vs time
+def plot_single_hbond():
+	#def smooth(data, window_size, time_present=True, timestep=1):
+	pylab.rcParams['xtick.labelsize']='10'
+	pylab.rcParams['ytick.labelsize']='12'
+	pylab.rcParams['legend.fontsize']='12'
+	pylab.rcParams['figure.figsize'] = [2.5,2.5]
+	pylab.rcParams["axes.titlesize"]='small'
+
+	A=utils.smooth(numpy.genfromtxt('chain_0_1_hbonds.xvg', skip_header=20), 1000, timestep=2)
+	B=utils.smooth(numpy.genfromtxt('chain_1_2_hbonds.xvg', skip_header=20), 1000, timestep=2) 
+	C=utils.smooth(numpy.genfromtxt('chain_2_3_hbonds.xvg', skip_header=20), 1000, timestep=2)
+	D=utils.smooth(numpy.genfromtxt('chain_3_4_hbonds.xvg', skip_header=20), 1000, timestep=2)
+
+	print A
+
+	time = A[:,0]/1000.0
+	pylab.plot(time, A[:,1], label="chain 1-2")
+	pylab.plot(time, B[:,1], label="chain 2-3")
+	pylab.plot(time, C[:,1], label="chain 3-4")
+	pylab.plot(time, D[:,1], label="chain 4-5")
+	pylab.ylim(0, 30)
+	pylab.xlim(0, 140)
+	pylab.grid(True)
+	# xlabel('Time (ns)')
+	# ylabel('Number of interchain hydrogen bonds')
+	# legend(loc='lower right')
+	pylab.savefig('chain_hbonds.png')
 		
-pylab.clf()
-pylab.rcParams['xtick.labelsize']='8'
-pylab.rcParams['ytick.labelsize']='8'
-pylab.rcParams['legend.fontsize']='8'
-pylab.rcParams['figure.figsize'] = [8,6]
-pylab.rcParams["axes.titlesize"]='small'
+def main():
+	pylab.clf()
+	pylab.rcParams['xtick.labelsize']='8'
+	pylab.rcParams['ytick.labelsize']='8'
+	pylab.rcParams['legend.fontsize']='8'
+	pylab.rcParams['figure.figsize'] = [8,6]
+	pylab.rcParams["axes.titlesize"]='small'
 
-if len(sys.argv) < 3: 
-	print "plot_array.py ratio iso analysis"
+	if len(sys.argv) < 3: 
+		print "plot_array.py ratio iso analysis"
 
-ratio=sys.argv[1]
-# isomerList = ["scyllo", "chiro", "water"]
-iso = sys.argv[2]
-analysis = sys.argv[3]
+	ratio=sys.argv[1]
+	# isomerList = ["scyllo", "chiro", "water"]
+	iso = sys.argv[2]
+	analysis = sys.argv[3]
 
-num_plotted = 0
-fig = pylab.figure()
-for i in range(1,11):
-	# plot_rmsd(fig, i)
-	if analysis == "rmsf":
-		print "plotting rmsf"
-		num_plotted += plot_rmsf(iso, ratio, fig, i)
-	elif analysis == "rmsd":
-		print "plotting rmsd"
-		num_plotted += plot_rmsd(iso, ratio, fig, i)
+	num_plotted = 0
+	fig = pylab.figure()
+	for i in range(1,11):
+		# plot_rmsd(fig, i)
+		if analysis == "rmsf":
+			print "plotting rmsf"
+			num_plotted += plot_rmsf(iso, ratio, fig, i)
+		elif analysis == "rmsd":
+			print "plotting rmsd"
+			num_plotted += plot_rmsd(iso, ratio, fig, i)
+		else:
+			print "no support for this option"
+
+	if num_plotted > 0:
+		fig.savefig("%(iso)s.png" % vars())
 	else:
-		print "no support for this option"
+		print "A figure was not saved because some files were not found."
 
-if num_plotted > 0:
-	fig.savefig("%(iso)s.png" % vars())
-else:
-	print "A figure was not saved because some files were not found."
+if __name__ == '__main__':
+	main()
