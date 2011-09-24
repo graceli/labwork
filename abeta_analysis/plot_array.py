@@ -54,45 +54,52 @@ def plot_rmsf(iso, ratio, fig, subplot_num):
 		return 1
 
 # Plots the number of chain-chain hydrogen bonds vs time
-def plot_single_hbond():
-	#def smooth(data, window_size, time_present=True, timestep=1):
-	pylab.rcParams['xtick.labelsize']='10'
-	pylab.rcParams['ytick.labelsize']='12'
-	pylab.rcParams['legend.fontsize']='12'
-	pylab.rcParams['figure.figsize'] = [2.5,2.5]
-	pylab.rcParams["axes.titlesize"]='small'
+def plot_chain_hbond(iso, ratio, fig, subplot_num):
+	ax=fig.add_subplot(3, 4, subplot_num)
+	fig.subplots_adjust(bottom=0.05,top=0.95,left=0.05,right=0.95,wspace=0.4, hspace=0.4)
 
-	A=utils.smooth(numpy.genfromtxt('chain_0_1_hbonds.xvg', skip_header=20), 1000, timestep=2)
-	B=utils.smooth(numpy.genfromtxt('chain_1_2_hbonds.xvg', skip_header=20), 1000, timestep=2) 
-	C=utils.smooth(numpy.genfromtxt('chain_2_3_hbonds.xvg', skip_header=20), 1000, timestep=2)
-	D=utils.smooth(numpy.genfromtxt('chain_3_4_hbonds.xvg', skip_header=20), 1000, timestep=2)
+	# pylab.rcParams['xtick.labelsize']='10'
+	# pylab.rcParams['ytick.labelsize']='12'
+	# pylab.rcParams['legend.fontsize']='12'
+	# pylab.rcParams['figure.figsize'] = [2.5,2.5]
+	# pylab.rcParams["axes.titlesize"]='small'
 
-	print A
+	# A=utils.smooth(numpy.genfromtxt('%(iso)s_sys%(subplot_num)d_chain_0_1_hbonds.dat' % vars(), comments="#"), 1000, timestep=2)
+	# B=utils.smooth(numpy.genfromtxt('%(iso)s_sys%(subplot_num)d_chain_1_2_hbonds.dat' % vars(), comments="#"), 1000, timestep=2) 
+	# C=utils.smooth(numpy.genfromtxt('%(iso)s_sys%(subplot_num)d_chain_2_3_hbonds.dat' % vars(), comments="#"), 1000, timestep=2)
+	# D=utils.smooth(numpy.genfromtxt('%(iso)s_sys%(subplot_num)d_chain_3_4_hbonds.dat' % vars(), comments="#"), 1000, timestep=2)
+
+	A=numpy.genfromtxt('%(iso)s_sys%(subplot_num)d_chain_0_1_hbonds.dat' % vars(), comments="#")
+	B=numpy.genfromtxt('%(iso)s_sys%(subplot_num)d_chain_1_2_hbonds.dat' % vars(), comments="#")
+	C=numpy.genfromtxt('%(iso)s_sys%(subplot_num)d_chain_2_3_hbonds.dat' % vars(), comments="#")
+	D=numpy.genfromtxt('%(iso)s_sys%(subplot_num)d_chain_3_4_hbonds.dat' % vars(), comments="#")
 
 	time = A[:,0]/1000.0
-	pylab.plot(time, A[:,1], label="chain 1-2")
-	pylab.plot(time, B[:,1], label="chain 2-3")
-	pylab.plot(time, C[:,1], label="chain 3-4")
-	pylab.plot(time, D[:,1], label="chain 4-5")
+	ax.plot(time, A[:,1], label="chain 1-2")
+	ax.plot(time, B[:,1], label="chain 2-3")
+	ax.plot(time, C[:,1], label="chain 3-4")
+	ax.plot(time, D[:,1], label="chain 4-5")
 	pylab.ylim(0, 30)
 	pylab.xlim(0, 140)
 	pylab.grid(True)
 	# xlabel('Time (ns)')
 	# ylabel('Number of interchain hydrogen bonds')
 	# legend(loc='lower right')
-	pylab.savefig('chain_hbonds.png')
+	pylab.savefig('test_%(iso)s_%(ratio)s_chain_hbond.pdf' % vars())
 		
 def main():
+	if len(sys.argv) < 3: 
+		print "plot_array.py ratio iso analysis"
+		sys.exit(0)
+
+
 	pylab.clf()
 	pylab.rcParams['xtick.labelsize']='8'
 	pylab.rcParams['ytick.labelsize']='8'
 	pylab.rcParams['legend.fontsize']='8'
 	pylab.rcParams['figure.figsize'] = [8,6]
 	pylab.rcParams["axes.titlesize"]='small'
-
-	if len(sys.argv) < 3: 
-		print "plot_array.py ratio iso analysis"
-
+		
 	ratio=sys.argv[1]
 	# isomerList = ["scyllo", "chiro", "water"]
 	iso = sys.argv[2]
@@ -108,13 +115,16 @@ def main():
 		elif analysis == "rmsd":
 			print "plotting rmsd"
 			num_plotted += plot_rmsd(iso, ratio, fig, i)
+		elif analysis == "chain_hbond":
+			print "plotting chain_hbond"
+			plot_chain_hbond(iso, ratio, fig, i)
 		else:
 			print "no support for this option"
 
-	if num_plotted > 0:
-		fig.savefig("%(iso)s.png" % vars())
-	else:
-		print "A figure was not saved because some files were not found."
+	# if num_plotted > 0:
+	fig.savefig("%(iso)s.png" % vars())
+	# else:
+		# print "A figure was not saved because some files were not found."
 
 if __name__ == '__main__':
 	main()

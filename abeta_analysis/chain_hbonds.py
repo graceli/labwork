@@ -3,7 +3,6 @@ import numpy
 import os
 import glob
 
-
 def comment_xvgr():
 	# comment out the xvgr header lines for the chain chain hbond analysis
 	for i in range(1,11):
@@ -12,13 +11,14 @@ def comment_xvgr():
 			os.system("sed -e 's/@/#/g' %(i)d/chain_%(chain)d_%(next_chain)d_hbonds.xvg > chch_hbonds/sys%(i)d_chain_%(chain)d_%(next_chain)d_hbonds.dat" % vars())
 
 	# delete the data files for very short (failed) simulation trajs
-	files = glob.glob('chch_hbonds/*.dat')
+	files = glob.glob('*.dat')
 	for f in files:
 		size = os.path.getsize(f)/(1024.0*1024)
 		if size < 1:
 			os.system('rm %(f)s' % vars())
 
-
+# Example of how its ran
+# for iso in chiro scyllo water; do cd $iso/analysis/hbonds; python ~/Desktop/biophysical_2011/analysis/chain_hbonds.py ../../../${iso}_chain_hbonds_summary.txt; cd ../../../;done
 def chain_hbonds(subplot_num):
 	average = []
 	for chain in range(0,4):
