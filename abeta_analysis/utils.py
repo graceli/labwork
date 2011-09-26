@@ -63,7 +63,11 @@ def smooth(data, window_size, time_present=True, timestep=1):
 	
 		smoothed.append(values)
 
-	return numpy.array(numpy.vstack(smoothed))
+	if smoothed == []:
+		print "WARNING: smoothed is empty"
+		return smoothed
+	else:
+		return numpy.array(numpy.vstack(smoothed))
 
 def columnAverage(data,colnum):
 	total_num_systems = len(data)
