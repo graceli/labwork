@@ -1,6 +1,15 @@
-#!/bin/sh
-#PBS -l nodes=1:compute-eth:ppn=8,walltime=02:00:00,os=centos53computeA
-#PBS -N analysis
+#!/bin/bash
+#$ -N ab_analysis
+#$ -P uix-840-ac
+#$ -A uix-840-ac
+#$ -l h_rt=3:00:00
+#$ -pe default 16
+#$ -q med
+#$ -S /bin/bash
+#$ -cwd
+#$ -notify
+
+module load tools/gnu-parallel/20110522
 
 #set -u
 #set -e
@@ -62,12 +71,11 @@ function dssp {
 }
 
 chain_start=0
-chain_end=3
+chain_end=4
 function chain_hbonds {
-	xtc="ab_${iso}_${ratio}_${s}_nosol_whole.xtc_c_fit"
-	for ch in `{$chain_start..$chain_end}`; do
-		let next=ch+1
-		echo $ch $next | g_hbond -f $NAME -s $TPR -n $DATA/chain.ndx -nonitacc -nomerge -num chain_${ch}_${next}_hbonds $TEST
+	for (( i=${chain_start}; i < ${chain_end}; i++ )); do
+		let next=i+1
+		echo $i $next | g_hbond -f $NAME -s $TPR -n $DATA/chain.ndx -nonitacc -nomerge -num chain_${i}_${next}_hbonds $TEST
 	done
 }
 
@@ -82,21 +90,28 @@ function rmsd {
 	echo 1 1 | g_rms  -o sys${SYS}_whole_rmsd_protein.xvg -noxvgr $TEST
 }
 
+function run {
+	sys=$1
+	if [ ! -e analysis/$sys ]; then
+		mkdir analysis/$sys; 
+	fi
+
+	cd analysis/$sys
+	mkdir $ANALYSIS; cd $ANALYSIS
+	${ANALYSIS} $sys
+}
+
 base_dir=`pwd`
 DATA="/rap/uix-840-ac/grace/abeta/42/glucose/xtc"
 
-# SYS=$SYSN
-# ANALYSIS=$ANALY
-SYS=1
-ANALYSIS=dssp
-TEST="-dt 1000"
+ANALYSIS=$analysis
+TEST=""
 TAG="nosol_whole"
-NAME="$DATA/sys${SYS}_${tag}.xtc"
+NAME="$DATA/sys${SYS}_${TAG}.xtc"
 TPR="$DATA/protein_sugar.tpr"
 echo "For system $SYS"
 echo "Performing analysis $ANALYSIS"
 
-mkdir analysis/$SYS; cd analysis/$SYS
-mkdir $ANALYSIS; cd $ANALYSIS
-${ANALYSIS} $SYS
+seq 1 10 | parallel -j 10 "run {}"
+
 
