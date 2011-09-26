@@ -7,7 +7,9 @@ function preprocess_chain_hbonds {
 	for iso in chiro scyllo water; do 
 		for (( i=1; i<=10; i++ )); do
 			for (( j=0; j<4; j++ )); do
-				sed -e 's/@/#/g' $iso/$i/chain_${j}_$((j+1))_hbonds.xvg > ${iso}_sys${i}_chain_${j}_$((j+1))_hbonds.dat
+				if [ -e "$iso/$i/chain_${j}_$((j+1))_hbonds.xvg" ]; then
+					sed -e 's/@/#/g' $iso/$i/chain_${j}_$((j+1))_hbonds.xvg > ${iso}_sys${i}_chain_${j}_$((j+1))_hbonds.dat
+				fi
 			done
 		done
 	done
