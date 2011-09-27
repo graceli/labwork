@@ -2,9 +2,9 @@
 #$ -N ab_analysis
 #$ -P uix-840-ac
 #$ -A uix-840-ac
-#$ -l h_rt=05:00:00
-#$ -pe default 8 
-#$ -q med
+#$ -l h_rt=00:15:00
+#$ -pe test 8 
+##$ -q med
 #$ -S /bin/bash
 #$ -cwd
 #$ -notify
@@ -22,33 +22,33 @@ set -x
 
 #trap 'exit 1' TERM INT SIGINT EXIT SIGKILL SIGSTOP SIGTERM
 
-function dssp {
-	echo 1 | do_dssp -f $DATA/$NAME -s $TPR -o ${NAME}_ss -sc ${NAME}_sc
-}
+#function dssp {
+#	echo 1 | do_dssp -f $NAME -s $TPR -o ${NAME}_ss -sc ${NAME}_sc
+#}
 
 chain_start=0
 chain_end=4
 function chain_hbonds {
 	for (( i=${chain_start}; i < ${chain_end}; i++ )); do
 		let next=i+1
-		echo $i $next | g_hbond -f $DATA/$NAME -s $TPR -n $DATA/chain.ndx -nonitacc -nomerge -num ${NAME}_chain_${i}_${next}_hbonds $TEST
+		echo $i $next | /software/apps/gromacs-4.0.7/bin/g_hbond -f $DATA/$NAME -s $TPR -n $DATA/chain.ndx -nonitacc -nomerge -num ${NAME}_chain_${i}_${next}_hbonds $TEST
 	done
 }
 
 # calculate the rmsf
 function rmsf {
     	# backbone fitting for specific parts of the peptide
-	echo "C-alpha" | g_rmsf -f $DATA/$NAME -s $TPR -o ${NAME}_rmsf.xvg -fit -res -ox ${NAME}_ox.xvg -noxvgr $TEST 
+	echo "C-alpha" | /software/apps/gromacs-4.0.7/bin/g_rmsf -f $DATA/$NAME -s $TPR -o ${NAME}_rmsf.xvg -fit -res -ox ${NAME}_ox.xvg -noxvgr $TEST 
 }
 
 # calculate the rmsd of the protein using the nmr structure as a reference
 function rmsd {
-	echo 1 1 | g_rms -f $DATA/$NAME -s $TPR -o ${NAME}_whole_rmsd_protein.xvg -noxvgr $TEST
+	echo 1 1 | /software/apps/gromacs-4.0.7/bin/g_rms -f $DATA/$NAME -s $TPR -o ${NAME}_whole_rmsd_protein.xvg -noxvgr $TEST
 }
 
 function run_analysis {
 	analysis=$1	
-	TEST=""
+	TEST="-b 0 -e 100"
 	for ((s=1; s<=10; s++)); do
 		TAG="nosol_whole"
 		NAME="sys${s}_${TAG}"
@@ -62,7 +62,7 @@ DATA="/rap/uix-840-ac/grace/abeta/42/glucose/xtc"
 
 echo "in $PWD"
 
-for ANALYSIS in chain_hbonds dssp; do
+for ANALYSIS in chain_hbonds; do
 	echo "Performing analysis $ANALYSIS"
 
 	if [ ! -e "$ANALYSIS" ]; then
