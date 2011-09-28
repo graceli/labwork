@@ -55,6 +55,7 @@ function run_analysis {
 		TPR="$DATA/protein_sugar.tpr"
 		${analysis}
 	done
+	wait
 }
 
 base_dir=`pwd`
