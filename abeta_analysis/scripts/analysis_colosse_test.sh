@@ -10,28 +10,31 @@
 #$ -notify
 
 #module load tools/gnu-parallel/20110522
-module load compilers/intel/11.1.059
-module load mpi/openmpi/1.3.4_intel
-export OMP_NUM_THREADS=$NSLOTS
-# echo "Got $NSLOTS processors."
-. /home/grace/.gmx
-
 set -u
 set -e
 set -x
 
+if [ "$HOSTNAME" != "colosse1" ]; then
+	module load compilers/intel/11.1.059
+	module load mpi/openmpi/1.3.4_intel
+	export OMP_NUM_THREADS=$NSLOTS
+	echo "Got $NSLOTS processors."
+	. /home/grace/.gmx
+fi
+
 #trap 'exit 1' TERM INT SIGINT EXIT SIGKILL SIGSTOP SIGTERM
 
-#function dssp {
-#	echo 1 | do_dssp -f $NAME -s $TPR -o ${NAME}_ss -sc ${NAME}_sc
-#}
+function dssp {
+	echo 1 | do_dssp -f $DATA/$NAME -s $TPR -o ${NAME}_ss -sc ${NAME}_sc
+}
+
 
 chain_start=0
 chain_end=4
 function chain_hbonds {
 	for (( i=${chain_start}; i < ${chain_end}; i++ )); do
 		let next=i+1
-		echo $i $next | /software/apps/gromacs-4.0.7/bin/g_hbond -f $DATA/$NAME -s $TPR -n $DATA/chain.ndx -nonitacc -nomerge -num ${NAME}_chain_${i}_${next}_hbonds $TEST
+		echo $i $next | g_hbond -f $DATA/$NAME -s $TPR -n $DATA/chain.ndx -nonitacc -nomerge -num ${NAME}_chain_${i}_${next}_hbonds $TEST
 	done
 }
 
@@ -61,8 +64,9 @@ base_dir=`pwd`
 DATA="/rap/uix-840-ac/grace/abeta/42/glucose/xtc"
 
 echo "in $PWD"
+analysis=dssp
 
-for ANALYSIS in chain_hbonds; do
+for ANALYSIS in $analysis; do
 	echo "Performing analysis $ANALYSIS"
 
 	if [ ! -e "$ANALYSIS" ]; then

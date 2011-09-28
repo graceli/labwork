@@ -3,7 +3,7 @@
 #$ -P uix-840-ac
 #$ -A uix-840-ac
 #$ -l h_rt=05:00:00
-#$ -pe default 8 
+#$ -pe default 16
 #$ -q med
 #$ -S /bin/bash
 #$ -cwd
@@ -20,10 +20,10 @@ set -u
 set -e
 set -x
 
-#trap 'exit 1' TERM INT SIGINT EXIT SIGKILL SIGSTOP SIGTERM
+trap "exit $?" TERM INT SIGINT EXIT SIGKILL SIGSTOP SIGTERM
 
 function dssp {
-	echo 1 | do_dssp -f $DATA/$NAME -s $TPR -o ${NAME}_ss -sc ${NAME}_sc
+	echo 1 | do_dssp -f $DATA/$NAME -s $TPR -o ${NAME}_ss -sc ${NAME}_sc 2> /dev/null >&2 &
 }
 
 chain_start=0
@@ -62,7 +62,7 @@ DATA="/rap/uix-840-ac/grace/abeta/42/glucose/xtc"
 
 echo "in $PWD"
 
-for ANALYSIS in chain_hbonds dssp; do
+for ANALYSIS in dssp; do
 	echo "Performing analysis $ANALYSIS"
 
 	if [ ! -e "$ANALYSIS" ]; then
