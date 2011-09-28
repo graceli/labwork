@@ -8,7 +8,8 @@ import os
 import utils
 
 def plot_rmsd(iso, ratio, fig, subplot_num):
-	filename="ab_%(iso)s_%(ratio)s_%(subplot_num)s_nosol_whole_rmsd_backbone.xvg" % vars()
+	#filename="ab_%(iso)s_%(ratio)s_%(subplot_num)s_nosol_whole_rmsd_backbone.xvg" % vars()
+	filename="%(iso)s_%(ratio)s_%(subplot_num)s_rmsd.xvg" % vars()
 	if os.path.exists(filename):
 		data=numpy.genfromtxt(filename)
 		nrows,ncols=data.shape
@@ -20,6 +21,10 @@ def plot_rmsd(iso, ratio, fig, subplot_num):
 		ax.plot(data[:,0]/1000.0, data[:,1], label=subplot_num)
 		ax.plot(data[:,0]/1000.0, [0.5]*nrows, 'g')
 		ax.set_title(subplot_num)
+		return 0
+	else:
+		print "WARNING: %(filename)s is not found in the current directory" % vars()
+		return 1	
 
 def plot_rmsf(iso, ratio, fig, subplot_num):
 	filename="%(iso)s_%(ratio)s_%(subplot_num)d_rmsf.xvg" % vars()

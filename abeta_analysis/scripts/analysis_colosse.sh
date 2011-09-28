@@ -22,8 +22,18 @@ set -x
 
 trap "exit $?" TERM INT SIGINT EXIT SIGKILL SIGSTOP SIGTERM
 
+
 function dssp {
-	echo 1 | do_dssp -f $DATA/$NAME -s $TPR -o ${NAME}_ss -sc ${NAME}_sc 2> /dev/null >&2 &
+	# break dssp analysis to write to different directories because temp file names can conflict
+	# todo: fix these bad temp files??
+	export DSSP=/home/grace/labwork/gromacs/dssp_ana/dsspcmbi
+
+	if [ ! -e "$1" ]; then
+		mkdir $1
+	fi
+	cd $1
+	echo 1 | do_dssp -f $DATA/$NAME -s $DATA/$TPR -o ${NAME}_ss -sc ${NAME}_sc &
+	cd ../
 }
 
 chain_start=0
@@ -31,19 +41,19 @@ chain_end=4
 function chain_hbonds {
 	for (( i=${chain_start}; i < ${chain_end}; i++ )); do
 		let next=i+1
-		echo $i $next | g_hbond -f $DATA/$NAME -s $TPR -n $DATA/chain.ndx -nonitacc -nomerge -num ${NAME}_chain_${i}_${next}_hbonds $TEST
+		echo $i $next | g_hbond -f $DATA/$NAME -s $DATA/$TPR -n $DATA/chain.ndx -nonitacc -nomerge -num ${NAME}_chain_${i}_${next}_hbonds $TEST
 	done
 }
 
 # calculate the rmsf
 function rmsf {
     	# backbone fitting for specific parts of the peptide
-	echo "C-alpha" | g_rmsf -f $DATA/$NAME -s $TPR -o ${NAME}_rmsf.xvg -fit -res -ox ${NAME}_ox.xvg -noxvgr $TEST 
+	echo "C-alpha" | g_rmsf -f $DATA/$NAME -s $DATA/$TPR -o ${NAME}_rmsf.xvg -fit -res -ox ${NAME}_ox.xvg -noxvgr $TEST 
 }
 
 # calculate the rmsd of the protein using the nmr structure as a reference
 function rmsd {
-	echo 1 1 | g_rms -f $DATA/$NAME -s $TPR -o ${NAME}_whole_rmsd_protein.xvg -noxvgr $TEST
+	echo 1 1 | g_rms -f $DATA/$NAME -s $DATA/$TPR -o ${NAME}_whole_rmsd_protein.xvg -noxvgr $TEST &
 }
 
 function run_analysis {
@@ -52,10 +62,10 @@ function run_analysis {
 	for ((s=1; s<=10; s++)); do
 		TAG="nosol_whole"
 		NAME="sys${s}_${TAG}"
-		TPR="$DATA/protein_sugar.tpr"
-		${analysis}
+		TPR="protein_sugar.tpr"
+		${analysis} ${s}
+		echo "running task $s"
 	done
-	wait
 }
 
 base_dir=`pwd`
@@ -73,6 +83,8 @@ for ANALYSIS in dssp; do
 
 	cd $ANALYSIS
 	run_analysis $ANALYSIS
+	echo "waiting"
+	wait
 	cd ..
 done
 
