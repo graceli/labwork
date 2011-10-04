@@ -1,0 +1,24 @@
+Using uid:0, gid:0.
+Writing a byte at a time...done
+Writing intelligently...done
+Rewriting...done
+Reading a byte at a time...done
+Reading intelligently...done
+start 'em...done...done...done...done...done...
+Create files in sequential order...done.
+Stat files in sequential order...done.
+Delete files in sequential order...done.
+Create files in random order...done.
+Stat files in random order...done.
+Delete files in random order...done.
+Version  1.96       ------Sequential Output------ --Sequential Input- --Random-
+Concurrency   1     -Per Chr- --Block-- -Rewrite- -Per Chr- --Block-- --Seeks--
+Machine        Size K/sec %CP K/sec %CP K/sec %CP K/sec %CP K/sec %CP  /sec %CP
+t2:/3ware/c0u 4000M  1416  99 146497  21 68455   7  3416  99 155047   8  1887   7
+Latency              6996us     854ms    2457ms    4379us     122ms     111ms
+Version  1.96       ------Sequential Create------ --------Random Create--------
+t2:/3ware/c0u1-2    -Create-- --Read--- -Delete-- -Create-- --Read--- -Delete--
+              files  /sec %CP  /sec %CP  /sec %CP  /sec %CP  /sec %CP  /sec %CP
+               1024  8831  19 328868  51  5970  13   177   1 200480  32    71   0
+Latency              2385ms     100ms    2349ms    4700ms     120ms   27088ms
+1.96,1.96,t2:/3ware/c0u1-2,1,1317658335,4000M,,1416,99,146497,21,68455,7,3416,99,155047,8,1887,7,1024,,,,,8831,19,328868,51,5970,13,177,1,200480,32,71,0,6996us,854ms,2457ms,4379us,122ms,111ms,2385ms,100ms,2349ms,4700ms,120ms,27088ms
