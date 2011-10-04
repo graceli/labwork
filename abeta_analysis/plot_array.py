@@ -126,5 +126,9 @@ def main():
 		else:
 			print "no support for this option"
 
+	# save a rasterized image as a draft b/c for fast viewing  
+	# for production figures use pdf/eps
+	pylab.savefig(analysis + '.png')
+
 if __name__ == '__main__':
 	main()
