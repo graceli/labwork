@@ -9,6 +9,16 @@
 #$ -cwd
 #$ -notify
 
+module load compilers/intel/11.1.059
+module load mpi/openmpi/1.3.4_intel
+export OMP_NUM_THREADS=$NSLOTS
+# echo "Got $NSLOTS processors."
+. /home/grace/.gmx
+
+set -u
+set -e
+set -x
+
 NPME=-1
 sysName=sys${SGE_TASK_ID}
 NRESUBMITS=2
@@ -20,13 +30,15 @@ function run {
 	cpt_file=sys${SGE_TASK_ID}_prod.cpt
 	cd $base_dir/sys${SGE_TASK_ID}
 	echo 'DEBUG: starting mdrun for $MAXH'
-	mpirun mdrun -s sys${SGE_TASK_ID}_prod -deffnm sys${SGE_TASK_ID}_prod -cpt 720 -nosum -dlb auto -npme -1 -cpo sys${SGE_TASK_ID}_prod -cpi sys${SGE_TASK_ID}_prod.cpt -maxh 0.03
+
+	mpirun mdrun -s ${sysName}_prod -deffnm ${sysName}_prod -maxh $MAXH -cpt 720 -nosum -dlb auto -npme $NPME -cpo ${sysName}_prod -cpi $cpt_file
+}
 }
 
 run 46
 
-if [ "$num" -lt "$NRESUBMITS" ]; then
-	num=$((NUM+1))
-	echo "resubmitting - sequence $num for replica $SGE_TASK_ID"
-	qsub -v NUM=$num,SGE_TASK_ID=${SGE_TASK_ID} -N ${JOB_NAME}_${SGE_TASK_ID}_${num} ../run.sh
-fi
+#if [ "$num" -lt "$NRESUBMITS" ]; then
+#	num=$((NUM+1))
+#	echo "resubmitting - sequence $num for replica $SGE_TASK_ID"
+#	qsub -v NUM=$num,SGE_TASK_ID=${SGE_TASK_ID} -N ${JOB_NAME}_${SGE_TASK_ID}_${num} ../run.sh
+#fi
