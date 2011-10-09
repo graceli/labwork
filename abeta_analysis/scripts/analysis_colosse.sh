@@ -2,9 +2,9 @@
 #$ -N ab_analysis
 #$ -P uix-840-ac
 #$ -A uix-840-ac
-#$ -l h_rt=05:00:00
-#$ -pe default 16
-#$ -q med
+##$ -l h_rt=00:15:00
+##$ -pe default 16
+##$ -q med
 #$ -S /bin/bash
 #$ -cwd
 #$ -notify
@@ -58,9 +58,7 @@ function rmsd {
 
 function run_analysis {
 	analysis=$1	
-	TEST=""
 	for ((s=1; s<=10; s++)); do
-		TAG="nosol_whole"
 		NAME="sys${s}_${TAG}"
 		TPR="protein_sugar.tpr"
 		${analysis} ${s}
@@ -70,10 +68,12 @@ function run_analysis {
 
 base_dir=`pwd`
 DATA="/rap/uix-840-ac/grace/abeta/42/glucose/xtc"
+TAG="nosol_whole_res"
+TEST=""
 
 echo "in $PWD"
 
-for ANALYSIS in dssp; do
+for ANALYSIS in rmsf rmsd; do
 	echo "Performing analysis $ANALYSIS"
 
 	if [ ! -e "$ANALYSIS" ]; then

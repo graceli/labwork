@@ -68,12 +68,7 @@ for ratio in 15 64; do
         fi
 
         cd $binder
-<<<<<<< HEAD
-        for repeat in {1..1}; do 
-            mkdir sys${repeat}
-            add_binder $PROTEIN $binder $ratio $repeat
-            mv *.gro sys${repeat}
-=======
+
         for repeat in `seq 1 $MAX_REPEAT`; do 
             mkdir sys${repeat}
             
@@ -94,7 +89,6 @@ for ratio in 15 64; do
 
             cp *.gro *.top *.mdp *.tpr sys${repeat}
             rm \#*
->>>>>>> bd28fbc1a4cb7810e4651ea70ffbdb5be4521451
         done
         cd ../
     done
