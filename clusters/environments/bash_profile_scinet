@@ -1,0 +1,58 @@
+if [ -f /etc/profile ]; then
+       . /etc/profile
+fi
+
+# commands which work for both GPC and TCS can go here
+alias passwd='echo "Please use the SciNet portal to change password: https://portal.scinet.utoronto.ca/change_password"'
+
+SSH_ENV="$HOME/.ssh/agent"
+function start_agent {
+	echo "Initialising new SSH agent..."
+	ssh-agent | sed 's/^echo/#echo/' > "${SSH_ENV}"
+	echo succeeded
+	chmod 600 "${SSH_ENV}"
+	. "${SSH_ENV}" > /dev/null
+}
+
+
+# Source SSH settings, if applicable
+start_agent
+trap "kill ${SSH_AGENT_PID}" 0
+
+ssh-add ~/.ssh/colosse
+ssh-add ~/.ssh/github_graceli_scinet
+
+. ~/git-completion.sh
+PS1='${debian_chroot:+($debian_chroot)}\[\033[0;37m\]\u@\h\[\033[00m\]:\[\033[00;32m\]\w\[\033[00m\]$(__git_ps1 " (%s)")\[\033[00m\]\$ '
+
+HOST=$(uname)
+
+if [ "${HOST}" == "AIX" ] 
+then
+	# do things for the TCS machine
+	alias llq1='/xcat/tools/tcs-scripts/LL/jobState.sh'
+	alias llstat='/xcat/tools/tcs-scripts/LL/jobSummary.sh'
+
+	if [ "${TERM}" = "xterm-color" ]; then
+		export TERM=xterm
+	fi
+
+	# user environment for login shells goes here
+	# replace colon with your own commands
+	:
+else
+	# do things for the GPC machine
+	# user environment for login shells goes here
+	# replace colon with your own commands
+	:
+fi
+
+if [ -f ~/.bashrc ]; then
+       . ~/.bashrc
+fi
+
+if [ -f ~/.bash_aliases ]; then
+	. ~/.bash_aliases
+fi
+
+
