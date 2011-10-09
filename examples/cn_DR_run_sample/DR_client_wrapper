@@ -1,0 +1,95 @@
+#!/bin/bash 
+#PBS -l nodes=1:compute-eth:ppn=8,walltime=48:00:00,os=centos53computeA
+#PBS -N vt0.0x0
+
+debug=0
+saveFilesFromRun=1    ## This refers to whatever is not already handled by tarring
+allowTmpdir=0
+allowSHmem=1
+
+user=`whoami`
+EXEDIR=/project/pomes/cneale/GPC/exe/DR/DR_version2.1.8_extended/bin
+BASEDIR=${PBS_O_WORKDIR}
+PACKAGEDIR=${BASEDIR}
+ZPACKAGE=package.tar.gz
+PACKAGE=package.tar
+
+MYJID=$PBS_JOBID      ## SciNet
+#MYJID=$LSB_BATCH_JID   ## Sharcnet
+
+######################################################
+## Nothing below this line usually needs to be changed
+
+function cleanexit {
+  mallowSHmem="$1"
+  if((mallowSHmem)); then
+    rm -rf /dev/shm/*
+  fi
+  exit
+}
+
+if((allowTmpdir&&allowSHmem)); then
+  echo "Error in DR_client_wrapper settings. can not allow both allowTmpdir and allowSHmem simultaneously"
+  cleanexit ${allowSHmem}
+fi
+
+MYTMP=${BASEDIR}
+if((allowTmpdir)); then
+  if [ ! -z ${TMPDIR} ]; then
+    MYTMP=${TMPDIR}
+  fi
+fi
+if((allowSHmem)); then
+  MYTMP=/dev/shm
+  freeshm=`df /dev/shm|grep tmpfs|awk '{print $4/1000000}'`
+  problemshm=`echo "$freeshm" | awk '{if($1<4.0) print 1; else print 0}'`
+  if((problemshm)); then
+    probip=`/sbin/ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{print $1}'`
+    echo "Dropping client on ${probib} because the SHmem there is too occupied (${freeshm} GB free)" >> ${BASEDIR}/ERROR_MESSAGE
+    cleanexit ${allowSHmem}
+  fi
+fi
+
+mkdir -p ${MYTMP}/${user}
+WORKINGDIR=${MYTMP}/${user}
+
+cd "$WORKINGDIR"
+
+DIR=`$EXEDIR/get_simulation_package $PACKAGEDIR/$ZPACKAGE`
+cd $DIR
+gunzip $ZPACKAGE
+tar xvf $PACKAGE
+if [[ $? != "0" ]]; then
+  echo "unable to untar the package in QueuedJob.run" >> ${BASEDIR}/ERROR_MESSAGE
+  cleanexit ${allowSHmem}
+fi
+rm -f $PACKAGE
+PORT=`cat port`
+IP=`cat serverip`
+
+ID=`$EXEDIR/DR_client_comm $IP $PORT '**' $MYJID`
+
+if [ -n "$ID" ]; then
+  job=`grep job setup | awk '{print $3}' | sed -e 's/"//g;' | tail -1`
+  ./DR_client_body
+  kob=`grep job setup | awk '{print $3}' | sed -e 's/"//g;' | head -1`
+  if((!debug)); then
+    rm -f *.gro *.trr *.edr *.log *.tpr 
+  fi
+
+  cd ..
+
+  if((saveFilesFromRun==0)); then
+    rm -rf $DIR
+  else
+    if [ "$job" = "$kob" ]; then
+      pnam="$job"
+    else
+      pnam="$job"-"$kob"
+    fi
+    tmpnam=`mktemp ${BASEDIR}/output/cleanup/"$pnam"_cleanup.tmp.XXX`
+    tar --remove-files -cf ${tmpnam} $DIR/*
+  fi
+fi
+
+cleanexit ${allowSHmem}

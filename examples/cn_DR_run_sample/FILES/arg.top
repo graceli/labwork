@@ -1,0 +1,22 @@
+; topology for 128 DOPC Molecule and indolicidin in water and 4 Cl-
+
+#include "/home/cneale/gromacs/oplspope.top/ffoplsaa_mod_twin.itp"
+#include "/home/cneale/gromacs/lipidstop/popc_mod_twin.itp"
+#include "/home/cneale/gromacs/proteintop/ksc_vsite_opls_virt.itp"
+
+; include water topology
+#include "/home/cneale/gromacs/top/tip4p.itp"
+#include "/home/cneale/gromacs/top/ions.itp"
+
+
+[ system ]
+; name
+128 DOPC lipid molecule and 1 indolicidin peptide
+
+
+[ molecules ]
+; name	number
+KSC  1
+POPC     128
+SOL      9161
+CL-      1

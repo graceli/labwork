@@ -1,0 +1,23 @@
+; Include forcefield parameters
+#include "/projects/pomes/cneale/exe/gromacs-3.3.1/share/top/ffoplsaa.itp"
+
+; Add these in order that ACE - ALA - NAC works properly
+[ dihedraltypes ]
+;  i    j    k    l   func     coefficients
+  CT     C      N      CT_2    3     30.28798  -4.81160 -25.47638   0.00000   0.00000   0.00000 ; peptide - V1 changed to 2.3
+  CT_2   C      N      CT      3     30.28798  -4.81160 -25.47638   0.00000   0.00000   0.00000 ; peptide - V1 changed to 2.3
+
+; Include topologies
+#include "/projects/pomes/grace/inositol_dipeptide/itp/alanine_dipeptide.itp"
+#include "/projects/pomes/grace/inositol_dipeptide/itp/inositol.itp"
+#include "/projects/pomes/cneale/exe/gromacs-3.3.1/share/top/tip3p.itp"
+
+[ system ]
+; Name
+alanine dipeptide solvated in water
+
+[ molecules ]
+; Compound        #mols
+;residue88 is crystal notation. In my system it is residue 82
+ALA_DIPEP           1
+SOL               884
