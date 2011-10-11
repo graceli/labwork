@@ -93,7 +93,7 @@ def plot_chain_hbond(iso, ratio, fig, subplot_num):
 	# xlabel('Time (ns)')
 	# ylabel('Number of interchain hydrogen bonds')
 	pylab.legend(loc='lower right')
-	pylab.savefig('test_%(iso)s_%(ratio)s_chain_hbond.pdf' % vars())
+	pylab.savefig('test_%(iso)s_%(ratio)s_chain_hbond.png' % vars())
 		
 def main():
 	if len(sys.argv) < 3: 
