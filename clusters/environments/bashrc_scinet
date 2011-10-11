@@ -1,0 +1,42 @@
+if [ -f /etc/bashrc ]; then
+       . /etc/bashrc
+fi
+
+# commands which work for both GPC and TCS can go here
+PATH=$PATH:/home/grace/labwork/analysis:/home/grace/labwork/gromacs
+
+eval "`dircolors -b`"
+
+HOST=$(uname)
+
+if [ "${HOST}" == "AIX" ]; then
+	# do things for the TCS machine
+	# user environment for all shells goes here
+	# replace colon with your own commands
+	:
+else
+	# do things for the GPC machine
+	# module load intel openmpi
+	module load intel
+	module load gcc intel
+	# should load the default openmpi module (which is version 1.4.1)
+	module load openmpi
+	module load vmd 
+	module load gcc
+	module load git
+	module load svn
+	module load graphics
+	module load python
+	module load hdf5/184-p1-v18-serial
+	module load gnu-parallel
+
+	# user environment for all shells goes here
+	# gromacs exe path, taken from chris's bashrc
+	PATH=/home/grace/scripts/:/project/pomes/cneale/GPC/exe/intel/gromacs-4.0.5/exec/bin/:/home/grace/bin/:/scratch/grace/bin/:$PATH
+	export GMXLIB=/home/cneale/exe/GPC/intel/gromacs-4.0.5/exec/share/gromacs/top/
+	export DSSP=/home/grace/src/dssp_ana/dsspcmbi
+fi
+
+export PYTHONPATH=~/labwork/lib:$PYTHONPATH
+
+cd /project/pomes/grace

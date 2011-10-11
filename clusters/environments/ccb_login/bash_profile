@@ -1,0 +1,27 @@
+# .bash_profile
+
+# Get the aliases and functions
+if [ -f ~/.bashrc ]; then
+	. ~/.bashrc
+fi
+
+#go directly to where project files are 
+cd /hpf/projects1/pomes/grace/
+
+# User specific environment and startup programs
+
+PATH=$PATH:$HOME/bin:/hpf/projects1/pomes/grace/amber6/exe:/home/cneale/exe:/hpf/projects1/pomes/grace/scripts:/hpf/projects1/pomes/grace/exe:/hpf/projects1/pomes/grace/inositol/scripts:/hpf/projects1/pomes/cneale/exe/gromacs-3.3.1_newccb_gCc3.4.6/exec/bin/:/tools/gnuplot/current/bin
+export PATH
+
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/hpf/tools/n1ge/lib/lx24-amd64:/tools/lam/lam-7.1.2/lib:/tools/gcc/4.1.1/lib6:/tools/local/lib
+AMBERHOME=/hpf/project1/pomes/grace/amber6
+export AMBERHOME
+
+SCRIPTS=/hpf/project1/pomes/grace/scripts
+export SCRIPTS
+
+GROMACS=/hpf/project1/pomes/cneale/exe/gromacs-3.3.1/exec/fftw-3.1.2/bin
+export GROMACS
+
+unset USERNAME
+

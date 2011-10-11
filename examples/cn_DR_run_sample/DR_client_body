@@ -1,0 +1,244 @@
+#!/bin/bash
+
+ROUNDS_PER_PURGE=100 ## If you set this too high, then you may run into big problems
+
+## The number of lines of output produced by these settings must match the STEPS variable from the .script file
+STEPS=1000;
+XTCEDRSTEPS=1000;
+STEPSIZE=0.004;
+PULLSTEPS=50;
+
+NAM=arg
+NNI=1
+debug=0
+CPTtime=1000
+MAXHtime=1000
+
+GROMACSDIR=/project/pomes/cneale/GPC/exe/intel/gromacs-4.0.7/exec/bin
+EXEDIR=/project/pomes/cneale/GPC/exe/DR/DR_version2.1.8_extended/bin
+BASEDIR=${PBS_O_WORKDIR}
+INIT=${BASEDIR}/FILES
+STARTDIR=${BASEDIR}/FILES
+
+#/sbin/ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{print $1}'
+
+MYJID=$PBS_JOBID      ## SciNet
+#MYJID=$LSB_BATCH_JID   ## Sharcnet
+
+PATH=${GROMACSDIR}:${EXEDIR}:$PATH:.
+
+###########################################################
+# Things below this line do not normally need to be changed
+
+
+function tarXE {
+  mfirst="$1"
+  mlast="$2"
+  mfail="$3"
+
+  if [ "$mfirst" = "$mlast" ]; then
+    pnam="$mfirst"
+  else
+    pnam="$mfirst"-"$mlast"
+  fi
+
+  if((mfail)); then
+    fcode="_FAILURE"
+  else
+    fcode=""
+  fi
+  
+  tmpnam=`mktemp ${BASEDIR}/output/data/${pnam}${fcode}.tmp.XXX`
+  tar --remove-files -cf ${tmpnam} *.xtc *.edr *nni*
+}
+
+
+port=`cat port`
+IP=`cat serverip`
+
+iob=`grep iob setup | awk '{print $3}' | sed -e 's/"//g;'`
+job=`grep job setup | awk '{print $3}' | sed -e 's/"//g;'`
+for((nni=1;nni<=NNI;nni++)); do
+  let "pos=nni-1+3"
+  wref[$nni]=`grep 'wref ' setup | awk '{print $'"$pos"'}' | sed -e 's/"//g;'`
+  force[$nni]=`grep 'force ' setup | awk '{print $'"$pos"'}' | sed -e 's/"//g;'`
+  wrefchange[$nni]=`grep 'wrefchange ' setup | awk '{print $'"$pos"'}' | sed -e 's/"//g;'`
+done
+
+expectedframes=`echo "$STEPS / $XTCEDRSTEPS + 1" | bc`
+expectedpulllines=`echo "$STEPS / $PULLSTEPS + 1" | bc`
+
+## The naming convention is based on NNI 1, so that even when NNI>1, the name is for the first NNI
+
+round=1
+failure=0
+fjob=${job}
+initialSequenceNumber=`echo "$job" | awk -F '.' '{print $2}'`
+while [ "$job" != "-1" ]; do
+  sequencenumber=`echo "$job" | awk -F '.' '{print $2}'`
+  if [ "$iob" == "-1" ]; then
+    TINIT=0;INITSTEP=0;
+    groname="$STARTDIR"/start.gro
+    #groname="$STARTDIR"/STARTERS/start.${wref[1]}.gro
+  else
+    TINIT=0;INITSTEP=`echo "$sequencenumber*$STEPS" | bc -l`;
+    groname="$iob".gro
+    ## The client should already have a .cpt at this point or it just got a .rst from the server
+    if [ ! -e "$iob".gro ]; then
+      mv ${iob}.rst ${iob}.gro
+    fi
+    if [ ! -e "$iob".gro ]; then
+      failure=1;
+      break
+    fi
+  fi
+
+  sed "s/TINIT/$TINIT/" "$INIT"/"$NAM".mdp | sed "s/STEPS/$STEPS/" | sed "s/INITSTEP/${INITSTEP}/" | \
+    sed "s/XTCEDRSTPS/$XTCEDRSTEPS/" | sed "s/PULLSTPS/$PULLSTEPS/" | sed "s/TEMPERATURE/${wref[1]}/" > ./this.mdp
+  if [ ! `tail -1 ./this.mdp | awk '{print $1}'` = ";;;EOF" ]; then
+    failure=1;
+    break
+  fi
+  "$GROMACSDIR"/grompp -f ./this.mdp -c "$groname" -p "$INIT"/"$NAM".top -o this.tpr -maxwarn 1 >out_grompp 2>out_gromppE
+  # The starting file needs to not use ${job} directly since we need to use this file to make the .tpr for later
+  # Note that another possibility would be to simply add a .tpr to the package
+  if [[ $? != "0" ]]; then
+    mv out_grompp out_grompp_failure_"$job"
+    mv out_gromppE out_gromppE_failure_"$job"
+    failure=1
+    break
+  fi
+  rm -f mdout.mdp
+
+  /scinet/gpc/mpi/openmpi/1.3.2-intel-v11.0-ofed/bin/mpirun -mca btl_sm_num_fifos 7 -np $(wc -l $PBS_NODEFILE | gawk '{print $1}') -mca btl self,sm -machinefile $PBS_NODEFILE "$GROMACSDIR"/mdrun_openmpi -deffnm "$job" -dlb yes -npme -1 -cpt ${CPTtime} -maxh ${MAXHtime} -px "$job".pull.pos.xvg -pf "$job".pull.force.xvg -s this.tpr -cpi ${iob}.cpt -noaddpart -noxvgr > out_mdrun 2>out_mdrunE
+  if [[ $? != "0" ]]; then
+    mv out_mdrun out_mdrun_failure_"$job"_"$i"     
+    mv out_mdrunE out_mdrunE_failure_"$job"_"$i"
+  fi
+
+  ${GROMACSDIR}/gmxcheck -f "$job".xtc 2> ./checkXTC
+  ## Ensure no magic number error
+  magicNumberError=`grep Error ./checkXTC | wc -l`
+  if((magicNumberError==1));then
+    echo "Magic Number error in $job" >> ${BASEDIR}/ERROR_MESSAGE
+    failure=1
+    break
+  fi
+  ## Ensure expected number of frames is reached -- this is system and mdp file specific
+  numFramesXTC=`grep Step ./checkXTC | awk '{print $2}'`
+  if((numFramesXTC!=expectedframes)); then
+    echo "not enough frames in $job" >> ${BASEDIR}/ERROR_MESSAGE
+    echo "   - numFramesXTC was ${numFramesXTC} and yet expectedframes was ${expectedframes}"
+    failure=1
+    break
+  fi
+  ##This is good when you just want to have the final frame -- CN wants all the frames for now though
+  timeoflastframe=`grep "Last frame" checkXTC | awk -F "Last frame" '{print $2}' | awk '{print $3}'`
+  trjconv -f "$job".xtc -o "$job".lastframe.xtc -dump "$timeoflastframe"
+  rm -f "$job".xtc
+
+  ## This is quite system specific
+  ## .force is potential energy
+  echo -e "Potential\nBox-X\nBox-Y\n\n" | g_energy -f "$job".edr
+  cat energy.xvg |grep -v '[#|@]'|awk '{print $2}' > "$job".force.nni1
+  ## can use "| sed -n '1~2p'" if I need to take out some lines
+  receiveddist=`cat "$job".force.nni1 | wc -l`
+  let "expecteddist=expectedpulllines"
+  if((receiveddist!=expecteddist)); then
+    echo "$job.force.nni1 was not completed for $job" >> ${BASEDIR}/ERROR_MESSAGE
+    echo "   - receiveddist was ${receiveddist} and yet expecteddist was ${expecteddist}"
+    failure=1
+    break
+  fi
+
+  ## send .force also as .add1 for easily using the analyze_force_database tool
+  cp "$job".force.nni1 "$job".add1.nni1
+
+  ## add2 is displacement
+  #grep -v '[#|@]' "$job".pull.pos.xvg | grep -v '^$' | awk '{print $3}' > "$job".add2.nni1 #not required with mdrun -noxvgr
+  awk '{print $3}' "$job".pull.pos.xvg > "$job".add2.nni1
+  ## can use "| sed -n '1~2p'" if I need to take out some lines
+  receiveddist=`cat "$job".add2.nni1 | wc -l`
+  let "expecteddist=expectedpulllines"
+  if((receiveddist!=expecteddist)); then
+    echo "$job.add2.nni1 was not completed for $job" >> ${BASEDIR}/ERROR_MESSAGE
+    echo "   - receiveddist was ${receiveddist} and yet expecteddist was ${expecteddist}"
+    failure=1
+    break
+  fi
+
+  ## .add3 is the area per lipid
+  echo -e "Potential\nBox-X\nBox-Y\n\n" | g_energy -f "$job".edr
+  cat energy.xvg |grep -v '[#|@]'|awk '{print $3*$4/64}' > "$job".add3.nni1
+  ## can use "| sed -n '1~2p'" if I need to take out some lines
+  receiveddist=`cat "$job".add3.nni1 | wc -l`
+  let "expecteddist=expectedpulllines"
+  if((receiveddist!=expecteddist)); then
+    echo "$job.add3.nni1 was not completed for $job" >> ${BASEDIR}/ERROR_MESSAGE
+    echo "   - receiveddist was ${receiveddist} and yet expecteddist was ${expecteddist}"
+    failure=1
+    break
+  fi
+
+  ## Get the current potential energy for the montecarlo move
+  thisenergy=$(tail -n 1 "$job".force.nni1)
+  echo ${thisenergy} > "$job".energy.nni1
+
+  ##Clean up
+  rm -f $job".pull.pos.xvg $job".pull.force.xvg energy.xvg
+
+  ##Save the center of restraint 
+  for((nni=1;nni<=NNI;nni++)); do
+    echo "${wref[$nni]}" > "$job".nominal.nni"$nni"
+  done
+
+  #trick server into taking these files
+  if [ "$iob" != "-1" ]; then
+    if((!debug)); then
+      rm -f "$iob".tpr
+    fi
+  fi
+  mv "$job".gro "$job".rst
+
+  basename=`echo "$job" | awk -F '.' '{print $1}'`
+
+  #Update the run parameters
+  echo set job -1 >> setup
+  "$EXEDIR"/DR_client_comm "$IP" "$port" "$job" "$MYJID"
+
+  oiob="$iob"
+  ojob="$job"
+  iob=`grep iob setup | awk '{print $3}' | sed -e 's/"//g;'`
+  job=`grep job setup | awk '{print $3}' | sed -e 's/"//g;' | tail -1`
+  for((nni=1;nni<=NNI;nni++)); do
+    let "pos=nni-1+3"
+    wref[$nni]=`grep 'wref ' setup | awk '{print $'"$pos"'}' | sed -e 's/"//g;'`
+    force[$nni]=`grep 'force ' setup | awk '{print $'"$pos"'}' | sed -e 's/"//g;'`
+    wrefchange[$nni]=`grep 'wrefchange ' setup | awk '{print $'"$pos"'}' | sed -e 's/"//g;'`
+  done
+
+  newbasename=`echo "$job" | awk -F '.' '{print $1}'`
+  if [ ! "$basename" = "$newbasename" ]; then
+    ##remove these because the replica has changed
+    rm -f "$ojob".cpt
+  fi
+  ##remove these at every step
+  rm -f ${oiob}.cpt *.log *.trr *.gro *.xvg \#*
+
+  ##optional cleanup
+  initiateClean=`echo ${round} ${ROUNDS_PER_PURGE} |awk '{print $1%$2}'`
+  if((initiateClean==0)); then
+    tarXE ${fjob} ${ojob} ${failure}
+    fjob=${job}
+  fi
+
+  let "round=round+1"
+done
+
+tarXE ${fjob} ${ojob} ${failure}
+
+##do some cleanup here
+rm -f *.rst checkXTC
+
+## Execution goes back to the DR_client_wrapper for proper cleanup of /dev/shm
+

@@ -37,21 +37,26 @@ def plot_eed(file_name="test.png"):
 	plot_settings(setting="pub")
 	
 	fig = pylab.figure()
+	fig1 = pylab.figure()
+	
 	fig.subplots_adjust(top=0.9, bottom=0.19, left=0.18, right=0.90, wspace=0.001)
+	fig1.subplots_adjust(top=0.9, bottom=0.19, left=0.18, right=0.90, wspace=0.001)
+	
 	# pylab.axes([0.05, 0.05, 0.92, 0.92])
 	
 	ax1 = fig.add_subplot(1,2,1)
 	# figure sharing doesn't work -- don't know why ...
-	ax2 = fig.add_subplot(1,2,2)	
+	ax2 = fig1.add_subplot(1,2,1)	
 	ax1.set_xlabel(r'End to end distance ($\AA$)')
 	ax1.set_ylabel(r'$P_{eed}$')
 	yticklabels = ax2.get_yticklabels()+ax2.get_xticklabels()
 	pylab.setp(yticklabels, visible=False)
 
 	nax = 0
-	for eed_data in [scyllo, chiro]:
+	all_figs = [ax1, ax2]
+	for eed_data in [chiro, scyllo]:
 		nrows, ncols = eed_data.shape
-		ax = fig.get_axes()[nax]
+		ax = all_figs[nax]
 		ax.grid('on')
 		ax.set_xlim(0, 25)
 		ax.set_ylim(0, 0.1)
@@ -68,7 +73,8 @@ def plot_eed(file_name="test.png"):
 				
 		nax += 1
 	ax2.legend()
-	fig.savefig('eed.pdf')
+	fig.savefig('eed_300dpi_chiro.pdf', dpi=300)
+	fig1.savefig('eed_300dpi_scyllo.pdf', dpi=300)
 
 def plot_timeseries(xlabel='', ylabel=''):
 	""" plot the time series for peptide-peptide nonpolar and polar contacts """
@@ -114,7 +120,7 @@ def plot_timeseries(xlabel='', ylabel=''):
 
 		# pylab.ylabel(ylabel)
 		# pylab.xlabel(xlabel)
-		pylab.savefig('%(system)s.png' %vars())
+		pylab.savefig('%(system)s.pdf' %vars(), dpi=300)
 		pylab.clf()
 
 def plot_timeseries_single(xlabel='', ylabel=''):
@@ -158,7 +164,7 @@ def plot_timeseries_single(xlabel='', ylabel=''):
 		
 		# pylab.ylabel(ylabel)
 		# pylab.xlabel(xlabel)
-		pylab.savefig('%(system)s.png' %vars())
+		pylab.savefig('%(system)s.pdf' %vars(), dpi=300)
 		pylab.clf()
 	
 def main():

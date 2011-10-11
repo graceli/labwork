@@ -1,0 +1,46 @@
+alias new='ls -alrth'
+alias rm='rm -i'
+alias project='cd /project/pomes/grace/'
+alias diskusage='/scinet/gpc/bin/diskUsage'
+alias ls='ls --color'
+
+
+#scinet alias
+alias p='cd /project/pomes/grace'
+alias s='cd /scratch/grace'
+alias q='qstat'
+alias ru='/home/grace/scripts/q.pl'
+alias qdi='qsub -I -l nodes=1:ppn=8,walltime=02:00:00 -q debug'
+alias qd='qsub -l nodes=1:ppn=8,walltime=02:00:00 -q debug'
+alias t='ssh tera.research.sickkids.ca'
+alias 1='ssh gpc01'
+alias 2='ssh gpc02'
+alias 3='ssh gpc03'
+alias 4='ssh gpc04'
+alias ab='cd /scratch/grace/inositol/abeta42'
+alias rmall='rm -rf'
+
+# sh3 aliases
+alias shsam='cd /scratch/grace/drSH3/PRIOR_TO_RESTART_Fri_Dec_24_17:32:02_EST_2010/output/data'
+alias shd='cd /scratch/grace/drSH3'
+alias sha='cd /scratch/grace/sha'
+alias shp='cd /project/pomes/grace/SH3_analysis'
+
+#git alias
+alias bh='git branch'
+alias ct='git checkout'
+alias cb='git checkout -b'
+alias pl='git pull'
+alias ph='git push'
+alias me='git merge'
+alias cm='git commit -a -m'
+alias st='git status'
+alias lg='git log'
+alias gp='git grep'
+alias di='git diff --ignore-space-change'
+alias ad='git add'
+
+#t2 and tera (pomes lab fileservers)
+alias t2='ssh t2.research.sickkids.ca'
+alias te='ssh tera.research.sickkids.ca'
+
