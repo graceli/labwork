@@ -52,7 +52,7 @@ if [ "$num" == "0" ]; then
 		grompp -f $base_dir/abeta42_prod.mdp -c sys${SGE_TASK_ID}_equil_npt -p $base_dir/abeta42_glucose.top -o sys${SGE_TASK_ID}_prod
 	fi
 else
-	cptfile="$base_dir/${SGE_TASK_ID}/sys${SGE_TASK_ID}_prod.cpt"
+	cptfile="$base_dir/sys${SGE_TASK_ID}/sys${SGE_TASK_ID}_prod.cpt"
 fi
 
 if [ ! -e "sys${SGE_TASK_ID}_prod.tpr" ]; then

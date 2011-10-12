@@ -36,8 +36,8 @@ function run {
 
 run 46
 
-#if [ "$num" -lt "$NRESUBMITS" ]; then
-#	num=$((NUM+1))
-#	echo "resubmitting - sequence $num for replica $SGE_TASK_ID"
-#	qsub -v NUM=$num,SGE_TASK_ID=${SGE_TASK_ID} -N ${JOB_NAME}_${SGE_TASK_ID}_${num} ../run.sh
-#fi
+if [ "$num" -lt "$NRESUBMITS" ]; then
+	num=$((NUM+1))
+	echo "resubmitting - sequence $num for replica $SGE_TASK_ID"
+	qsub -v NUM=$num,SGE_TASK_ID=${SGE_TASK_ID} -N ${JOB_NAME}_${SGE_TASK_ID}_${num} /home/grace/labwork/abeta_analysis/scripts/rerun_colosse.sh
+fi

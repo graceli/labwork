@@ -102,7 +102,7 @@ function batch_run {
 base_dir=`pwd`
 DATA="/rap/uix-840-ac/grace/abeta/42/glucose/xtc"
 TAG="c_res_nosol"
-TEST="-b 0 -e 100"
+TEST=""
 
 echo "in $PWD"
 echo "running app $1"
