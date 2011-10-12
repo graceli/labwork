@@ -9,10 +9,12 @@
 #$ -cwd
 #$ -notify
 
+#path for qsub
+export PATH=$PATH:/usr/local/ge6.2u5/bin/lx24-amd64
+
 module load compilers/intel/11.1.059
 module load mpi/openmpi/1.3.4_intel
 export OMP_NUM_THREADS=$NSLOTS
-# echo "Got $NSLOTS processors."
 . /home/grace/.gmx
 
 #set -e
@@ -63,6 +65,6 @@ mpirun /software/apps/gromacs-4.0.7/bin/mdrun -deffnm sys${SGE_TASK_ID}_prod -s 
 if [ "$num" -lt "$NRESUBMITS" ]; then
     num=$(($num+1))
     echo "resubmitting - sequence $num for replica $SGE_TASK_ID"
-    ssh colosse1 "cd $base_dir; qsub -v NUM=$num,SGE_TASK_ID=${SGE_TASK_ID} -N ${JOB_NAME}_${SGE_TASK_ID}_${num} ./run.sh"
+   qsub -v NUM=$num,SGE_TASK_ID=${SGE_TASK_ID} -N ${JOB_NAME}_${SGE_TASK_ID}_${num} /home/grace/labwork/abeta_analysis/scripts/submit_colosse_ab42.sh
 fi
 
