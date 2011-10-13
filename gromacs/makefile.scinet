@@ -7,6 +7,8 @@ CFLAGS       = -O3 -w -funroll-all-loops -std=gnu99  -I/project/pomes/cneale/GPC
 CC           = c++
 LD           = $(CC)
 
+BIN 	     = g_pp_nonpolar g_inositol_residue_nonpolar_v2 g_eed g_mdmat_g 
+
 # The real make targets - note that most make programs support
 # the shortcut $^ instead of listing all object files a second
 # time, but we cannot count on it...
@@ -26,4 +28,4 @@ g_mdmat_g: g_mdmat_g.o
 	$(LD) $(LDFLAGS) -o /home/grace/bin/$@ g_mdmat_g.o $(LIBS)
 
 clean:
-	rm *.o
+	rm *.o $(BIN)

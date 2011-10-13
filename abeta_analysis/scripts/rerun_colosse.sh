@@ -15,7 +15,7 @@ export OMP_NUM_THREADS=$NSLOTS
 # echo "Got $NSLOTS processors."
 . /home/grace/.gmx
 
-set -u
+#set -u
 set -e
 set -x
 
@@ -28,17 +28,16 @@ base_dir=$PWD
 function run {
 	MAXH=$1
 	cpt_file=sys${SGE_TASK_ID}_prod.cpt
-	cd $base_dir/sys${SGE_TASK_ID}
+	cd $base_dir/${SGE_TASK_ID}
 	echo 'DEBUG: starting mdrun for $MAXH'
 
 	mpirun mdrun -s ${sysName}_prod -deffnm ${sysName}_prod -maxh $MAXH -cpt 720 -nosum -dlb auto -npme $NPME -cpo ${sysName}_prod -cpi $cpt_file
 }
-}
 
 run 46
 
-#if [ "$num" -lt "$NRESUBMITS" ]; then
-#	num=$((NUM+1))
-#	echo "resubmitting - sequence $num for replica $SGE_TASK_ID"
-#	qsub -v NUM=$num,SGE_TASK_ID=${SGE_TASK_ID} -N ${JOB_NAME}_${SGE_TASK_ID}_${num} ../run.sh
-#fi
+if [ "$num" -lt "$NRESUBMITS" ]; then
+	num=$((NUM+1))
+	echo "resubmitting - sequence $num for replica $SGE_TASK_ID"
+	qsub -v NUM=$num,SGE_TASK_ID=${SGE_TASK_ID} -N ${JOB_NAME}_${SGE_TASK_ID}_${num} /home/grace/labwork/abeta_analysis/scripts/rerun_colosse.sh
+fi

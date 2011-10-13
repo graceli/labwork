@@ -1,0 +1,40 @@
+# Generated automatically from Makefile.in by configure.
+#
+# This is a Gromacs 3.0 g_eed makefile for your own utility programs.
+#
+# Copy this file to whatever directory you are using for your own
+# software and add more targets like the g_eed one below.
+#
+# If you are using gmake it is relatively straightforward to add
+# an include based on environment variables (like previous Gromacs versions)
+# to select compiler flags and stuff automatically, but below it is static:
+#
+
+# Variables set by the configuration script:
+LIBS         = -lmd_d -lgmx_d -lnsl -lfftw3 -lm   -lSM 
+LDFLAGS      = -L/usr/lib
+CFLAGS	     = -I/usr/include -I/usr/include/gromacs -DGMX_DOUBLE	
+CC           = x86_64-linux-gnu-gcc
+LD           = $(CC)
+BIN 	     = g_pp_nonpolar_tera g_inositol_residue_nonpolar_v2_tera g_eed_tera g_mdmat_g_tera 
+
+# The real make targets - note that most make programs support
+# the shortcut $^ instead of listing all object files a second
+# time, but we cannot count on it...
+
+all: $(BIN) 
+
+g_pp_nonpolar_tera:  g_pp_nonpolar.o
+	$(LD) $(LDFLAGS) -o /bigwork/grace/labwork/bin/$@ g_pp_nonpolar.o $(LIBS)
+
+g_inositol_residue_nonpolar_v2_tera: g_inositol_residue_nonpolar_v2.o
+	$(LD) $(LDFLAGS) -o /bigwork/grace/labwork/bin/$@ g_inositol_residue_nonpolar_v2.o $(LIBS)
+
+g_eed_tera: g_eed.o
+	$(LD) $(LDFLAGS) -o /bigwork/grace/labwork/bin/$@ g_eed.o $(LIBS)
+
+g_mdmat_g_tera: g_mdmat_g.o
+	$(LD) $(LDFLAGS) -o /bigwork/grace/labwork/bin/$@ g_mdmat_g.o $(LIBS)
+
+clean:
+	rm *.o $(BIN)
