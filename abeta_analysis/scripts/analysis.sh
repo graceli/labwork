@@ -31,6 +31,18 @@ function clean {
 	rm -rf * 
 }
 
+function dssp {
+	export DSSP=/home/grace/src/dssp_ana/dsspcmbi
+	
+	for i in `seq 0 10`; do 
+		if [ ! -e "$1" ]; then
+			mkdir $1
+		fi
+
+		seq 0 10 | parallels -j 8 "cd $1; echo 1 | do_dssp -f $DATA/$xtc -s ${iso}_${ratio}_nosol.tpr -o ${NAME}_ss -sc ${NAME}_sc $TEST 2>&1 &; cd ../"
+	done
+}
+
 chain_start=0
 chain_end=3
 function chain_hbonds {
@@ -131,16 +143,16 @@ function rmsf_calpha {
 
 mode='test'
 target='test'
-TEST="-b 1000"
+TEST="-b 0 -e 100"
 if [ "$mode" == "$target" ]; then
 	echo "running in production mode"
 	cd $PBS_O_WORKDIR
 else
 	echo "testing ..."
 	#set externally bound variables
-	ISO=glycerol
+	ISO=scyllo
 	RATIO=15
-	ANALYSIS=rmsd
+	ANALYSIS=dssp
 	TEST="-b 1000 -e 1010"
 fi
 
