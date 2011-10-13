@@ -38,9 +38,10 @@ function dssp {
 		if [ ! -e "$1" ]; then
 			mkdir $1
 		fi
-
-		seq 0 10 | parallels -j 8 "cd $1; echo 1 | do_dssp -f $DATA/$xtc -s ${iso}_${ratio}_nosol.tpr -o ${NAME}_ss -sc ${NAME}_sc $TEST 2>&1 &; cd ../"
 	done
+
+	xtc="ab_${ISO}_${RATIO}_${s}_nosol_whole.xtc_c_fit"
+	seq 0 10 | parallels -j 8 "cd $1; echo 1 | do_dssp -f $DATA/$xtc -s ${ISO}_${RATIO}_nosol.tpr -o ${NAME}_ss -sc ${NAME}_sc $TEST 2>&1 &; cd ../"
 }
 
 chain_start=0
