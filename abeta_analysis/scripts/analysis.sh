@@ -41,7 +41,7 @@ function dssp {
 	done
 
 	seq 0 9 | parallel -j 8 "cd $SHM/{}; echo 1 | do_dssp -f $DATA/ab_${ISO}_${RATIO}_{}_nosol_whole.xtc_c_fit -s $base_dir/${ISO}_${RATIO}_nosol.tpr -o ab_${ISO}_${RATIO}_{}_ss -sc ab_${ISO}_${RATIO}_{}_sc $TEST 2>&1"
-	clean "test_dssp"
+	clean "${ISO}_${RATIO}_dssp"
 }
 
 chain_start=0
@@ -142,8 +142,8 @@ function rmsf_calpha {
 	clean "${iso}_${ratio}_rmsf"
 }
 
-mode='test'
-TEST="-b 0 -e 1000"
+mode='production'
+TEST="-b 0"
 if [ "$mode" == "production" ]; then
 	echo "running in production mode"
 	cd $PBS_O_WORKDIR
