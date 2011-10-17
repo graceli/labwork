@@ -142,6 +142,38 @@ def plot_chain_hbond(iso, ratio, fig, subplot_num):
 	# ylabel('Number of interchain hydrogen bonds')
 	pylab.legend(loc='lower right')
 	pylab.savefig('test_%(iso)s_%(ratio)s_chain_hbond.png' % vars())
+
+def plot_dssp(iso, ratio, fig, subplot_num):
+	ax=fig.add_subplot(3, 4, subplot_num)
+	fig.subplots_adjust(bottom=0.05,top=0.95,left=0.05,right=0.95,wspace=0.4, hspace=0.4)
+
+	# pylab.rcParams['xtick.labelsize']='10'
+	# pylab.rcParams['ytick.labelsize']='12'
+	pylab.rcParams['legend.fontsize']='6'
+	# pylab.rcParams['figure.figsize'] = [2.5,2.5]
+	# pylab.rcParams["axes.titlesize"]='small'
+
+	A=utils.smooth(numpy.genfromtxt('%(subplot_num)d/sys%(subplot_num)d_dssp.dat' % vars(), comments="#"), 1000, timestep=2)
+
+	if A == []:
+		print "WARNING: data file empty ... quitting ..."
+		return
+	
+	time = A[:,0]/1000.0
+	ax.plot(time, A[:,2], label="Coil")
+	ax.plot(time, A[:,3], label="B-sheet")
+	ax.plot(time, A[:,4], label="B-bridge")
+	ax.plot(time, A[:,5], label="Bend")
+	ax.plot(time, A[:,6], label="Turn")
+	pylab.ylim(0, 80)
+	pylab.xlim(0, 100)
+	pylab.grid(True)
+	# xlabel('Time (ns)')
+	# ylabel('Number of interchain hydrogen bonds')
+	pylab.legend(loc='lower right')
+	#pylab.savefig('test_%(iso)s_%(ratio)s_dssp.png' % vars())
+
+
 		
 def main():
 	if len(sys.argv) < 3: 
@@ -171,6 +203,9 @@ def main():
 		elif analysis == "chain_hbond":
 			print "plotting chain_hbond"
 			plot_chain_hbond(iso, ratio, fig, i)
+		elif analysis == "dssp":
+			print "plotting dssp"
+			plot_dssp(iso, ratio, fig, i)
 		else:
 			print "no support for this option"
 

@@ -65,6 +65,10 @@ function rmsd {
 	echo 1 1 | g_rms -f $DATA/$NAME -s $DATA/$TPR -o ${NAME}_whole_rmsd_protein.xvg -noxvgr $TEST &
 }
 
+function gyration {
+	echo 1 | g_gyrate -f $DATA/$NAME -s $DATA/$TPR -o ${NAME}_rg_protein.xvg -noxvgr $TEST 2> rg.out >&2 &
+} 
+
 # task function to run analysis
 function run_analysis {
 	analysis=$1	
@@ -83,7 +87,7 @@ function run_analysis {
 
 # run all analysis at once
 function batch_run {
-	for ANALYSIS in rmsf rmsd chain_hbonds dssp; do
+	for ANALYSIS in gyration; do
 		echo "Performing analysis $ANALYSIS"
 
 		if [ ! -e "$ANALYSIS" ]; then
