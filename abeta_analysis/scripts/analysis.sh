@@ -22,13 +22,26 @@ set -x
 #         done
 # }
 
-trap 'clean $RANDOM; exit' TERM INT SIGINT EXIT SIGKILL SIGSTOP SIGTERM
+trap 'echo $?' TERM INT SIGINT EXIT SIGKILL SIGSTOP SIGTERM
 
 function clean {
 	cd /dev/shm
-	tar cvfz "analysis_${1}.tgz" analysis
+	tar cvfz "analysis_${1}.tgz" grace
 	cp analysis*.tgz $base_dir
 	rm -rf * 
+}
+
+function dssp {
+	export DSSP=/home/grace/src/dssp_ana/dsspcmbi
+	
+	for i in `seq 0 10`; do 
+		if [ ! -e "$SHM/$i" ]; then
+			mkdir -p $SHM/$i
+		fi
+	done
+
+	seq 0 9 | parallel -j 8 "cd $SHM/{}; echo 1 | do_dssp -f $DATA/ab_${ISO}_${RATIO}_{}_nosol_whole.xtc_c_fit -s $base_dir/${ISO}_${RATIO}_nosol.tpr -o ab_${ISO}_${RATIO}_{}_ss -sc ab_${ISO}_${RATIO}_{}_sc $TEST 2>&1"
+	clean "${ISO}_${RATIO}_dssp"
 }
 
 chain_start=0
@@ -129,24 +142,23 @@ function rmsf_calpha {
 	clean "${iso}_${ratio}_rmsf"
 }
 
-mode='test'
-target='test'
-TEST="-b 1000"
-if [ "$mode" == "$target" ]; then
+mode='production'
+TEST="-b 0"
+if [ "$mode" == "production" ]; then
 	echo "running in production mode"
 	cd $PBS_O_WORKDIR
 else
 	echo "testing ..."
 	#set externally bound variables
-	ISO=glycerol
+	ISO=scyllo
 	RATIO=15
-	ANALYSIS=rmsd
+	ANALYSIS=dssp
 	TEST="-b 1000 -e 1010"
 fi
 
 base_dir=`pwd`
 DATA="/scratch/grace/inositol/abeta42/2/xtc"
-SHM="/dev/shm/analysis"
+SHM="/dev/shm/grace/"
 
 echo `pwd`
 ${ANALYSIS} $ISO $RATIO $SHM
