@@ -1,0 +1,31 @@
+#!/bin/sh
+#$ -v LD_LIBRARY_PATH=/usr/lib64/tls:/hpf/tools/n1ge/lib/lx24-amd64:/tools/gcc/4.1.1/lib64:/tools/openmpi/1.2/lib:/tools/local/lib
+#$ -v PATH=/hpf/tools/n1ge/bin/lx24-amd64:/usr/local/bin:/usr/bin:/usr/X11R6/bin:/bin:/usr/games:/opt/gnome/bin:/tools/local/bin:/home/cneale/exe:/projects/pomes/cneale/exe/gromacs-3.3.1/exec/fftw-3.1.2/bin:.:/tools/openmpi/1.2/bin
+
+### for openmpi LD_LIBRARY_PATH includes /tools/openmpi/1.2b3/lib
+### for lam-mpi LD_LIBRARY_PATH includes /tools/lam/lam-7.1.2/lib
+### for openmpi PATH includes /tools/openmpi/1.2b3/bin
+### for lam-mpi PATH includes /tools/lam/lam-7.1.2/bin
+
+MYMOL=SAME_AS_MYMOL_IN_DRIVER
+
+#do not edit variables ED, DD
+ED=/projects/pomes/cneale/exe/gromacs-3.3.1/exec/fftw-3.1.2/bin
+DD=/projects/pomes/cneale/exe/gromacs-3.3.1/exec/fftw-3.1.2/share/gromacs/template
+
+MD=SAME_AS_MD_IN_DRIVER
+cd ${MD}
+
+#do not edit variables below
+in=_in
+out=_out
+mynp=4
+
+echo "Starting grompp..."
+
+${ED}/tpbconv -s ${MYMOL}${in}.tpr -f ${MYMOL}${in}.trr -e ${MYMOL}${in}.edr -extend 15000 -o ${MYMOL}${out}.tpr  > output.${MYMOL}_tpbconv${out} 2> output.${MYMOL}_tpbconv${out}_e
+
+echo "grompp finished"
+echo "grompp finished" > ./gromppfinished
+
+###EOF

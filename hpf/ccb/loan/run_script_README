@@ -1,0 +1,16 @@
+Usage:
+
+1) rename MYSYS_template_grompp and MYSYS_template_mdrun.sh by replacing MYSYS with your own system name
+2) Manually run the first job by adapting the template_mdrun.sh 
+	make sure that the following files are outputted from this initial manual run:
+		MYMOL_IN.gro
+		MYMOL_IN.trr
+		MYMOL_IN.edr
+		MYMOL.top
+	this means, your initial mdrun should be executed with -deffnm MYMOL_IN and that your topology file should be
+	named MYMOL.top
+   label the initial run as md0, and output files with md1
+
+3) Once this initial run starts, edit the files MYSYS_template_grompp and MYSYS_template_mdrun.sh as directed by the comments
+inside the files and execute the driver file.  This is the continuation part of the run.  This part will automatically use tpbconv to 
+continue your run, once the initial run is done. Set START=1 and END to however long you want your run to be.

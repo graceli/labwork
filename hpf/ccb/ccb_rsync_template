@@ -1,0 +1,1 @@
+rsync --rsh=ssh --rsync-path=/tools/rsync/2.6.9/bin/rsync -avzh --remove-sent-files --ignore-existing CCB_SOURCE_DIR  DEST_DIR
