@@ -1,1 +1,1 @@
-find . -mtime 1 -ls
+find . -mtime -1 -ls
