@@ -72,6 +72,7 @@ def plot_eed(file_name="test.png"):
 				ax = plot_with_error(x, y, 'n=%(state)d hbonds' % vars(), yerror=None, axes=ax)			
 				
 		nax += 1
+
 	ax2.legend()
 	fig.savefig('eed_300dpi_chiro.pdf', dpi=300)
 	fig1.savefig('eed_300dpi_scyllo.pdf', dpi=300)
