@@ -12,16 +12,6 @@ from tables import *
 # 	'total' : Float64Col(dflt=0.0, pos=6)
 # }
 # 
-# RGTable = {
-# 	'temp' : Int64Col(dflt=0, pos=0),
-# 	'replicanum' : Int64Col(dflt=0, pos=1),
-# 	'seqnum' : Int64Col(dflt=0, pos=2),
-# 	'time' : Int64Col(dflt=0, pos=3),
-# 	'Rg' : Float64Col(dflt=0.0, pos=4),
-# 	'Rgx' : Float64Col(dflt=0.0, pos=5),
-# 	'Rgy' : Float64Col(dflt=0.0, pos=6),
-# 	'Rgz' : Float64Col(dflt=0.0, pos=7)
-# }
 # 
 # EETable = {
 # 	'temp' : Int64Col(dflt=0, pos=0),
@@ -30,6 +20,17 @@ from tables import *
 # 	'time' : Float64Col(dflt=0, pos=3),
 # 	'eed' : Float64Col(dflt=0.0, pos=4)
 # }
+
+RGTable = {
+	'temp' : Int64Col(dflt=0, pos=0),
+	'replicanum' : Int64Col(dflt=0, pos=1),
+	'seqnum' : Int64Col(dflt=0, pos=2),
+	'time' : Int64Col(dflt=0, pos=3),
+	'Rg' : Float64Col(dflt=0.0, pos=4),
+	'Rgx' : Float64Col(dflt=0.0, pos=5),
+	'Rgy' : Float64Col(dflt=0.0, pos=6),
+	'Rgz' : Float64Col(dflt=0.0, pos=7)
+}
 
 RamaTable = {
 	'temp' : Int64Col(dflt=0, pos=0),

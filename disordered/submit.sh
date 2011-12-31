@@ -1,4 +1,4 @@
 #!/bin/sh
-
-. ~/ENV/bin/activate
-python indexer.py
+ 
+# . ~/ENV/bin/activate
+# python indexer.py

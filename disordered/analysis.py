@@ -97,6 +97,37 @@ class Analysis(object):
 		if not os.path.exists(output):
 			os.mkdir(output)
 		return output
+
+class Gyration(Analysis):
+	
+	def files(self, xtc):
+		return [ xtc.name() + '.xvg' ]
+	
+	def types(self):
+		return [ rowtypes.RGTable ]
+	
+	def type_names(self):
+		return ['rg']
+	
+	def xtc_file(self):
+		return self.__file
+		
+	
+	def run(self, xtc=None, tpr='sh3.tpr'):
+		self.__extract(xtc, tpr)
+		self.__file = xtc
+
+	def __extract(self, xtc, tpr):		
+		name = os.path.join(self.location(), xtc.name())
+
+		print "PID", os.getpid(), "is extracting:", xtc.name(), tpr, "to", name
+
+		selection = {'group1':'Protein'}
+		command = "g_gyrate -f %s -s %s " % (xtc.full_path(), tpr, name, name, name, name)
+		(stdout, stderr) = subprocess.Popen(shlex.split(command),  stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE).communicate("%s" %(selection['group1']))
+		print "PID", os.getpid(), "done extracting"
+	
+	
 	
 class ContactMap(Analysis):
 	def __init__(self):
