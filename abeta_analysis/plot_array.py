@@ -153,7 +153,15 @@ def plot_dssp(iso, ratio, fig, subplot_num):
 	# pylab.rcParams['figure.figsize'] = [2.5,2.5]
 	# pylab.rcParams["axes.titlesize"]='small'
 
-	A=utils.smooth(numpy.genfromtxt('%(subplot_num)d/sys%(subplot_num)d_dssp.dat' % vars(), comments="#"), 1000, timestep=2)
+	# TODO: refactor this to a configuration file
+	#filename = '%(subplot_num)d/sys%(subplot_num)d_dssp.dat' % vars()
+
+	filename = 'ab_%(iso)s_%(ratio)s_%(subplot_num)d_sc.xvg' % vars()
+	A=[]
+	if os.path.exists(filename):
+		A=utils.smooth(numpy.genfromtxt(filename, comments="#"), 1000, timestep=2)
+	else:
+		print "WARNING: %(filename)s not found" % vars()
 
 	if A == []:
 		print "WARNING: data file empty ... quitting ..."
@@ -211,7 +219,9 @@ def main():
 
 	# save a rasterized image as a draft b/c for fast viewing  
 	# for production figures use pdf/eps
-	pylab.savefig(analysis + '.png')
+	output = "%(iso)s_%(ratio)s_analysis" % vars()
+
+	pylab.savefig(output + '.pdf')
 
 if __name__ == '__main__':
 	main()

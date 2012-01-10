@@ -120,7 +120,6 @@ int main(int argc,char *argv[])
  /* GL: comment out this line to get PBC back */ 
 
     box[XX][XX]=box[YY][YY]=box[ZZ][ZZ]=0;
-    printf("A"); 
 /* end comment */
 
     set_pbc(&pbc, -1, box);
