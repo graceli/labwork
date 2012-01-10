@@ -1,6 +1,19 @@
 #!/bin/sh
+WORKING=$PWD
+TEMP=/dev/shm/grace/sh3_300_logs
+mkdir -p $TEMP
 
-for log in `ls */*.300K`; do
+# Extract out the records only at T = 300K
+for file in `ls dat_files_noforce/PRIOR*.noforce`; do
+    echo "extracting records at beta=1.67 (or T=300K)"
+    b=`basename $file`
+    cat $file | grep record | grep '1.677389' > /dev/shm/grace/sh3_300_logs/${b}.300K
+done
+
+cd $TEMP
+
+# Clean and rename the log files
+for log in `ls *.300K`; do
     # replace the pesky colons with an underscore
     string=$log
     new_log_name=${string//:/_}
@@ -17,3 +30,10 @@ for log in `ls */*.300K`; do
     # rename the original log file with the colons from the filename removed
     mv $log ${new_log_name}
 done    
+
+# tar up stuff and clean temp working dir
+cd /dev/shm/grace
+tar cvfz sh3_300_logs.tar.gz sh3_300_logs
+cd $WORKING
+cp /dev/shm/grace/*.gz .
+rm -rf /dev/shm/grace

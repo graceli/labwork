@@ -16,7 +16,11 @@ def main():
     tarfiles_dict = {}
     for each tar file:
         tarfiles_dict[tarfile] = xtcfiles(tarfile)
-    
+        
+        for each file at T=300:
+            if file is in tarfile
+                extract file from tarfile
+                
 if __name__ == '__main__':
     files = xtcfiles('lgw124.90188-lgw35.91189.tmp.455')
     print len(files)
