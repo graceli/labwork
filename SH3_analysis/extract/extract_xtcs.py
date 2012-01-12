@@ -42,60 +42,63 @@ def parse_names_from_log(logname):
 		fileslist.append(edrname)
 	return fileslist
 
-def main():
-    # list and store a list of the data directories
+def process_run_dir(d):
+	# list and store a list of the data directories
 	DATA = '/scratch/p/pomes/grace/drSH3'
 	LOGS = '/scratch/p/pomes/grace/hpss/sh3/SH3_analysis/sh3_300_logs'
 	CWD =  '/scratch/p/pomes/grace/sha/2012'
 
-	# data_dirs = glob.glob(os.path.join(DATA, "PRIOR*"))
+	# make a listing of the tar files in the run directory
+	print "processing:", d
+	data_path = os.path.join(d, "output/data")
 
-	data_dirs =[ os.path.join(DATA, 'PRIOR_TO_RESTART_Tue_Nov_2_17:35:28_EDT_2010') ]
+	run_dir_tarfiles = glob.glob(os.path.join(data_path, 'lgw*tmp*'))
+	#run_dir_tarfiles = [ os.path.join(data_path, 'lgw99.52166-lgw99.52749.tmp.458') ] 
 
-	for d in data_dirs:
-		# make a listing of the tar files in the run directory
-		print "processing:", d
-		data_path = os.path.join(d, "output/data")
-
-		run_dir_tarfiles = glob.glob(os.path.join(data_path, 'lgw*tmp*'))
-		#run_dir_tarfiles = [ os.path.join(data_path, 'lgw99.52166-lgw99.52749.tmp.458') ] 
-
-		# load the corresponding log file
-		logname = os.path.join(LOGS, construct_logname(d))
-		
-		print "scanning in log file:", logname
-
-		files_at_300 = parse_names_from_log(logname)
-
-		# extract from each tar file in the run dir
-		# the xtc file at T=300K (beta=1.67)
-		num_extracted = 0
-		for tf in run_dir_tarfiles:
-			print "searching in tarfile", tf
-			all_xtc_in_tar = xtcfiles(tf)
-			for file in files_at_300:
-				if file in all_xtc_in_tar: 
-					# extract file from tar file	
-					tar_obj = tarfile.open(tf)
-					tar_obj.extract(file, path="/dev/shm/grace")
-					# print "extracted", file
-					num_extracted += 1
-		print num_extracted, "files extracted" 
+	# load the corresponding log file
+	logname = os.path.join(LOGS, construct_logname(d))
 	
-		new_tar = os.path.join('/dev/shm/grace', sanitize_name(os.path.basename(d)) + '.tar.gz')
+	print "scanning in log file:", logname
 
-		try:
-			subprocess.check_call('tar cvfz %(new_tar)s /dev/shm/grace/* --remove-files' % vars(), shell=True) 
-		except subprocess.CalledProcessError:
-			print "Tarring failed ... quitting"	
-			sys.exit(0)
+	files_at_300 = parse_names_from_log(logname)
 
-		# if tarring succeeded then remove all the files in memory and try again
-		print "moving", new_tar, "to", CWD
-		subprocess.check_call('mv /dev/shm/grace/*.tar.gz %(CWD)s' % vars(), shell=True)
+	# extract from each tar file in the run dir
+	# the xtc file at T=300K (beta=1.67)
+	num_extracted = 0
+	for tf in run_dir_tarfiles:
+		print "searching in tarfile", tf
+		all_xtc_in_tar = xtcfiles(tf)
+		for file in files_at_300:
+			if file in all_xtc_in_tar: 
+				# extract file from tar file	
+				tar_obj = tarfile.open(tf)
+				tar_obj.extract(file, path="/dev/shm/grace")
+				# print "extracted", file
+				num_extracted += 1
+	print num_extracted, "files extracted" 
 
+	new_tar = os.path.join('/dev/shm/grace', sanitize_name(os.path.basename(d)) + '.tar.gz')
+
+	try:
+		subprocess.check_call('tar cvfz %(new_tar)s /dev/shm/grace/* --remove-files' % vars(), shell=True) 
+	except subprocess.CalledProcessError:
+		print "Tarring failed ... quitting"	
+		sys.exit(0)
+
+	# if tarring succeeded then remove all the files in memory and try again
+	print "moving", new_tar, "to", CWD
+	subprocess.check_call('mv /dev/shm/grace/*.tar.gz %(CWD)s' % vars(), shell=True)
 	subprocess.check_call('rm -rf /dev/shm/grace', shell=True)
-			
+
+def main():
+	if len(sys.argv) < 2:
+		print "Input a run directory as input"
+		sys.exit(0)
+	else:
+		d = sys.argv[1]
+
+	process_run_dir(d)
+
 if __name__ == '__main__':
     main()
 
