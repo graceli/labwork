@@ -3,6 +3,7 @@ import os
 import glob
 import re
 import csv
+import subprocess
 
 # Return the xtc files in the tarfile as a set
 def sanitize_name(name):
@@ -47,17 +48,17 @@ def main():
 	LOGS = '/scratch/p/pomes/grace/hpss/sh3/SH3_analysis/sh3_300_logs'
 	CWD =  '/scratch/p/pomes/grace/sha/2012'
 
-	data_dirs = glob.glob(os.path.join(DATA, "PRIOR*"))
+	# data_dirs = glob.glob(os.path.join(DATA, "PRIOR*"))
 
-	#data_dirs =[ os.path.join(DATA, 'PRIOR_TO_RESTART_Tue_Nov_2_17:35:28_EDT_2010') ]
+	data_dirs =[ os.path.join(DATA, 'PRIOR_TO_RESTART_Tue_Nov_2_17:35:28_EDT_2010') ]
 
 	for d in data_dirs:
 		# make a listing of the tar files in the run directory
 		print "processing:", d
 		data_path = os.path.join(d, "output/data")
 
-		#run_dir_tarfiles = glob.glob(os.path.join(data_path, 'lgw*tmp*'))
-		run_dir_tarfiles = [ os.path.join(data_path, 'lgw99.52166-lgw99.52749.tmp.458') ] #os.path.join(data_path, 'lgw96.11028-lgw101.11709.tmp.742') ]
+		run_dir_tarfiles = glob.glob(os.path.join(data_path, 'lgw*tmp*'))
+		#run_dir_tarfiles = [ os.path.join(data_path, 'lgw99.52166-lgw99.52749.tmp.458') ] 
 
 		# load the corresponding log file
 		logname = os.path.join(LOGS, construct_logname(d))
@@ -77,16 +78,25 @@ def main():
 					# extract file from tar file	
 					tar_obj = tarfile.open(tf)
 					tar_obj.extract(file, path="/dev/shm/grace")
-					print "extracted", file
+					# print "extracted", file
 					num_extracted += 1
 		print num_extracted, "files extracted" 
 	
-		new_tar = os.path.join('/dev/shm', sanitize_name(d) + '.tar.gz')
-		ret_code = subprocess.Popen(['tar', 'xvfz', new_tar, '/dev/shm/grace/*.xtc'])
-		if ret_code == 0:
-			subprocess.Popen(['mv', new_tar,
-			
+		new_tar = os.path.join('/dev/shm/grace', sanitize_name(os.path.basename(d)) + '.tar.gz')
 
+		try:
+			subprocess.check_call('tar cvfz %(new_tar)s /dev/shm/grace/* --remove-files' % vars(), shell=True) 
+		except subprocess.CalledProcessError:
+			print "Tarring failed ... quitting"	
+			sys.exit(0)
+
+		# if tarring succeeded then remove all the files in memory and try again
+		print "moving", new_tar, "to", CWD
+		subprocess.check_call('mv /dev/shm/grace/*.tar.gz %(CWD)s' % vars(), shell=True)
+
+	subprocess.check_call('rm -rf /dev/shm/grace', shell=True)
+			
 if __name__ == '__main__':
     main()
+
 
