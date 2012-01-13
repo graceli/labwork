@@ -1,9 +1,12 @@
+#!/usr/bin/env python
+
 import tarfile
 import os
 import glob
 import re
 import csv
 import subprocess
+import sys
 
 # Return the xtc files in the tarfile as a set
 def sanitize_name(name):
