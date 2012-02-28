@@ -21,7 +21,7 @@ def setup(X, Y, Z_bilayer = '15'):
 		
 	# Create a POPC bilayer with the right XY dimensions if it does not exist
 	if not os.path.exists("popc_clean_bounded.gro"):
-		command = "editconf -f popc_clean.gro -o popc_clean_bounded.gro -c -box %(X)s %(Y)s %(Z_bilayer)s" % vars()
+		command = "editconf_mpi -f popc_clean.gro -o popc_clean_bounded.gro -c -box %(X)s %(Y)s %(Z_bilayer)s" % vars()
 		os.system(command)
 		logger.info("Bilayer structure not found. Created bilayer file.")
 		logger.info(command)
@@ -39,23 +39,23 @@ def run_log(command):
 	os.system(command)
 
 def define_system_geometry(output_dir, num):
-	command = "editconf -f %(output_dir)s/temp.gro -translate 0 0 5.5 -o %(output_dir)s/temp2_%(num)d" % vars()
+	command = "editconf_mpi -f %(output_dir)s/temp.gro -translate 0 0 5.5 -o %(output_dir)s/temp2_%(num)d" % vars()
 	run_log(command)
 
 	command = "perl ~/labwork/scripts/analysis/combine_gros.pl %(output_dir)s/temp2_%(num)d.gro popc_clean_bounded.gro %(output_dir)s/test_%(num)d.gro" % vars()
 	run_log(command)
 
-	command = "editconf -f %(output_dir)s/test_%(num)d.gro -o %(output_dir)s/final_%(num)d.gro -translate 0 0 -3" % vars()
+	command = "editconf_mpi -f %(output_dir)s/test_%(num)d.gro -o %(output_dir)s/final_%(num)d.gro -translate 0 0 -3" % vars()
 	run_log(command)
 
 def add_inositol(isomer, ninos, index, grofile, topfile):
 	output = "temp_inositol_%(index)d.gro" % vars()
 	os.system("cp system.top systems/%(topfile)s.top" % vars())
-	os.system("genbox -cp systems/%(grofile)s -ci ~/systems/gro/%(isomer)s_em.gro -o systems/%(output)s -p systems/%(topfile)s -nmol %(ninos)d" % vars())
+	os.system("genbox_mpi -cp systems/%(grofile)s -ci ~/systems/gro/%(isomer)s_em.gro -o systems/%(output)s -p systems/%(topfile)s -nmol %(ninos)d" % vars())
 	return output
 	
 def add_water(index, grofile, topfile):
-	os.system("genbox -cp systems/%(grofile)s -cs ~/systems/gro/tip3.gro -o systems/test_final_%(index)d.gro -p systems/%(topfile)s" % vars())
+	os.system("genbox_mpi -cp systems/%(grofile)s -cs ~/systems/gro/tip3.gro -o systems/test_final_%(index)d.gro -p systems/%(topfile)s" % vars())
 
 def main():
 	output_dir = 'systems'
@@ -72,7 +72,7 @@ def main():
 	for filename in glob.glob("%s/*.pdb" % input_dir):
 		# prepocess the beta oligomer box such that it has the same X and Y dimensions as the POPC bilayer
 		newfilename = 'test' + str(num)
-		command = "editconf -f %(filename)s -o %(output_dir)s/temp.gro -box %(X)s %(Y)s %(Z_protein)s -c" % vars()
+		command = "editconf_mpi -f %(filename)s -o %(output_dir)s/temp.gro -box %(X)s %(Y)s %(Z_protein)s -c" % vars()
 		run_log(command)
 		define_system_geometry(output_dir, num)
 		
