@@ -13,5 +13,5 @@ function make_check_dir() {
     done
 }
 
-make_systems("max_mrsd", 1, 1)
-make_systems("max_q", 1, 1)
+make_systems "max_mrsd" 1 1
+make_systems "max_q" 1 1
