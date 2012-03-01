@@ -11,7 +11,7 @@ NPME=-1
 #EXE=/home/nealechr/exe/gromacs-4.5.4/exec/bin/mdrun_mpi
 EXE=mdrun_mpi
 sysName=system_${PBS_ARRAYID}_final
-SHM=$SCRATCH
+SHM=/dev/shm
 base_dir=$PBS_O_WORKDIR
 NRESUBMITS=0
 #num=$NUM
@@ -26,14 +26,14 @@ function log {
 	echo "INFO: $1"
 }
 
-function clean_exit {
-	echo "DEBUG: starting clean_exit ... on ARRAYID $PBS_ARRAYID"
-	cd $SHM
-	cp -p *.log *.tpr *.xtc *.edr *.gro *.cpt $base_dir/$PBS_ARRAYID
-	cd $base_dir
-	rm -rf $SHM
-	echo "DEBUG: cleaned up $SHM"
-}
+#function clean_exit {
+#	echo "DEBUG: starting clean_exit ... on ARRAYID $PBS_ARRAYID"
+#	cd $SHM
+#	cp -p *.log *.tpr *.xtc *.edr *.gro *.cpt $base_dir/$PBS_ARRAYID
+#	cd $base_dir
+#	rm -rf $SHM
+#	echo "DEBUG: cleaned up $SHM"
+#}
 
 function run {
 	MAXH=$1
@@ -82,7 +82,7 @@ if [ "$PBS_ENVIRONMENT" != "PBS_INTERACTIVE" ]; then
   fi
 fi
 
-trap "clean_exit; exit 0" TERM KILL SIGINT SIGTERM EXIT
+#trap "clean_exit; exit 0" TERM KILL SIGINT SIGTERM EXIT
 
 run $MAXH
 
