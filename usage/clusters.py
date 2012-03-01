@@ -36,8 +36,16 @@ class Orca(Cluster):
         #self.joblist_command = "/opt/sharcnet/sq-tm/2.4/bin/sqjobs | grep ceing"
         self.joblist_command = "/opt/sharcnet/util/current/bin/gjobs | grep orca"
 
+class Lattice(Cluster):
+    def __init__(self, user):
+        self.user = user
+        self.name = "Lattice"
+        self.host = "lattice.westgrid.ca"
+        # self.submit_command = 'qsub'
+        self.joblist_command = "qstat"
+
 if __name__ == '__main__':
-    x = Orca("ceing")
+    x = Lattice("grace")
     print x._executeCommand(x.joblist_command)
     #print x._executeCommand("du -h")
 
