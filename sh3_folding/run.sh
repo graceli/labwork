@@ -5,8 +5,6 @@
 # stricter bash -- quits on error and unset variables
 set -u
 set -x
-# set -e
-
 
 NPME=-1
 MDRUN=mdrun_openmpi
