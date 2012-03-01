@@ -21,7 +21,18 @@ class System:
 		box_size = self.box_size
 		contents = self.comment + '\n' + str(self.num_atoms) + '\n' + protein + '\n' + solute + '\n' + lipid + '\n' + solvent + '\n' + box_size
 		return contents	
+	
+	def to_string_no_solute(self):
+		protein = '\n'.join(self.protein)
+		lipid = '\n'.join(self.lipid)
+		solvent = '\n'.join(self.solvent)
+		box_size = self.box_size
+		num_atoms = len(self.protein) + len(self.lipid) + len(self.solvent)
+		contents = self.comment + '\n' + str(num_atoms) + '\n' + protein + '\n' + lipid + '\n' + solvent + '\n' + box_size
+		return contents	
+	
 
+		
 # process the gro file
 system = System()
 num_line = 0
@@ -54,4 +65,5 @@ for line in sys.stdin:
 
 	num_line += 1
 
-print system.to_string()	
+#print system.to_string()	
+print system.to_string_no_solute()
