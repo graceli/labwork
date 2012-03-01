@@ -38,7 +38,7 @@ function clean_exit {
 
 function run {
 	MAXH=$1
-	cd $base_dir/$PBS_ARRAYID 
+	cd $base_dir/$PBS_ARRAYID
 	echo "$PWD"
 	cpt_file=""
 	if [[ ! -e "prod.cpt" || ! -s "prod.cpt" ]]; then
