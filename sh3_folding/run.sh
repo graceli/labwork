@@ -2,16 +2,17 @@
 #PBS -l nodes=1:ppn=8,walltime=48:00:00
 #PBS -N foldit
 
-
 # stricter bash -- quits on error and unset variables
 set -u
 set -x
 # set -e
 
+
 NPME=-1
 MDRUN=mdrun_openmpi
 GROMPP=grompp
-sysName=system_${PBS_ARRAYID}_final
+# NAME is passed in from the qsub 
+sysName=${NAME}_${PBS_ARRAYID}
 SHM=$SCRATCH
 base_dir=$PBS_O_WORKDIR
 NRESUBMITS=0
