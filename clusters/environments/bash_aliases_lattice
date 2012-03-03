@@ -1,0 +1,2 @@
+alias q='qstat'
+alias qu='showq -u grace'
