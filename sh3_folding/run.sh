@@ -1,13 +1,14 @@
 #!/bin/bash
-#PBS -l nodes=1:ppn=8,walltime=48:00:00
-#PBS -N foldit
+#PBS -l nodes=1:compute-eth:ppn=8,walltime=48:00:00
+#PBS -N foldit_mrsd
 
 # stricter bash -- quits on error and unset variables
 set -u
 set -x
+set -v
 
 NPME=-1
-MDRUN=mdrun_openmpi
+MDRUN=mdrun_openmpi-1.4.1
 GROMPP=grompp
 # NAME is passed in from the qsub 
 sysName=${NAME}_${PBS_ARRAYID}
@@ -38,10 +39,14 @@ function run {
 		$MDRUN -s em.tpr -deffnm em
 
 		# equilibration
-		$GROMPP -f $PARAMS/equil.mdp -c em.gro -p ${sysName}.top -o equil
+		log "starting equilibration stage"
+		$GROMPP -f $PARAMS/equil.mdp -c em.gro -p ${sysName}.top -o equil 
 
-		mpirun -np $NCORES $MDRUN -s equil.tpr -deffnm equil -npme -1 
-		
+		mpirun -np $NCORES $MDRUN -s equil.tpr -deffnm equil -nosum -dlb auto -npme 4
+		#$MDRUN -s equil.tpr -deffnm equil
+
+	
+		log "making tpr for production run"
 		# production runs
 		$GROMPP -f $PARAMS/prod.mdp -c equil.gro -p ${sysName}.top -o prod.tpr
 	else
@@ -50,7 +55,7 @@ function run {
 	fi	
 
 	echo "DEBUG: starting mdrun for $MAXH"
-	mpirun -np $NCORES $MDRUN -s prod -deffnm prod -maxh $MAXH -cpt 720 -nosum -dlb auto -npme $NPME -cpo prod -cpi $cpt_file -noappend
+	mpirun -np $NCORES $MDRUN -s prod -deffnm prod -maxh $MAXH -cpt 720 -nosum -dlb auto -npme 4 -cpo prod -cpi $cpt_file -noappend
 }
 
 # prepare environment
@@ -60,12 +65,12 @@ if [ "$PBS_ENVIRONMENT" != "PBS_INTERACTIVE" ]; then
   fi
 fi
 
-trap "exit 0" TERM KILL SIGINT SIGTERM EXIT
+#trap "exit 0" TERM KILL SIGINT SIGTERM EXIT
 
 run $MAXH
 
-if [ "$DEBUG" -eq "1" ]; then
+#if [ "$DEBUG" -eq "1" ]; then
     DEBUG_FLAGS="-l nodes=1:ppn=8,walltime=02:00:00 -q debug"
-else
-    DEBUG_FLAGS=""
-fi
+#else
+#    DEBUG_FLAGS=""
+#fi
