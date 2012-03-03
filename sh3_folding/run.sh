@@ -19,21 +19,12 @@ DEBUG=0
 MAXH=48
 nodes=1
 NCORES=16
-PARAMS="../params"
+PARAMS="../../params"
 
 
 function log {
 	echo "INFO: $1"
 }
-
-# function clean_exit {
-#   echo "DEBUG: starting clean_exit ... on ARRAYID $PBS_ARRAYID"
-#   cd $SHM
-#   cp -p *.log *.tpr *.xtc *.edr *.gro *.cpt $base_dir/$PBS_ARRAYID
-#   cd $base_dir
-#   rm -rf $SHM
-#   echo "DEBUG: cleaned up $SHM"
-# }
 
 function run {
 	MAXH=$1
