@@ -25,10 +25,9 @@ set -x
 trap 'echo $?' TERM INT SIGINT EXIT SIGKILL SIGSTOP SIGTERM
 
 function clean {
-	cd /dev/shm
 	tar cvfz "analysis_${1}.tgz" grace
 	cp analysis*.tgz $base_dir
-	rm -rf * 
+	rm -rf /dev/shm/*
 }
 
 function dssp {

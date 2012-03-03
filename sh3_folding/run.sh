@@ -11,7 +11,7 @@ MDRUN=mdrun_openmpi
 GROMPP=grompp
 # NAME is passed in from the qsub 
 sysName=${NAME}_${PBS_ARRAYID}
-SHM=$SCRATCH
+SHM=/dev/shm
 base_dir=$PBS_O_WORKDIR
 NRESUBMITS=0
 #num=$NUM
@@ -19,20 +19,11 @@ DEBUG=0
 MAXH=48
 nodes=1
 NCORES=16
-PARAMS="../params"
+PARAMS="../../params"
 
 
 function log {
 	echo "INFO: $1"
-}
-
-function clean_exit {
-	echo "DEBUG: starting clean_exit ... on ARRAYID $PBS_ARRAYID"
-	cd $SHM
-	cp -p *.log *.tpr *.xtc *.edr *.gro *.cpt $base_dir/$PBS_ARRAYID
-	cd $base_dir
-	rm -rf $SHM
-	echo "DEBUG: cleaned up $SHM"
 }
 
 function run {
@@ -69,7 +60,7 @@ if [ "$PBS_ENVIRONMENT" != "PBS_INTERACTIVE" ]; then
   fi
 fi
 
-trap "clean_exit; exit 0" TERM KILL SIGINT SIGTERM EXIT
+trap "exit 0" TERM KILL SIGINT SIGTERM EXIT
 
 run $MAXH
 
