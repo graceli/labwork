@@ -1,0 +1,27 @@
+#!/bin/bash
+#PBS -q qwork@mp2 -l walltime=48:00:00 -l nodes=1:ppn=24
+#PBS -N nav4hds1
+
+# to submit this type bqsub eth.sh
+
+if [ "$PBS_ENVIRONMENT" != "PBS_INTERACTIVE" ]; then
+  if [ -n "$PBS_O_WORKDIR" ]; then
+    cd $PBS_O_WORKDIR
+  fi
+fi
+
+EXE=/home/nealechr/exe/gromacs-4.5.4/exec/bin/mdrun_mpi
+
+. /home/chakraba/.gmx4.5.4_cn
+sleep 1
+
+grompp -f lang4h-n1.mdp -c t0_4gluh_nav_dmpc_salt.gro -o lang4h-n1.tpr -p nilu_4GluH_dmpc_salt.top -po mdout.lang4h-n1.mdp
+sleep 3
+module purge
+module load intel64/12.0.5.220 openmpi_intel64/1.4.3_ofed
+sleep 5
+
+mpirun -np 24 -machinefile $PBS_NODEFILE2 mdrun_mpi -deffnm lang4h-n1 -s lang4h-n1.tpr -dlb yes -npme -1 -cpt 60 -maxh 47.8 -cpi lang4h-n1.cpt -noappend
+
+##EOF
+sleep 5
