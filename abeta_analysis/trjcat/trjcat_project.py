@@ -5,23 +5,41 @@ import os
 import sys
 import glob
 
+# TODO this is very similar in nature to Oliver Beckstein's GromacsWrapper
 class GromacsCommand:
     # how do pass in multiple kwargs?
-    def __init__(self, executable, args):
+    def __init__(self, executable, **kwargs):
         self.gromacs_exe = executable
-        self.gromacs_args = args  
+        self.gromacs_args = kwargs  
 
-    def run():
-        # run command
-        # wrapper around 
-        pass
-
-    # does python have some sort of default to_string method for a class that I can override ?
-    # like in ruby or Java?
-    def to_string():
-        # returns the command as a string
-        # string version of what would be ran
-        pass
+    def run(self):
+        """ Executes the command as a subprocess """
+        
+        command = self._build_command()
+        # args = shlex.split(command)
+        # p = subprocess.Popen(args, stdout=open(os.devnull)).communicate(index_group)
+        print "executed", command
+        logging.info("executed %s", command)
+        
+        # if p.returncode == None or p.returncode != 0:
+        #     logging.warn("FAILED with", p.returncode)
+        #     raise CallProcessError    
+    
+    def _build_command(self):
+        """ Returns the Gromacs command as a string """
+        
+        files_str = self.gromacs_args["xtc"]
+        tpr = self.gromacs_args["tpr"]
+        temp_name = self.gromacs_args["output"]
+        index_file = self.gromacs_args["index"]
+            
+        command = "%s -f %s -s %s -o %s -n %s" % (self.gromacs_exe, files_str, tpr, temp_name, index_file)
+        
+        if "custom" in self.gromacs_args:
+            command = command + " " + self.gromacs_args["custom"]
+            
+        return command
+   
 
 class Trajectory:
     def __init__(self, name, project_path, traj_path, trajs):
@@ -33,38 +51,31 @@ class Trajectory:
         # location of the trajectories
         self.files_to_cat = trajs
 
-    def build(self, index_group):
+    def build(self, tpr, index_group):
         files_str = " ".join([ os.path.join(self.traj_path, t) for t in self.files_to_cat])
+
         # input is index_group                                                                    
         index_file = os.path.join(self.project_path, "index.ndx")
         temp_name = self.name + "_temp"
-        command = "trjcat -f %s -o %s -n %s" % (files_str, temp_name, index_file)
-        args = shlex.split(command)
-        p = subprocess.Popen(args, stdout=open(os.devnull)).communicate(index_group)
-        logging.info("%s executed", command)
-
-        if p.returncode == None or p.returncode != 0:
-            raise CallProcessError
+        
+        trjcat = GromacsCommand('trjcat', xtc=files_str, tpr=tpr, output=temp_name, index=index_file)
+        trjcat.run()
 
         final_name = self.name
-
-        command = "trjconv -f %s -o %s -pbc mol" % (self.dir_name, final_name)
-        args = shlex.split(command)
-        p = subprocess.Popen(args, stdout=os.devnull).communicate(index_group)
-        logging.info("%s executed", command)
-
-        if p.returncode == None or p.returncode != 0:
-            raise CallProcessError  
-
+        trjconv = GromacsCommand('trjconv', xtc=temp_name, tpr=tpr, output=final_name, index=index_file, custom='-pbc mol')
+        trjconv.run()
+        
     def check(self):
         command = "gmxcheck -f %s" % (self.name)
         print command  
 
+# Represents a simulation project generated using gromacs
+# What do you have to have at the minimum to consider having some data?
 class Project:
-    def __init__(self, name, trjs, group):
+    def __init__(self, name, tpr, traj_set):
         self.project_name = name
-        self.trajectories = trjs
-        self.contents = group
+        self.tpr = tpr
+        self.trajectories = traj_set
 
     def data_info(self):
         # log a list of trajectories produced and their file sizes
@@ -86,7 +97,7 @@ def main():
     # TODO error checking
     # TODO refactor to configuration file
     project_name = "TestProject"
-
+    
     if not os.path.exists(project_name):
         print "project {0} does not exist".format(project_name)
         sys.exit(1)
@@ -112,10 +123,12 @@ def main():
         else:
             logging.info("Directory %s does not exist", dir_idx)                               
 
-    # project = Project(project_name, trajectories, "Non-Solvent")
+    p = Project(project_name, "TestProject.tpr", trajectories)
+    print p
+    
     for t in trajectories:
-        t.build("Protein")    
-
+            t.build(p.tpr, "Protein")    
+         
 
 if __name__ == '__main__':
     main()
