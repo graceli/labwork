@@ -51,7 +51,7 @@ class Trajectory:
         # location of the trajectories
         self._files_to_cat = trajs
 
-    def build(self, tpr, index_group, project_output):
+    def build(self, tpr, index_file, index_group, project_output):
         files_str = " ".join([ os.path.join(self.traj_path, t) for t in self._files_to_cat])
         
         if files_str == "":
@@ -59,7 +59,7 @@ class Trajectory:
             return
             
         # input is index_group                                                                    
-        index_file = os.path.join(self.project_path, "index.ndx")
+        index_file = os.path.join(self.project_path, index_file)
         temp_name = self.name + "_temp"
         
         trjcat = GromacsCommand('trjcat', xtc=files_str, tpr=tpr, output=os.path.join(project_output, temp_name), index=index_file)
@@ -79,9 +79,12 @@ class Trajectory:
 # Represents a simulation project generated using gromacs
 # What do you have to have at the minimum to consider having some data?
 class Project:
-    def __init__(self, name, tpr, output, trajectories=[]):
+    def __init__(self, name, tpr, output, index="index.ndx", trajectories=[]):
         self.project_name = name
         self.tpr = tpr
+        
+        # TODO raise an error if the index file was not provided
+        self.index_file = index
         self.trajectories = trajectories
         self.subdirectories = []
         self.project_output = output
@@ -90,7 +93,7 @@ class Project:
         self._prepare_for_build()
         
         for i in range(len(self.trajectories)):
-            self.trajectories[i].build(self.tpr, index_group, self.project_output)
+            self.trajectories[i].build(self.tpr, self.index_file, index_group, self.project_output)
 
     def data_info(self):
         # log a list of trajectories produced and their file sizes
@@ -152,7 +155,7 @@ def main():
     logging.info("Initializing trjcatting for project %s", project_name)
     N = 10     
 
-    p = Project(project_name, "TestProject.tpr", project_output)
+    p = Project(project_name, "TestProject.tpr", project_output, index="index.ndx")
         
     # Read project directory and build a list of files to trjcat
     for dir_idx in range(N):
