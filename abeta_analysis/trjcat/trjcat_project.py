@@ -4,6 +4,7 @@ import logging
 import os
 import sys
 import glob
+import optparse
 
 # TODO this is very similar in nature to Oliver Beckstein's GromacsWrapper
 class GromacsCommand:
@@ -139,29 +140,49 @@ def main():
     logging.basicConfig(filename='trjcat_project.log', format=FORMAT, level=logging.DEBUG)
     logger = logging.getLogger('trjcat')
 
-    # Usage: trjcat_project <project_name>
-
     # TODO error checking
     # TODO refactor to configuration file
     # component such as protein, solvent etc defined in the index file
-    system_component = "Protein"
-    project_name = "TestProject"
-    project_output = project_name + "_" + system_component
-    subdir_prefix = "sys"
     
+    # system_component = "Protein"
+    # project_name = "TestProject"
+    # project_output = project_name + "_" + system_component
+    # subdir_prefix = "sys"
+    # N = 10     
+    
+    usage = "usage: %prog [options] project_name"
+    parser = optparse.OptionParser(usage, description='Trjcat some trajectories')                                          
+    
+    # parser.add_option("-p", "--project_name", dest="project_name", help='Existing project name')
+    parser.add_option("-o", "--project_output", dest="project_output", 
+        help='New project directory', default="Test")
+    parser.add_option("-f", "--subdir_prefix", dest="subdir_prefix", 
+        help='Optional prefix for the project subdirectory', default="")
+    parser.add_option("-N", "--num_replicas", type=int, dest="N", 
+        help="Number of subdirectories (for testing purposes only)")
+    parser.add_option("-n", "--component", dest="system_component",
+        help="The component of the system to get out (protein, etc)", default="System")
+        
+    (options, args) = parser.parse_args()
+
+    # TODO error handling for add_option -- look into how to properly do this 
+    # http://docs.python.org/library/optparse.html
+    if len(args) != 1:
+          parser.error("Incorrect number of arguments")
+
+    project_name = args[0]
     if not os.path.exists(project_name):
         print "project {0} does not exist".format(project_name)
         sys.exit(1)
 
     logging.info("Initializing trjcatting for project %s", project_name)
-    N = 10     
 
-    p = Project(project_name, "TestProject.tpr", project_output, index="index.ndx")
+    p = Project(project_name, "TestProject.tpr", options.project_output, index="index.ndx")
         
     # Read project directory and build a list of files to trjcat
-    for dir_idx in range(N):
+    for dir_idx in range(options.N):
         # trj_dir_path = os.path.join(project_name, str(dir_idx))
-        project_subdir = subdir_prefix + str(dir_idx)
+        project_subdir = options.subdir_prefix + str(dir_idx)
         p.add_directory(project_subdir)
         
         traj_path = os.path.join(project_name, project_subdir)
@@ -171,7 +192,7 @@ def main():
         
         p.add_trajectory(Trajectory(str(dir_idx) + "_final", project_name, traj_path, results))
  
-    p.build_trajectories(system_component)
+    p.build_trajectories(options.system_component)
     
 
 if __name__ == '__main__':
