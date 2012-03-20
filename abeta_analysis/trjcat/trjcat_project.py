@@ -8,47 +8,41 @@ import optparse
 
 # TODO this is very similar in nature to Oliver Beckstein's GromacsWrapper
 class GromacsCommand:
-    # how do pass in multiple kwargs?
     def __init__(self, executable, **kwargs):
         self.gromacs_exe = executable
         self.gromacs_args = kwargs  
 
     def run(self):
-        """ Executes the command as a subprocess """
-        
+        """ Executes the command as a subprocess """        
         command = self._build_command()
-        # args = shlex.split(command)
-        # p = subprocess.Popen(args, stdout=open(os.devnull)).communicate(index_group)
-        print "executed", command
-        logging.info("executed %s", command)
-        
-        # if p.returncode == None or p.returncode != 0:
-        #     logging.warn("FAILED with", p.returncode)
-        #     raise CallProcessError    
+        args = shlex.split(command)
+        process = subprocess.Popen(args, stdout=open(os.devnull)).communicate(self.gromacs_args["pipe"])
+        logging.info("Executed %s", command)
+        logging.info("Finished with %s", process)
     
     def _build_command(self):
-        """ Returns the Gromacs command as a string """
-        
+        """ Returns the Gromacs command as a string """        
         files_str = self.gromacs_args["xtc"]
-        tpr = self.gromacs_args["tpr"]
         temp_name = self.gromacs_args["output"]
         index_file = self.gromacs_args["index"]
             
-        command = "%s -f %s -s %s -o %s -n %s" % (self.gromacs_exe, files_str, tpr, temp_name, index_file)
+        command = "%s -f %s -o %s -n %s" % (self.gromacs_exe, files_str, temp_name, index_file)
         
         if "custom" in self.gromacs_args:
             command = command + " " + self.gromacs_args["custom"]
-            
+        
+        # TODO fix this. This is a hack. Handle differing arguments properly
+        if "tpr" in self.gromacs_args:
+            command = command + " " + self.gromacs_args["tpr"]
+                        
         return command
    
 
 class Trajectory:
     def __init__(self, name, project_path, traj_path, trajs):
-        # names of the trajectory pieces
         self.name = name 
         self.project_path = project_path
         self.traj_path = traj_path
-
         # location of the trajectories
         self._files_to_cat = trajs
 
@@ -59,20 +53,15 @@ class Trajectory:
             print "Nothing to concatenate for", self.name
             return
             
-        # input is index_group                                                                    
         index_file = os.path.join(self.project_path, index_file)
-        temp_name = self.name + "_temp"
-        
-        trjcat = GromacsCommand('trjcat', xtc=files_str, tpr=tpr, output=os.path.join(project_output, temp_name), index=index_file)
+        temp_outfile = os.path.join(project_output, self.name + "_temp")
+        trjcat = GromacsCommand('trjcat', xtc=files_str, output=temp_outfile, index=index_file, pipe=index_group)
         trjcat.run()
 
-        outfile = os.path.join(project_output, self.name)
-        trjconv = GromacsCommand('trjconv', xtc=temp_name, tpr=tpr, output=outfile, index=index_file, custom='-pbc mol')
+        final_output = os.path.join(project_output, self.name)
+        trjconv = GromacsCommand('trjconv', xtc=temp_outfile, tpr="-s " + os.path.join(project_output, tpr), output=final_output, index=index_file, custom='-pbc mol', pipe=index_group)
         trjconv.run()               
-        
-        # place holder for file creation
-        os.system("touch {0}".format(outfile))
-        
+                
     def check(self):
         command = "gmxcheck -f %s" % (self.name)
         print command  
@@ -106,23 +95,19 @@ class Project:
         # ...
         pass
         
-    def _prepare_for_build(self):
-        logging.info("Preparing for trajectory building")
-        # create the output directory
-        try:
-            os.mkdir(self.project_output)
-        except OSError as e:
-            print e
-            logging.info("Exception: %s", str(e))
-            
-        
-        # return True
-        
     def add_trajectory(self, traj):
         self.trajectories.append(traj)
 
     def add_directory(self, subdir):
         self.subdirectories.append(subdir)
+
+    def _prepare_for_build(self):
+        logging.info("Preparing for trajectory building")
+        try:
+            os.mkdir(self.project_output)
+        except OSError as e:
+            print e
+            logging.info("Exception: %s", str(e))
         
 def list_xtcs(directory):
     results = []
@@ -179,9 +164,8 @@ def main():
 
     p = Project(project_name, "TestProject.tpr", options.project_output, index="index.ndx")
         
-    # Read project directory and build a list of files to trjcat
+    # Read the project directory and build a list of files to trjcat
     for dir_idx in range(options.N):
-        # trj_dir_path = os.path.join(project_name, str(dir_idx))
         project_subdir = options.subdir_prefix + str(dir_idx)
         p.add_directory(project_subdir)
         
