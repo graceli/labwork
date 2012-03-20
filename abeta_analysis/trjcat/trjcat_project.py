@@ -147,6 +147,7 @@ def main():
     system_component = "Protein"
     project_name = "TestProject"
     project_output = project_name + "_" + system_component
+    subdir_prefix = "sys"
     
     if not os.path.exists(project_name):
         print "project {0} does not exist".format(project_name)
@@ -160,7 +161,7 @@ def main():
     # Read project directory and build a list of files to trjcat
     for dir_idx in range(N):
         # trj_dir_path = os.path.join(project_name, str(dir_idx))
-        project_subdir = str(dir_idx)
+        project_subdir = subdir_prefix + str(dir_idx)
         p.add_directory(project_subdir)
         
         traj_path = os.path.join(project_name, project_subdir)
