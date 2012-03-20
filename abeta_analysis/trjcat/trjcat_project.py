@@ -66,6 +66,7 @@ class Trajectory:
         command = "gmxcheck -f %s" % (self.name)
         print command  
 
+
 # Represents a simulation project generated using gromacs
 # What do you have to have at the minimum to consider having some data?
 class Project:
@@ -108,6 +109,7 @@ class Project:
         except OSError as e:
             print e
             logging.info("Exception: %s", str(e))
+
         
 def list_xtcs(directory):
     results = []
@@ -119,8 +121,13 @@ def list_xtcs(directory):
         logging.info("Directory %s does not exist", directory)                               
     
     return results
+
     
 def main():
+    # TODO Change the log file name depending on date
+    # TODO Also output the options that was ran
+    # later make this the configuration file
+    
     FORMAT = '%(asctime)s %(levelname)s %(message)s'
     logging.basicConfig(filename='trjcat_project.log', format=FORMAT, level=logging.DEBUG)
     logger = logging.getLogger('trjcat')
@@ -138,7 +145,6 @@ def main():
     usage = "usage: %prog [options] project_name"
     parser = optparse.OptionParser(usage, description='Trjcat some trajectories')                                          
     
-    # parser.add_option("-p", "--project_name", dest="project_name", help='Existing project name')
     parser.add_option("-o", "--project_output", dest="project_output", 
         help='New project directory', default="Test")
     parser.add_option("-f", "--subdir_prefix", dest="subdir_prefix", 
@@ -149,7 +155,8 @@ def main():
         help="The component of the system to get out (protein, etc)", default="System")
         
     (options, args) = parser.parse_args()
-
+    logging.info("Ran with options=%s and args=%s", options, args)
+    
     # TODO error handling for add_option -- look into how to properly do this 
     # http://docs.python.org/library/optparse.html
     if len(args) != 1:
