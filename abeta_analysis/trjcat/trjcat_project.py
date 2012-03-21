@@ -50,7 +50,8 @@ class Trajectory:
         # check if the trajectory exists or not before building
         wildcard = os.path.join(project_output, "{0}*".format(self.name))
         if len(glob.glob(wildcard)) != 0:
-            logging.info("%s.xtc already exists on disk ... skipping ...", self.name)
+            print self.name, ".xtc already exists on disk ... skipping trjcat ..."
+            logging.info("%s.xtc already exists on disk ... skipping trjcat ...", self.name)
             return
             
         files_str = " ".join(self._files_to_cat)
