@@ -114,7 +114,7 @@ class Project:
 def list_xtcs(directory):
     results = []
     if os.path.exists(directory):
-        results = glob.glob("%(directory)s/*.xtc" % vars())
+        results = glob.glob("%(directory)s/*prod*.xtc" % vars())
         if results == []:
             logging.info("No trajectories were found")
     else:
@@ -142,15 +142,17 @@ def main():
     # subdir_prefix = "sys"
     # N = 10     
     
-    usage = "usage: %prog [options] project_name"
+    usage = "usage: %prog [options] project_name N_project_dirs"
     parser = optparse.OptionParser(usage, description='Trjcat some trajectories')                                          
     
     parser.add_option("-o", "--project_output", dest="project_output", 
         help='New project directory', default="Test")
     parser.add_option("-f", "--subdir_prefix", dest="subdir_prefix", 
         help='Optional prefix for the project subdirectory', default="")
-    parser.add_option("-N", "--num_replicas", type=int, dest="N", 
-        help="Number of subdirectories (for testing purposes only)")
+        
+    # parser.add_option("-N", "--num_replicas", type=int, dest="N", 
+    #     help="Number of subdirectories (for testing purposes only)")
+        
     parser.add_option("-n", "--component", dest="system_component",
         help="The component of the system to get out (protein, etc)", default="System")
         
