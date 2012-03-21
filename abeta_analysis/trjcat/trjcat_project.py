@@ -16,8 +16,8 @@ class GromacsCommand:
         """ Executes the command as a subprocess """        
         command = self._build_command()
         args = shlex.split(command)
-        process = subprocess.Popen(args, stdout=open(os.devnull)).communicate(self.gromacs_args["pipe"])
-        logging.info("Executed %s", command)
+        logging.info("Executing %s with input %s", command, self.gromacs_args["pipe"])
+        process = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=open(os.devnull)).communicate(self.gromacs_args["pipe"])
         logging.info("Finished with %s", process)
     
     def _build_command(self):
@@ -48,7 +48,8 @@ class Trajectory:
 
     def build(self, tpr, index_file, index_group, project_output):
         files_str = " ".join([ os.path.join(self.traj_path, t) for t in self._files_to_cat])
-        
+        logging.debug("%s to be trjcatted", files_str)
+
         if files_str == "":
             print "Nothing to concatenate for", self.name
             return
@@ -59,7 +60,7 @@ class Trajectory:
         trjcat.run()
 
         final_output = os.path.join(project_output, self.name)
-        trjconv = GromacsCommand('trjconv', xtc=temp_outfile, tpr="-s " + os.path.join(project_output, tpr), output=final_output, index=index_file, custom='-pbc mol', pipe=index_group)
+        trjconv = GromacsCommand('trjconv', xtc=temp_outfile, tpr="-s " + os.path.join(self.project_path, tpr), output=final_output, index=index_file, custom='-pbc mol', pipe=index_group)
         trjconv.run()               
                 
     def check(self):
@@ -161,20 +162,21 @@ def main():
     
     # TODO error handling for add_option -- look into how to properly do this 
     # http://docs.python.org/library/optparse.html
-    if len(args) != 1:
+    if len(args) != 2:
           parser.error("Incorrect number of arguments")
 
     project_name = args[0]
+    N = int(args[1])
     if not os.path.exists(project_name):
         print "project {0} does not exist".format(project_name)
         sys.exit(1)
 
     logging.info("Initializing trjcatting for project %s", project_name)
 
-    p = Project(project_name, "TestProject.tpr", options.project_output, index="index.ndx")
+    p = Project(project_name, project_name + ".tpr", options.project_output, index=project_name + ".ndx")
         
     # Read the project directory and build a list of files to trjcat
-    for dir_idx in range(options.N):
+    for dir_idx in range(N):
         project_subdir = options.subdir_prefix + str(dir_idx)
         p.add_directory(project_subdir)
         
