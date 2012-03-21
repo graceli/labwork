@@ -47,7 +47,7 @@ class Trajectory:
         self._files_to_cat = trajs
 
     def build(self, tpr, index_file, index_group, project_output):
-        files_str = " ".join([ os.path.join(self.traj_path, t) for t in self._files_to_cat])
+        files_str = " ".join(self._files_to_cat)
         logging.debug("%s to be trjcatted", files_str)
 
         if files_str == "":
@@ -67,6 +67,9 @@ class Trajectory:
         command = "gmxcheck -f %s" % (self.name)
         print command  
 
+    def __repr__(self):
+        representation = " ".join(["Trajectory:", "name:", self.name, "path:", self.traj_path ])
+        return representation
 
 # Represents a simulation project generated using gromacs
 # What do you have to have at the minimum to consider having some data?
@@ -183,9 +186,9 @@ def main():
         traj_path = os.path.join(project_name, project_subdir)
         
         results = list_xtcs(traj_path)
-        print results
-        
-        p.add_trajectory(Trajectory(str(dir_idx) + "_final", project_name, traj_path, results))
+        traj = Trajectory(str(dir_idx) + "_final", project_name, traj_path, results)
+        logging.info("Added %s", traj)
+        p.add_trajectory(traj)
  
     p.build_trajectories(options.system_component)
     
