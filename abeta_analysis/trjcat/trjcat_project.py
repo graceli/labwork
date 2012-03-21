@@ -47,6 +47,12 @@ class Trajectory:
         self._files_to_cat = trajs
 
     def build(self, tpr, index_file, index_group, project_output):
+        # check if the trajectory exists or not before building
+        wildcard = os.path.join(project_output, "%s*".format(self.name))
+        if glob.glob(wildcard) != []:
+            logging.info("%s.xtc already exists on disk ... skipping ...", self.name)
+            return
+            
         files_str = " ".join(self._files_to_cat)
         logging.debug("%s to be trjcatted", files_str)
 
