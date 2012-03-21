@@ -46,7 +46,7 @@ class Trajectory:
         # location of the trajectories
         self._files_to_cat = trajs
 
-    def build(self, tpr, index_file, index_group, project_output):
+    def build(self, tpr, index_file, index_group, project_output, center=False):
         # check if the trajectory exists or not before building
         wildcard = os.path.join(project_output, "{0}*".format(self.name))
         if len(glob.glob(wildcard)) != 0:
@@ -67,7 +67,13 @@ class Trajectory:
         trjcat.run()
 
         final_output = os.path.join(project_output, self.name)
-        trjconv = GromacsCommand('trjconv', xtc=temp_outfile, tpr="-s " + os.path.join(self.project_path, tpr), output=final_output, index=index_file, custom='-pbc mol', pipe=index_group)
+        custom_command = "-pbc whole"
+        pipe_command = index_group
+        if center:
+            custom_command = "-pbc res -center"
+            pipe_command = "{0} {1}".format("center_group", index_group)
+            
+        trjconv = GromacsCommand('trjconv', xtc=temp_outfile, tpr="-s " + os.path.join(self.project_path, tpr), output=final_output, index=index_file, custom=custom_command, pipe=pipe_command)
         trjconv.run()               
                 
     def check(self):
@@ -91,11 +97,11 @@ class Project:
         self.subdirectories = []
         self.project_output = output
         
-    def build_trajectories(self, index_group):
+    def build_trajectories(self, index_group, center=False):
         self._prepare_for_build()
         
         for i in range(len(self.trajectories)):
-            self.trajectories[i].build(self.tpr, self.index_file, index_group, self.project_output)
+            self.trajectories[i].build(self.tpr, self.index_file, index_group, self.project_output, center=center)
 
     def data_info(self):
         # log a list of trajectories produced and their file sizes
@@ -123,10 +129,10 @@ class Project:
 
         
 def list_xtcs(directory):
-    results = []
+    results = None
     if os.path.exists(directory):
         results = glob.glob("%(directory)s/*prod*.xtc" % vars())
-        if results == []:
+        if results is None:
             logging.info("No trajectories were found")
     else:
         logging.info("Directory %s does not exist", directory)                               
@@ -136,36 +142,26 @@ def list_xtcs(directory):
     
 def main():
     # TODO Change the log file name depending on date
-    # TODO Also output the options that was ran
-    # later make this the configuration file
-    
+        
     FORMAT = '%(asctime)s %(levelname)s %(message)s'
     logging.basicConfig(filename='trjcat_project.log', format=FORMAT, level=logging.DEBUG)
-    logger = logging.getLogger('trjcat')
 
-    # TODO error checking
     # TODO refactor to configuration file
-    # component such as protein, solvent etc defined in the index file
-    
-    # system_component = "Protein"
-    # project_name = "TestProject"
-    # project_output = project_name + "_" + system_component
-    # subdir_prefix = "sys"
-    # N = 10     
     
     usage = "usage: %prog [options] project_name N_project_dirs"
     parser = optparse.OptionParser(usage, description='Trjcat some trajectories')                                          
-    
+
     parser.add_option("-o", "--project_output", dest="project_output", 
         help='New project directory', default="Test")
     parser.add_option("-f", "--subdir_prefix", dest="subdir_prefix", 
         help='Optional prefix for the project subdirectory', default="")
         
-    # parser.add_option("-N", "--num_replicas", type=int, dest="N", 
-    #     help="Number of subdirectories (for testing purposes only)")
-        
+    # Note that if this option is set and a center_group index group is 
+    # not defined in index file, then trjconv will fail
+    parser.add_option("-c", "--center_system", dest="center_system", 
+        help="Use a centering group and output by -pbc res mol", default=False)
     parser.add_option("-n", "--component", dest="system_component",
-        help="The component of the system to get out (protein, etc)", default="System")
+        help="The component of the system (in Gromacs index group language) to extract",        default="System")
         
     (options, args) = parser.parse_args()
     logging.info("Ran with options=%s and args=%s", options, args)
@@ -186,6 +182,7 @@ def main():
     p = Project(project_name, project_name + ".tpr", options.project_output, index=project_name + ".ndx")
         
     # Read the project directory and build a list of files to trjcat
+    all_dirs_failed = True
     for dir_idx in range(N):
         project_subdir = options.subdir_prefix + str(dir_idx)
         p.add_directory(project_subdir)
@@ -193,11 +190,18 @@ def main():
         traj_path = os.path.join(project_name, project_subdir)
         
         results = list_xtcs(traj_path)
+        if results is not None:
+            all_dirs_failed = False
+            
         traj = Trajectory(str(dir_idx) + "_final", project_name, traj_path, results)
         logging.info("Added %s", traj)
         p.add_trajectory(traj)
  
-    p.build_trajectories(options.system_component)
+    if all_dirs_failed:
+        print "No numerical subdirectories were found ... perhaps you are missing a prefix?"
+        sys.exit(1)
+    
+    p.build_trajectories(options.system_component, center=options.center_system)
     
 
 if __name__ == '__main__':
