@@ -48,8 +48,8 @@ class Trajectory:
 
     def build(self, tpr, index_file, index_group, project_output):
         # check if the trajectory exists or not before building
-        wildcard = os.path.join(project_output, "%s*".format(self.name))
-        if glob.glob(wildcard) != []:
+        wildcard = os.path.join(project_output, "{0}*".format(self.name))
+        if len(glob.glob(wildcard)) != 0:
             logging.info("%s.xtc already exists on disk ... skipping ...", self.name)
             return
             
