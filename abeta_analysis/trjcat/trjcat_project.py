@@ -79,6 +79,7 @@ class Trajectory:
         # Remove temp files to avoid overflow if writing to /dev/shm
         # Bit of a hack fix
         os.system("rm -f %(temp_outfile)s" % vars())        
+		logging.info("Deleted %s", temp_outfile)
 
     def check(self):
         command = "gmxcheck -f %s" % (self.name)

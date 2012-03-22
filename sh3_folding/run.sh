@@ -6,10 +6,11 @@
 set -u
 set -x
 set -v
+set -e
 
-NPME=-1
-MDRUN=mdrun_openmpi-1.4.1
-GROMPP=grompp
+NPME=4
+MDRUN=/project/p/pomes/cneale/GPC/exe/intel/gromacs-4.0.7/exec/bin/mdrun_openmpi-1.4.1
+GROMPP=/project/p/pomes/cneale/GPC/exe/intel/gromacs-4.0.7/exec/bin/grompp
 # NAME is passed in from the qsub 
 sysName=${NAME}_${PBS_ARRAYID}
 SHM=/dev/shm
@@ -22,6 +23,7 @@ nodes=1
 NCORES=16
 PARAMS="../../params"
 
+. ~/.gmx_407
 
 function log {
 	echo "INFO: $1"
@@ -42,7 +44,7 @@ function run {
 		log "starting equilibration stage"
 		$GROMPP -f $PARAMS/equil.mdp -c em.gro -p ${sysName}.top -o equil 
 
-		mpirun -np $NCORES $MDRUN -s equil.tpr -deffnm equil -nosum -dlb auto -npme 4
+		mpirun -np $NCORES $MDRUN -s equil.tpr -deffnm equil -nosum -dlb auto -npme $NPME
 		#$MDRUN -s equil.tpr -deffnm equil
 
 	
@@ -55,7 +57,7 @@ function run {
 	fi	
 
 	echo "DEBUG: starting mdrun for $MAXH"
-	mpirun -np $NCORES $MDRUN -s prod -deffnm prod -maxh $MAXH -cpt 720 -nosum -dlb auto -npme 4 -cpo prod -cpi $cpt_file -noappend
+	mpirun -np $NCORES $MDRUN -s prod -deffnm prod -maxh $MAXH -cpt 720 -nosum -dlb auto -npme $NPME -cpo prod -cpi $cpt_file -noappend
 }
 
 # prepare environment
@@ -69,8 +71,8 @@ fi
 
 run $MAXH
 
-#if [ "$DEBUG" -eq "1" ]; then
-    DEBUG_FLAGS="-l nodes=1:ppn=8,walltime=02:00:00 -q debug"
-#else
+# if [ "$DEBUG" -eq "1" ]; then
+#    DEBUG_FLAGS="-l nodes=1:ppn=8,walltime=02:00:00 -q debug"
+# else
 #    DEBUG_FLAGS=""
-#fi
+# fi
