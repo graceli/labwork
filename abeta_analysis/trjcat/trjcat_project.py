@@ -75,7 +75,11 @@ class Trajectory:
             
         trjconv = GromacsCommand('trjconv', xtc=temp_outfile, tpr="-s " + os.path.join(self.project_path, tpr), output=final_output, index=index_file, custom=custom_command, pipe=pipe_command)
         trjconv.run()               
-                
+        
+        # Remove temp files to avoid overflow if writing to /dev/shm
+        # Bit of a hack fix
+        os.system("rm -f %(temp_outfile)s" % vars())        
+
     def check(self):
         command = "gmxcheck -f %s" % (self.name)
         print command  
