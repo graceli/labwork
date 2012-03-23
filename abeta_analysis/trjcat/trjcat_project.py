@@ -81,8 +81,7 @@ class Trajectory:
         
         # Remove temp files to avoid overflow if writing to /dev/shm
         # Bit of a hack fix
-        logging.info("Deleted %s", temp_outfile)
-        os.system("rm -f *_temp*")        
+        os.system("rm -f /dev/shm/grace/*_temp*")        
 
     def check(self):
         command = "gmxcheck -f %s" % (self.name)
@@ -149,13 +148,7 @@ def list_xtcs(directory):
 
     
 def main():
-    # TODO Change the log file name depending on date
-        
-    FORMAT = '%(asctime)s %(levelname)s %(message)s'
-    logging.basicConfig(filename='trjcat_project.log', format=FORMAT, level=logging.DEBUG)
-
-    # TODO refactor to configuration file
-    
+    # TODO refactor to configuration file    
     usage = "usage: %prog [options] project_name N_project_dirs"
     parser = optparse.OptionParser(usage, description='Trjcat some trajectories')                                          
 
@@ -179,11 +172,17 @@ def main():
     if len(args) != 2:
           parser.error("Incorrect number of arguments")
 
+
     project_name = args[0]
     N = int(args[1])
     if not os.path.exists(project_name):
         print "project {0} does not exist".format(project_name)
         sys.exit(1)
+
+    # Setup logging
+    FORMAT = '%(asctime)s %(levelname)s %(message)s'
+    now = datetime.datetime.now()
+    logging.basicConfig(filename='trjcat_project_' + now.strftime("%Y-%m-%d-%H-%M-%s") + project_name + '.log', format=FORMAT, level=logging.DEBUG)
 
     logging.info("Initializing trjcatting for project %s", project_name)
 
