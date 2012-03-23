@@ -59,7 +59,7 @@ class Trajectory:
 	if num_trajs == 0 or num_trajs == 1:
 	    print "Nothing to concatenate for", self.name
 	    return
-	else
+	else:
 	    files_str = " ".join(self._files_to_cat)
             logging.debug("%s to be trjcatted", files_str)
 
@@ -81,7 +81,7 @@ class Trajectory:
         
         # Remove temp files to avoid overflow if writing to /dev/shm
         # Bit of a hack fix
-		logging.info("Deleted %s", temp_outfile)
+        logging.info("Deleted %s", temp_outfile)
         os.system("rm -f *_temp*")        
 
     def check(self):
