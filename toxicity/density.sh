@@ -17,11 +17,15 @@ TEST=""
 
 trap "clean; exit $?" TERM INT SIGINT EXIT
 
-#cd $PBS_O_WORKDIR
+cd $PBS_O_WORKDIR
+
+base_dir=$PWD
+
+mkdir /dev/shm/grace
 
 function clean {
-	mkdir -p analysis/density
-	cp -rp /dev/shm/grace/* analysis/density/
+	mkdir -p $base_dir/analysis/density
+	cp -rp /dev/shm/grace/* $base_dir/analysis/density/
 	rm -rf /dev/shm/grace
 }
 
@@ -43,15 +47,16 @@ function density {
 	INDEX_GROUP=$1	
 	for i in `seq 0 43`; do
 		cd $i
-	if [ ! -e "toxicity.ndx" ]; then
+		if [ ! -e "toxicity.ndx" ]; then
 make_ndx_mpi -f prod.tpr -o toxicity.ndx <<EOF
 a P*
 name 18 headgroups
 q
 EOF
-	fi
+		fi
 
-		echo INDEX_GROUP | g_density_mpi -f prod.part0003.xtc -s prod.tpr -o /dev/shm/grace/${INDEX_GROUP}_density_${i}.xvg -n toxicity.ndx $TEST 2> /dev/shm/grace/${INDEX_GROUP}_density_${i}.out >&2 &
+		echo "Getting the density of $INDEX_GROUP for system=$i ..."
+		echo $INDEX_GROUP | g_density_mpi -f prod.part0003.xtc -s prod.tpr -o /dev/shm/grace/${INDEX_GROUP}_density_${i}.xvg -n toxicity.ndx $TEST 2> /dev/shm/grace/${INDEX_GROUP}_density_${i}.out >&2 
 		cd ../
 	done
 }
