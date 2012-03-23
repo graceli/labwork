@@ -54,13 +54,16 @@ class Trajectory:
             logging.info("%s.xtc already exists on disk ... skipping trjcat ...", self.name)
             return
             
-        files_str = " ".join(self._files_to_cat)
-        logging.debug("%s to be trjcatted", files_str)
+	num_trajs = len(self._files_to_cat)
+	files_str = ""
+	if num_trajs == 0 or num_trajs == 1:
+	    print "Nothing to concatenate for", self.name
+	    return
+	else
+	    files_str = " ".join(self._files_to_cat)
+            logging.debug("%s to be trjcatted", files_str)
 
-        if files_str == "":
-            print "Nothing to concatenate for", self.name
-            return
-            
+	    
         index_file = os.path.join(self.project_path, index_file)
         temp_outfile = os.path.join(project_output, self.name + "_temp")
         trjcat = GromacsCommand('trjcat', xtc=files_str, output=temp_outfile, index=index_file, pipe=index_group)
@@ -78,7 +81,7 @@ class Trajectory:
         
         # Remove temp files to avoid overflow if writing to /dev/shm
         # Bit of a hack fix
-        os.system("rm -f %(temp_outfile)s" % vars())        
+        os.system("rm -f *_temp*")        
 
     def check(self):
         command = "gmxcheck -f %s" % (self.name)

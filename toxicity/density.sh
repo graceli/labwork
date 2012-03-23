@@ -1,6 +1,6 @@
 #!/bin/sh
 #PBS -q qwork@mp2 
-#PBS -l walltime=00:24:00 -l nodes=2:ppn=1
+#PBS -l walltime=24:00:00 -l nodes=2:ppn=1
 #PBS -N analysis
 
 # Extract protein, inositol, and solvent Z density profiles
@@ -56,7 +56,7 @@ EOF
 		fi
 
 		echo "Getting the density of $INDEX_GROUP for system=$i ..."
-		echo $INDEX_GROUP | g_density_mpi -f prod.part0003.xtc -s prod.tpr -o /dev/shm/grace/${INDEX_GROUP}_density_${i}.xvg -n toxicity.ndx $TEST 2> /dev/shm/grace/${INDEX_GROUP}_density_${i}.out >&2 
+		echo $INDEX_GROUP | g_density_mpi -f prod.part0003.xtc -s prod.tpr -o /dev/shm/grace/${INDEX_GROUP}_density_${i}.xvg -n toxicity.ndx $TEST 2> /dev/shm/grace/${INDEX_GROUP}_density_${i}.out >&2 &
 		cd ../
 	done
 }
