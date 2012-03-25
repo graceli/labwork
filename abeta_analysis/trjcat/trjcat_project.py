@@ -62,7 +62,7 @@ class Trajectory:
     	    return
     	else:
     	    files_str = " ".join(self._files_to_cat)
-                logging.debug("%s to be trjcatted", files_str)
+            logging.debug("%s to be trjcatted", files_str)
 
 	    
             index_file = os.path.join(self.project_path, index_file)
