@@ -5,6 +5,7 @@ import os
 import sys
 import glob
 import optparse
+import datetime
 
 # TODO this is very similar in nature to Oliver Beckstein's GromacsWrapper
 class GromacsCommand:
