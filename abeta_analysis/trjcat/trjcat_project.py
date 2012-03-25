@@ -55,34 +55,34 @@ class Trajectory:
             logging.info("%s.xtc already exists on disk ... skipping trjcat ...", self.name)
             return
             
-	num_trajs = len(self._files_to_cat)
-	files_str = ""
-	if num_trajs == 0 or num_trajs == 1:
-	    print "Nothing to concatenate for", self.name
-	    return
-	else:
-	    files_str = " ".join(self._files_to_cat)
-            logging.debug("%s to be trjcatted", files_str)
+	    num_trajs = len(self._files_to_cat)
+    	files_str = ""
+    	if num_trajs == 0 or num_trajs == 1:
+    	    print "Nothing to concatenate for", self.name
+    	    return
+    	else:
+    	    files_str = " ".join(self._files_to_cat)
+                logging.debug("%s to be trjcatted", files_str)
 
 	    
-        index_file = os.path.join(self.project_path, index_file)
-        temp_outfile = os.path.join(project_output, self.name + "_temp")
-        trjcat = GromacsCommand('trjcat', xtc=files_str, output=temp_outfile, index=index_file, pipe=index_group)
-        trjcat.run()
+            index_file = os.path.join(self.project_path, index_file)
+            temp_outfile = os.path.join(project_output, self.name + "_temp")
+            trjcat = GromacsCommand('trjcat', xtc=files_str, output=temp_outfile, index=index_file, pipe=index_group)
+            trjcat.run()
 
-        final_output = os.path.join(project_output, self.name)
-        custom_command = "-pbc whole"
-        pipe_command = index_group
-        if center:
-            custom_command = "-pbc res -center"
-            pipe_command = "{0} {1}".format("center_group", index_group)
+            final_output = os.path.join(project_output, self.name)
+            custom_command = "-pbc whole"
+            pipe_command = index_group
+            if center:
+                custom_command = "-pbc res -center"
+                pipe_command = "{0} {1}".format("center_group", index_group)
             
-        trjconv = GromacsCommand('trjconv', xtc=temp_outfile, tpr="-s " + os.path.join(self.project_path, tpr), output=final_output, index=index_file, custom=custom_command, pipe=pipe_command)
-        trjconv.run()               
+            trjconv = GromacsCommand('trjconv', xtc=temp_outfile, tpr="-s " + os.path.join(self.project_path, tpr), output=final_output, index=index_file, custom=custom_command, pipe=pipe_command)
+            trjconv.run()               
         
-        # Remove temp files to avoid overflow if writing to /dev/shm
-        # Bit of a hack fix
-        os.system("rm -f /dev/shm/grace/*_temp*")        
+            # Remove temp files to avoid overflow if writing to /dev/shm
+            # Bit of a hack fix
+            os.system("rm -f /dev/shm/grace/*_temp*")        
 
     def check(self):
         command = "gmxcheck -f %s" % (self.name)
