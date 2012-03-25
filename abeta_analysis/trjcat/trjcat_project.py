@@ -165,6 +165,13 @@ def main():
     parser.add_option("-n", "--component", dest="system_component",
         help="The component of the system (in Gromacs index group language) to extract",        default="System")
         
+    # Setup logging
+    FORMAT = '%(asctime)s %(levelname)s %(message)s'
+    now = datetime.datetime.now()
+    logging.basicConfig(filename='trjcat_project_' + now.strftime("%Y-%m-%d-%H-%M-%s") + '.log', format=FORMAT, level=logging.DEBUG)
+
+    logging.info("Initializing trjcatting for project")
+          
     (options, args) = parser.parse_args()
     logging.info("Ran with options=%s and args=%s", options, args)
     
@@ -180,12 +187,7 @@ def main():
         print "project {0} does not exist".format(project_name)
         sys.exit(1)
 
-    # Setup logging
-    FORMAT = '%(asctime)s %(levelname)s %(message)s'
-    now = datetime.datetime.now()
-    logging.basicConfig(filename='trjcat_project_' + now.strftime("%Y-%m-%d-%H-%M-%s") + project_name + '.log', format=FORMAT, level=logging.DEBUG)
-
-    logging.info("Initializing trjcatting for project %s", project_name)
+  
 
     p = Project(project_name, project_name + ".tpr", options.project_output, index=project_name + ".ndx")
         
