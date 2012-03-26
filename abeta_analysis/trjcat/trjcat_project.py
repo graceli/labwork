@@ -47,7 +47,7 @@ class Trajectory:
         # location of the trajectories
         self._files_to_cat = trajs
 
-    def build(self, tpr, index_file, index_group, project_output, center=False):
+    def build(self, tpr, index_file, index_group, project_output, temp_output="/dev/shm", center=False):
         # check if the trajectory exists or not before building
         wildcard = os.path.join(project_output, "{0}*".format(self.name))
 
@@ -70,7 +70,8 @@ class Trajectory:
     	    files_str = " ".join(self._files_to_cat)
             logging.debug("%s to be trjcatted", files_str) 
             index_file = os.path.join(self.project_path, index_file)
-            temp_outfile = os.path.join(project_output, self.name + "_temp")
+            temp_outfile = os.path.join(temp_output, self.name + "_temp")
+
             trjcat = GromacsCommand('trjcat', xtc=files_str, output=temp_outfile, index=index_file, pipe=index_group)
             trjcat.run()
 
@@ -82,11 +83,12 @@ class Trajectory:
                 pipe_command = "{0} {1}".format("center_group", index_group)
             
             trjconv = GromacsCommand('trjconv', xtc=temp_outfile, tpr="-s " + os.path.join(self.project_path, tpr), output=final_output, index=index_file, custom=custom_command, pipe=pipe_command)
-            trjconv.run()               
+            trjconv.run()
         
             # Remove temp files to avoid overflow if writing to /dev/shm
             # Bit of a hack fix
-            os.system("rm -f %(temp_outfile)s" % vars())        
+            # Never got this to work ... Silly
+            # os.system("rm -f %(temp_outfile)s" % vars())        
 
     def check(self):
         command = "gmxcheck -f %s" % (self.name)
@@ -109,11 +111,11 @@ class Project:
         self.subdirectories = []
         self.project_output = output
         
-    def build_trajectories(self, index_group, center=False):
+    def build_trajectories(self, index_group, temp="/dev/shm", center=False):
         self._prepare_for_build()
         
         for i in range(len(self.trajectories)):
-            self.trajectories[i].build(self.tpr, self.index_file, index_group, self.project_output, center=center)
+            self.trajectories[i].build(self.tpr, self.index_file, index_group, self.project_output, temp=temp, center=center)
 
     def data_info(self):
         # log a list of trajectories produced and their file sizes
@@ -158,7 +160,9 @@ def main():
 
     parser.add_option("-o", "--project_output", dest="project_output", 
         help='New project directory', default="Test")
-    parser.add_option("-f", "--subdir_prefix", dest="subdir_prefix", 
+    parser.add_option("-e", "--temp_dir", dest="temp_dir",
+        help="Temp directory (default=/dev/shm)", default="/dev/shm")
+    parser.add_option("-f", "--subdir_prefix", dest="subdir_prefix",
         help='Optional prefix for the project subdirectory', default="")
         
     # Note that if this option is set and a center_group index group is 
