@@ -55,8 +55,11 @@ class Trajectory:
             print self.name, ".xtc already exists on disk ... skipping trjcat ..."
             logging.info("%s.xtc already exists on disk ... skipping trjcat ...", self.name)
             return
+
+        print self._files_to_cat
         
         num_trajs = len(self._files_to_cat)
+
     	files_str = ""
         print num_trajs
 
@@ -138,7 +141,7 @@ class Project:
 
         
 def list_xtcs(directory):
-    results = None
+    results = []
     if os.path.exists(directory):
         results = glob.glob("%(directory)s/*prod*.xtc" % vars())
         if results is None:
@@ -147,7 +150,6 @@ def list_xtcs(directory):
         logging.info("Directory %s does not exist", directory)                               
     
     return results
-
     
 def main():
     # TODO refactor to configuration file    
@@ -165,16 +167,8 @@ def main():
         help="Use a centering group and output by -pbc res mol", default=False)
     parser.add_option("-n", "--component", dest="system_component",
         help="The component of the system (in Gromacs index group language) to extract",        default="System")
-        
-    # Setup logging
-    FORMAT = '%(asctime)s %(levelname)s %(message)s'
-    now = datetime.datetime.now()
-    logging.basicConfig(filename='trjcat_project_' + now.strftime("%Y-%m-%d-%H-%M-%s") + '.log', format=FORMAT, level=logging.DEBUG)
 
-    logging.info("Initializing trjcatting for project")
-          
     (options, args) = parser.parse_args()
-    logging.info("Ran with options=%s and args=%s", options, args)
     
     # TODO error handling for add_option -- look into how to properly do this 
     # http://docs.python.org/library/optparse.html
@@ -184,11 +178,18 @@ def main():
 
     project_name = args[0]
     N = int(args[1])
+
     if not os.path.exists(project_name):
         print "project {0} does not exist".format(project_name)
         sys.exit(1)
 
-  
+    # Setup logging
+    FORMAT = '%(asctime)s %(levelname)s %(message)s'
+    now = datetime.datetime.now()
+    logging.basicConfig(filename='trjcat_project_' + project_name + '_' + now.strftime("%Y-%m-%d-%H-%M") + '.log', format=FORMAT, level=logging.DEBUG)
+
+    logging.info("Initializing trjcatting for project")
+    logging.info("Ran with options=%s and args=%s", options, args)
 
     p = Project(project_name, project_name + ".tpr", options.project_output, index=project_name + ".ndx")
         
