@@ -47,7 +47,7 @@ class Trajectory:
         # location of the trajectories
         self._files_to_cat = trajs
 
-    def build(self, tpr, index_file, index_group, project_output, temp_output="/dev/shm", center=False):
+    def build(self, tpr, index_file, index_group, project_output, temp_output="/dev/shm/grace", center=False):
         # check if the trajectory exists or not before building
         wildcard = os.path.join(project_output, "{0}*".format(self.name))
 
@@ -111,11 +111,11 @@ class Project:
         self.subdirectories = []
         self.project_output = output
         
-    def build_trajectories(self, index_group, temp="/dev/shm", center=False):
+    def build_trajectories(self, index_group, temp="/dev/shm/grace", center=False):
         self._prepare_for_build()
         
         for i in range(len(self.trajectories)):
-            self.trajectories[i].build(self.tpr, self.index_file, index_group, self.project_output, temp=temp, center=center)
+            self.trajectories[i].build(self.tpr, self.index_file, index_group, self.project_output, temp_output=temp, center=center)
 
     def data_info(self):
         # log a list of trajectories produced and their file sizes
@@ -161,7 +161,7 @@ def main():
     parser.add_option("-o", "--project_output", dest="project_output", 
         help='New project directory', default="Test")
     parser.add_option("-e", "--temp_dir", dest="temp_dir",
-        help="Temp directory (default=/dev/shm)", default="/dev/shm")
+        help="Temp directory (default=/dev/shm/grace)", default="/dev/shm/grace")
     parser.add_option("-f", "--subdir_prefix", dest="subdir_prefix",
         help='Optional prefix for the project subdirectory', default="")
         
