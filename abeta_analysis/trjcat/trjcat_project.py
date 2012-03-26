@@ -50,21 +50,22 @@ class Trajectory:
     def build(self, tpr, index_file, index_group, project_output, center=False):
         # check if the trajectory exists or not before building
         wildcard = os.path.join(project_output, "{0}*".format(self.name))
+
         if len(glob.glob(wildcard)) != 0:
             print self.name, ".xtc already exists on disk ... skipping trjcat ..."
             logging.info("%s.xtc already exists on disk ... skipping trjcat ...", self.name)
             return
-            
-	    num_trajs = len(self._files_to_cat)
+        
+        num_trajs = len(self._files_to_cat)
     	files_str = ""
+        print num_trajs
+
     	if num_trajs == 0 or num_trajs == 1:
     	    print "Nothing to concatenate for", self.name
     	    return
     	else:
     	    files_str = " ".join(self._files_to_cat)
-            logging.debug("%s to be trjcatted", files_str)
-
-	    
+            logging.debug("%s to be trjcatted", files_str) 
             index_file = os.path.join(self.project_path, index_file)
             temp_outfile = os.path.join(project_output, self.name + "_temp")
             trjcat = GromacsCommand('trjcat', xtc=files_str, output=temp_outfile, index=index_file, pipe=index_group)
@@ -82,7 +83,7 @@ class Trajectory:
         
             # Remove temp files to avoid overflow if writing to /dev/shm
             # Bit of a hack fix
-            os.system("find /dev/shm/grace -name *_temp* -delete")        
+            os.system("rm -f %(temp_outfile)s" % vars())        
 
     def check(self):
         command = "gmxcheck -f %s" % (self.name)
