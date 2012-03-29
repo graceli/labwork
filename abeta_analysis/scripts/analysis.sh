@@ -142,7 +142,9 @@ function rmsf_calpha {
 	clean "${iso}_${ratio}_rmsf"
 }
 
-mode='production'
+. ~/.gmx_407
+
+mode='test'
 TEST="-b 0"
 if [ "$mode" == "production" ]; then
 	echo "running in production mode"
