@@ -25,9 +25,10 @@ set -x
 trap 'echo $?' TERM INT SIGINT EXIT SIGKILL SIGSTOP SIGTERM
 
 function clean {
-	tar cvfz "analysis_${1}.tgz" grace
-	cp analysis*.tgz $base_dir
-	rm -rf /dev/shm/*
+    cd /dev/shm/grace
+	tar cvfz analysis_${1}.tgz *
+	cp analysis_${1}.tgz $base_dir
+	#rm -rf /dev/shm/*
 }
 
 function dssp {
@@ -107,13 +108,13 @@ function nonpolar {
 	
 	 echo -e "'SideChain'&aC*&!rACE\nsplitch16\nq" | make_ndx -f ${iso}_${ratio}_nosol.tpr -o ab_${ratio}_nonpolar.ndx
 	
-	for s in `seq 1 10`; do
-		xtc="ab_${iso}_${ratio}_${s}_nosol_whole.xtc_c_fit"
+	for s in `seq 0 9`; do
+		xtc="${s}_final"
 		if [ -e "$DATA/${xtc}.xtc" ]; then
-			seq $chain1 $chain5 | parallel -j 5 "echo {} $insgrp | g_inositol_residue_nonpolar_v2 -f $DATA/$xtc -s ${iso}_${ratio}_nosol.tpr -n ab_${ratio}_nonpolar.ndx -per_residue_contacts $output_dir/chain{}_residue_np_contact.dat -per_inositol_contacts $output_dir/chain{}_inositol_np_contact.dat -per_residue_table chain{}_table.dat $TEST"
+			seq $chain1 $chain5 | parallel -j 5 "echo {} $insgrp | g_inositol_residue_nonpolar_v2 -f $DATA/$xtc -s ${iso}_${ratio}_nosol.tpr -n ab_${ratio}_nonpolar.ndx -per_residue_contacts $output_dir/${s}_chain{}_residue_np_contact.dat -per_inositol_contacts $output_dir/${s}_chain{}_inositol_np_contact.dat -per_residue_table $output_dir/${s}_chain{}_table.dat -per_inositol_phe_contacts $output_dir/per_inositol_phe_contacts.dat -FF_info $output_dir/ff_vs_t.dat -com_dist_xvg $output_dir/per_inositol_phe_com_dists.dat $TEST"
 		fi
 	done
-	clean "${iso}_${ratio}_nonpolar"
+	#clean "${iso}_${ratio}_nonpolar"
 }
 
 # calculate the rmsd of the protein using the nmr structure as a reference
@@ -123,8 +124,8 @@ function rmsd {
 	output_dir=$3/rmsd
 	mkdir -p $output_dir
 	
-	seq 1 10 | parallel -j 8 "echo 1 1 | g_rms -f $DATA/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit.xtc -s ${iso}_${ratio}_nosol.tpr -o $output_dir/ab_${iso}_${ratio}_{}_nosol_whole_rmsd_protein.xvg -noxvgr $TEST"
-	seq 1 10 | parallel -j 8 "echo 4 4 | g_rms -f $DATA/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit.xtc -s ${iso}_${ratio}_nosol.tpr -o $output_dir/ab_${iso}_${ratio}_{}_nosol_whole_rmsd_backbone.xvg -noxvgr $TEST"
+	seq 0 9 | parallel -j 8 "echo 1 1 | g_rms -f $DATA/{}_final.xtc -s ${iso}_${ratio}_nosol.tpr -o $output_dir/{}_rmsd.xvg -noxvgr $TEST"
+	#seq 1 10 | parallel -j 8 "echo 4 4 | g_rms -f $DATA/{}_final.xtc -s ${iso}_${ratio}_nosol.tpr -o $output_dir/{}_rmsd.xvg -noxvgr $TEST"
 	
 	clean "${iso}_${ratio}_rmsd"
 }
@@ -158,7 +159,7 @@ else
 	TEST="-b 1000 -e 1010"
 fi
 
-ANALYSIS=rmsd
+ANALYSIS=nonpolar
 ISO=chiro
 RATIO=15
 
@@ -166,8 +167,10 @@ base_dir=`pwd`
 DATA="$SCRATCH/inositol/abeta42/2/$RATIO/${ISO}_nonsolvent"
 SHM="/dev/shm/grace/"
 
+mkdir $SHM
+
 echo `pwd`
 ${ANALYSIS} $ISO $RATIO $SHM
 
 #remove everything in memory in case signals aren't trapped properly
-rm -rf /dev/shm/*
+#rm -rf /dev/shm/*
