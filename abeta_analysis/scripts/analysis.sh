@@ -40,6 +40,7 @@ function dssp {
 	done
 
 	seq 0 9 | parallel -j 8 "cd $SHM/{}; echo 1 | do_dssp -f $DATA/ab_${ISO}_${RATIO}_{}_nosol_whole.xtc_c_fit -s $base_dir/${ISO}_${RATIO}_nosol.tpr -o ab_${ISO}_${RATIO}_{}_ss -sc ab_${ISO}_${RATIO}_{}_sc $TEST 2>&1"
+	
 	clean "${ISO}_${RATIO}_dssp"
 }
 
@@ -155,8 +156,12 @@ else
 	TEST="-b 1000 -e 1010"
 fi
 
+ANALYSIS=rmsd
+ISO=chiro
+RATIO=15
+
 base_dir=`pwd`
-DATA="/scratch/grace/inositol/abeta42/2/xtc"
+DATA="$SCRATCH/inositol/abeta42/2/$RATIO/${ISO}_nonsolvent"
 SHM="/dev/shm/grace/"
 
 echo `pwd`
