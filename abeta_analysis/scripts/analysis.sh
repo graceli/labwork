@@ -23,69 +23,12 @@ set -x
 # }
 
 
+
 function clean {
     cd /dev/shm/grace
 	tar cvfz analysis_${1}.tgz *
 	cp analysis_${1}.tgz $base_dir
 	rm -rf /dev/shm/*
-}
-
-function dssp {
-	export DSSP=/home/grace/src/dssp_ana/dsspcmbi
-	
-	for i in `seq 0 10`; do 
-		if [ ! -e "$SHM/$i" ]; then
-			mkdir -p $SHM/$i
-		fi
-	done
-
-	seq 0 9 | parallel -j 8 "cd $SHM/{}; echo 1 | do_dssp -f $DATA/ab_${ISO}_${RATIO}_{}_nosol_whole.xtc_c_fit -s $base_dir/${ISO}_${RATIO}_nosol.tpr -o ab_${ISO}_${RATIO}_{}_ss -sc ab_${ISO}_${RATIO}_{}_sc $TEST 2>&1"
-	
-	clean "${ISO}_${RATIO}_dssp"
-}
-
-chain_start=0
-chain_end=3
-function chain_hbonds {
-	iso=$1
-    ratio=$2
-	output_dir=$3/hbonds
-	mkdir -p $output_dir
-		
-	for s in `seq 1 10`; do
-		xtc="ab_${iso}_${ratio}_${s}_nosol_whole.xtc_c_fit"
-		if [ -e "$DATA/${xtc}.xtc" ]; then
-			mkdir -p $output_dir/$s
-			for ch in `seq $chain_start $chain_end`; do
-				let next=ch+1
-				echo $ch $next | g_hbond -f $DATA/$xtc -s ${iso}_${ratio}_nosol.tpr -n chain.ndx -nonitacc -nomerge -num $output_dir/$s/chain_${ch}_${next}_hbonds $TEST > /dev/null 2>&1 &
-			done
-			wait
-		fi
-		# python /home/grace/AnalysisScripts/abeta_analysis/abeta_analysis.py sys${s}.h5
-	done
-	clean "${iso}_${ratio}_chain_hbonds"
-}
-
-res_start=0
-res_end=129
-INS_grp=130
-num=0
-function hbonds {
-	iso=$1
-    ratio=$2
-	output_dir=$3/hbonds
-	mkdir -p $output_dir
-		
-	for s in `seq 1 10`; do
-		xtc="ab_${iso}_${ratio}_${s}_nosol_whole.xtc_c_fit"
-		if [ -e "$DATA/${xtc}.xtc" ]; then
-			mkdir -p $output_dir/$s
-			seq $res_start $res_end | parallel -j 8 "echo {} $INS_grp | g_hbond -f $DATA/$xtc -s ${iso}_${ratio}_nosol.tpr -n g_hbond_${ratio}_${iso}.ndx -nonitacc -nomerge -num $output_dir/$s/{} $xvgr $TEST > /dev/null 2>&1"
-		fi
-		# python /home/grace/AnalysisScripts/abeta_analysis/abeta_analysis.py sys${s}.h5
-	done
-	clean "${iso}_${ratio}_hbonds"
 }
 
 
@@ -113,34 +56,94 @@ function nonpolar {
 			seq $chain1 $chain5 | parallel -j 5 "echo {} $insgrp | g_inositol_residue_nonpolar_v2 -f $DATA/$xtc -s ${iso}_${ratio}_nosol.tpr -n ab_${ratio}_nonpolar.ndx -per_residue_contacts $output_dir/${s}_chain{}_residue_np_contact.dat -per_inositol_contacts $output_dir/${s}_chain{}_inositol_np_contact.dat -per_residue_table $output_dir/${s}_chain{}_table.dat -per_inositol_phe_contacts $output_dir/per_inositol_phe_contacts.dat -FF_info $output_dir/ff_vs_t.dat -com_dist_xvg $output_dir/per_inositol_phe_com_dists.dat $TEST"
 		fi
 	done
-	#clean "${iso}_${ratio}_nonpolar"
+    clean "${iso}_${ratio}_nonpolar"
 }
-
-# calculate the rmsd of the protein using the nmr structure as a reference
-function rmsd {
-    iso=$1
-    ratio=$2
-	output_dir=$3/rmsd
-	mkdir -p $output_dir
-	
-	seq 0 9 | parallel -j 8 "echo 1 1 | g_rms -f $DATA/{}_final.xtc -s ${iso}_${ratio}_nosol.tpr -o $output_dir/{}_rmsd.xvg -noxvgr $TEST"
-	#seq 1 10 | parallel -j 8 "echo 4 4 | g_rms -f $DATA/{}_final.xtc -s ${iso}_${ratio}_nosol.tpr -o $output_dir/{}_rmsd.xvg -noxvgr $TEST"
-	
-	clean "${iso}_${ratio}_rmsd"
-}
-
-# calculate the rmsf
-function rmsf_calpha {
-	iso=$1
-    ratio=$2
-	output_dir=$3/rmsf
-	mkdir -p $output_dir
-    calpha=3
-
-    # backbone fitting for specific parts of the peptide    
-	seq 1 10 | parallel -j 8 "echo $calpha | g_rmsf -f $DATA/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit.xtc -s ${iso}_${ratio}_nosol.tpr -o $output_dir/${iso}_${ratio}_{}_rmsf.xvg -fit -res -ox $output_dir/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit -noxvgr $TEST" 
-	clean "${iso}_${ratio}_rmsf"
-}
+# 
+# function dssp {
+#   export DSSP=/home/grace/src/dssp_ana/dsspcmbi
+#   
+#   for i in `seq 0 10`; do 
+#       if [ ! -e "$SHM/$i" ]; then
+#           mkdir -p $SHM/$i
+#       fi
+#   done
+# 
+#   seq 0 9 | parallel -j 8 "cd $SHM/{}; echo 1 | do_dssp -f $DATA/ab_${ISO}_${RATIO}_{}_nosol_whole.xtc_c_fit -s $base_dir/${ISO}_${RATIO}_nosol.tpr -o ab_${ISO}_${RATIO}_{}_ss -sc ab_${ISO}_${RATIO}_{}_sc $TEST 2>&1"
+#   
+#   clean "${ISO}_${RATIO}_dssp"
+# }
+# 
+# chain_start=0
+# chain_end=3
+# function chain_hbonds {
+#   iso=$1
+#     ratio=$2
+#   output_dir=$3/hbonds
+#   mkdir -p $output_dir
+#       
+#   for s in `seq 1 10`; do
+#       xtc="ab_${iso}_${ratio}_${s}_nosol_whole.xtc_c_fit"
+#       if [ -e "$DATA/${xtc}.xtc" ]; then
+#           mkdir -p $output_dir/$s
+#           for ch in `seq $chain_start $chain_end`; do
+#               let next=ch+1
+#               echo $ch $next | g_hbond -f $DATA/$xtc -s ${iso}_${ratio}_nosol.tpr -n chain.ndx -nonitacc -nomerge -num $output_dir/$s/chain_${ch}_${next}_hbonds $TEST > /dev/null 2>&1 &
+#           done
+#           wait
+#       fi
+#       # python /home/grace/AnalysisScripts/abeta_analysis/abeta_analysis.py sys${s}.h5
+#   done
+#   clean "${iso}_${ratio}_chain_hbonds"
+# }
+# 
+# res_start=0
+# res_end=129
+# INS_grp=130
+# num=0
+# function hbonds {
+#   iso=$1
+#     ratio=$2
+#   output_dir=$3/hbonds
+#   mkdir -p $output_dir
+#       
+#   for s in `seq 1 10`; do
+#       xtc="ab_${iso}_${ratio}_${s}_nosol_whole.xtc_c_fit"
+#       if [ -e "$DATA/${xtc}.xtc" ]; then
+#           mkdir -p $output_dir/$s
+#           seq $res_start $res_end | parallel -j 8 "echo {} $INS_grp | g_hbond -f $DATA/$xtc -s ${iso}_${ratio}_nosol.tpr -n g_hbond_${ratio}_${iso}.ndx -nonitacc -nomerge -num $output_dir/$s/{} $xvgr $TEST > /dev/null 2>&1"
+#       fi
+#       # python /home/grace/AnalysisScripts/abeta_analysis/abeta_analysis.py sys${s}.h5
+#   done
+#   
+#     # Cleaning up
+#   clean "${iso}_${ratio}_hbonds"
+# }
+# 
+# # calculate the rmsd of the protein using the nmr structure as a reference
+# function rmsd {
+#     iso=$1
+#     ratio=$2
+#   output_dir=$3/rmsd
+#   mkdir -p $output_dir
+#   
+#   seq 0 9 | parallel -j 8 "echo 1 1 | g_rms -f $DATA/{}_final.xtc -s ${iso}_${ratio}_nosol.tpr -o $output_dir/{}_rmsd.xvg -noxvgr $TEST"
+#   #seq 1 10 | parallel -j 8 "echo 4 4 | g_rms -f $DATA/{}_final.xtc -s ${iso}_${ratio}_nosol.tpr -o $output_dir/{}_rmsd.xvg -noxvgr $TEST"
+#   
+#   clean "${iso}_${ratio}_rmsd"
+# }
+# 
+# # calculate the rmsf
+# function rmsf_calpha {
+#   iso=$1
+#     ratio=$2
+#   output_dir=$3/rmsf
+#   mkdir -p $output_dir
+#     calpha=3
+# 
+#     # backbone fitting for specific parts of the peptide    
+#   seq 1 10 | parallel -j 8 "echo $calpha | g_rmsf -f $DATA/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit.xtc -s ${iso}_${ratio}_nosol.tpr -o $output_dir/${iso}_${ratio}_{}_rmsf.xvg -fit -res -ox $output_dir/ab_${iso}_${ratio}_{}_nosol_whole.xtc_c_fit -noxvgr $TEST" 
+#   clean "${iso}_${ratio}_rmsf"
+# }
 
 . ~/.gmx_407
 
@@ -163,7 +166,7 @@ ANALYSIS=nonpolar
 ISO=chiro
 RATIO=15
 
-trap 'clean "${ISO}_${RATIO}_${ANALYSIS}; echo "last process ended with retcode=$?"' TERM INT SIGINT EXIT SIGKILL SIGSTOP SIGTERM
+# trap 'clean "${ISO}_${RATIO}_${ANALYSIS}"; echo "last process ended with retcode=$?"' TERM INT SIGINT EXIT SIGKILL SIGSTOP SIGTERM
 
 base_dir=`pwd`
 DATA="$SCRATCH/inositol/abeta42/2/$RATIO/${ISO}_nonsolvent"
