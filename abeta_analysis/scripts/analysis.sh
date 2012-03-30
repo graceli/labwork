@@ -1,5 +1,5 @@
 #!/bin/sh
-#PBS -l nodes=1:compute-eth:ppn=8,walltime=02:00:00,os=centos53computeA
+##PBS -l nodes=1:compute-eth:ppn=8,walltime=02:00:00,os=centos53computeA
 #PBS -N analysis
 
 set -u
@@ -22,13 +22,12 @@ set -x
 #         done
 # }
 
-trap 'echo $?' TERM INT SIGINT EXIT SIGKILL SIGSTOP SIGTERM
 
 function clean {
     cd /dev/shm/grace
 	tar cvfz analysis_${1}.tgz *
 	cp analysis_${1}.tgz $base_dir
-	#rm -rf /dev/shm/*
+	rm -rf /dev/shm/*
 }
 
 function dssp {
@@ -145,7 +144,7 @@ function rmsf_calpha {
 
 . ~/.gmx_407
 
-mode='test'
+mode='production'
 TEST="-b 0"
 if [ "$mode" == "production" ]; then
 	echo "running in production mode"
@@ -159,9 +158,12 @@ else
 	TEST="-b 1000 -e 1010"
 fi
 
+
 ANALYSIS=nonpolar
 ISO=chiro
 RATIO=15
+
+trap 'clean "${ISO}_${RATIO}_${ANALYSIS}; echo "last process ended with retcode=$?"' TERM INT SIGINT EXIT SIGKILL SIGSTOP SIGTERM
 
 base_dir=`pwd`
 DATA="$SCRATCH/inositol/abeta42/2/$RATIO/${ISO}_nonsolvent"
