@@ -58,6 +58,20 @@ function nonpolar {
 	done
     clean "${iso}_${ratio}_nonpolar"
 }
+
+# calculate the rmsd of the protein using the nmr structure as a reference
+function rmsd {
+    iso=$1
+    ratio=$2
+    output_dir=$3/rmsd
+    mkdir -p $output_dir
+
+    seq 0 9 | parallel -j 8 "echo 1 1 | g_rms -f $DATA/{}_final.xtc -s ${iso}_${ratio}_nosol.tpr -o $output_dir/{}_rmsd.xvg -noxvgr $TEST"
+
+    clean "${iso}_${ratio}_rmsd"
+}
+
+
 # 
 # function dssp {
 #   export DSSP=/home/grace/src/dssp_ana/dsspcmbi
@@ -119,18 +133,7 @@ function nonpolar {
 #   clean "${iso}_${ratio}_hbonds"
 # }
 # 
-# # calculate the rmsd of the protein using the nmr structure as a reference
-# function rmsd {
-#     iso=$1
-#     ratio=$2
-#   output_dir=$3/rmsd
-#   mkdir -p $output_dir
-#   
-#   seq 0 9 | parallel -j 8 "echo 1 1 | g_rms -f $DATA/{}_final.xtc -s ${iso}_${ratio}_nosol.tpr -o $output_dir/{}_rmsd.xvg -noxvgr $TEST"
-#   #seq 1 10 | parallel -j 8 "echo 4 4 | g_rms -f $DATA/{}_final.xtc -s ${iso}_${ratio}_nosol.tpr -o $output_dir/{}_rmsd.xvg -noxvgr $TEST"
-#   
-#   clean "${iso}_${ratio}_rmsd"
-# }
+
 # 
 # # calculate the rmsf
 # function rmsf_calpha {
@@ -147,7 +150,7 @@ function nonpolar {
 
 . ~/.gmx_407
 
-mode='production'
+mode='testing'
 TEST="-b 0"
 if [ "$mode" == "production" ]; then
 	echo "running in production mode"
