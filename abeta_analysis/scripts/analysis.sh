@@ -151,7 +151,7 @@ function hbonds {
 
 . ~/.gmx_407
 
-mode='testing'
+mode='production'
 TEST="-b 0"
 if [ "$mode" == "production" ]; then
 	echo "running in production mode"
@@ -161,14 +161,14 @@ else
 	#set externally bound variables
 	ISO=scyllo
 	RATIO=15
-	ANALYSIS=dssp
+	ANALYSIS=rmsd
 	TEST="-b 1000 -e 1010"
 fi
 
 
-ANALYSIS=nonpolar
-ISO=chiro
-RATIO=15
+#ANALYSIS=nonpolar
+#ISO=chiro
+#RATIO=15
 
 # trap 'clean "${ISO}_${RATIO}_${ANALYSIS}"; echo "last process ended with retcode=$?"' TERM INT SIGINT EXIT SIGKILL SIGSTOP SIGTERM
 
