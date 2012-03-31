@@ -2,6 +2,8 @@
 ##PBS -l nodes=1:compute-eth:ppn=8,walltime=02:00:00,os=centos53computeA
 #PBS -N analysis
 
+. ~/.gmx_407
+
 set -u
 #set -e
 set -x
@@ -21,7 +23,6 @@ set -x
 #                 done
 #         done
 # }
-
 
 
 function clean {
@@ -85,7 +86,7 @@ function hbonds {
       xtc="${s}_final"
       if [ -e "$DATA/${xtc}.xtc" ]; then
           mkdir -p $output_dir/$s
-          seq $res_start $res_end | parallel -j 8 "echo {} $INS_grp | g_hbond -f $DATA/$xtc -s ${iso}_${ratio}_nosol.tpr -n g_hbond_${ratio}_${iso}.ndx -nonitacc -nomerge -num $output_dir/$s/{} $xvgr $TEST > /dev/null 2>&1"
+          seq $res_start $res_end | parallel -j 8 "echo {} $INS_grp | g_hbond -f $DATA/$xtc -s ${iso}_${ratio}_nosol.tpr -n g_hbond_${ratio}.ndx -nonitacc -nomerge -num $output_dir/$s/{} $xvgr $TEST > /dev/null 2>&1"
       fi
       # python /home/grace/AnalysisScripts/abeta_analysis/abeta_analysis.py sys${s}.h5
     done
@@ -151,7 +152,10 @@ function hbonds {
 
 . ~/.gmx_407
 
-mode='production'
+#mode='production'
+
+mode=$1
+
 TEST="-b 0"
 if [ "$mode" == "production" ]; then
 	echo "running in production mode"
@@ -161,7 +165,7 @@ else
 	#set externally bound variables
 	ISO=scyllo
 	RATIO=15
-	ANALYSIS=rmsd
+	ANALYSIS=hbonds
 	TEST="-b 1000 -e 1010"
 fi
 
