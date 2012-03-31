@@ -71,8 +71,30 @@ function rmsd {
     clean "${iso}_${ratio}_rmsd"
 }
 
+res_start=0
+res_end=129
+INS_grp=130
+num=0
+function hbonds {
+    iso=$1
+    ratio=$2
+    output_dir=$3/hbonds
+    mkdir -p $output_dir
+  
+    for s in `seq 0 9`; do
+      xtc="${s}_final"
+      if [ -e "$DATA/${xtc}.xtc" ]; then
+          mkdir -p $output_dir/$s
+          seq $res_start $res_end | parallel -j 8 "echo {} $INS_grp | g_hbond -f $DATA/$xtc -s ${iso}_${ratio}_nosol.tpr -n g_hbond_${ratio}_${iso}.ndx -nonitacc -nomerge -num $output_dir/$s/{} $xvgr $TEST > /dev/null 2>&1"
+      fi
+      # python /home/grace/AnalysisScripts/abeta_analysis/abeta_analysis.py sys${s}.h5
+    done
 
-# 
+    # Cleaning up
+    clean "${iso}_${ratio}_hbonds"
+}
+
+
 # function dssp {
 #   export DSSP=/home/grace/src/dssp_ana/dsspcmbi
 #   
@@ -86,7 +108,8 @@ function rmsd {
 #   
 #   clean "${ISO}_${RATIO}_dssp"
 # }
-# 
+
+
 # chain_start=0
 # chain_end=3
 # function chain_hbonds {
@@ -110,29 +133,7 @@ function rmsd {
 #   clean "${iso}_${ratio}_chain_hbonds"
 # }
 # 
-# res_start=0
-# res_end=129
-# INS_grp=130
-# num=0
-# function hbonds {
-#   iso=$1
-#     ratio=$2
-#   output_dir=$3/hbonds
-#   mkdir -p $output_dir
-#       
-#   for s in `seq 1 10`; do
-#       xtc="ab_${iso}_${ratio}_${s}_nosol_whole.xtc_c_fit"
-#       if [ -e "$DATA/${xtc}.xtc" ]; then
-#           mkdir -p $output_dir/$s
-#           seq $res_start $res_end | parallel -j 8 "echo {} $INS_grp | g_hbond -f $DATA/$xtc -s ${iso}_${ratio}_nosol.tpr -n g_hbond_${ratio}_${iso}.ndx -nonitacc -nomerge -num $output_dir/$s/{} $xvgr $TEST > /dev/null 2>&1"
-#       fi
-#       # python /home/grace/AnalysisScripts/abeta_analysis/abeta_analysis.py sys${s}.h5
-#   done
-#   
-#     # Cleaning up
-#   clean "${iso}_${ratio}_hbonds"
-# }
-# 
+
 
 # 
 # # calculate the rmsf
