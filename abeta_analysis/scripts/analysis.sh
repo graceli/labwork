@@ -24,7 +24,6 @@ set -x
 #         done
 # }
 
-
 function clean {
     cd /dev/shm/grace
 	tar cvfz analysis_${1}.tgz *
