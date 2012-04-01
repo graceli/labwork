@@ -34,12 +34,9 @@ function clean {
 
 
 proteingrp=1
-insgrp=12
-chain1=17
-chain2=18
-chain3=19
-chain4=20
-chain5=21
+insgrp=5
+chain1=0
+chain5=4
 xvgr="-noxvgr"
 # start=1
 # end=20
@@ -49,12 +46,12 @@ function nonpolar {
 	output_dir=$3/nonpolar
 	mkdir -p $output_dir
 	
-	 echo -e "'SideChain'&aC*&!rACE\nsplitch16\nq" | make_ndx -f ${iso}_${ratio}_nosol.tpr -o ab_${ratio}_nonpolar.ndx
+	 #echo -e "'SideChain'&aC*&!rACE\nsplitch16\nq" | make_ndx -f ${iso}_${ratio}_nosol.tpr -o ab_${ratio}_nonpolar.ndx
 	
 	for s in `seq 0 9`; do
 		xtc="${s}_final"
 		if [ -e "$DATA/${xtc}.xtc" ]; then
-			seq $chain1 $chain5 | parallel -j 5 "echo {} $insgrp | g_inositol_residue_nonpolar_v2 -f $DATA/$xtc -s ${iso}_${ratio}_nosol.tpr -n ab_${ratio}_nonpolar.ndx -per_residue_contacts $output_dir/${s}_chain{}_residue_np_contact.dat -per_inositol_contacts $output_dir/${s}_chain{}_inositol_np_contact.dat -per_residue_table $output_dir/${s}_chain{}_table.dat -per_inositol_phe_contacts $output_dir/per_inositol_phe_contacts.dat -FF_info $output_dir/ff_vs_t.dat -com_dist_xvg $output_dir/per_inositol_phe_com_dists.dat $TEST"
+			seq $chain1 $chain5 | parallel -j 5 "echo {} $insgrp | g_inositol_residue_nonpolar_v2 -f $DATA/$xtc -s ${iso}_${ratio}_nosol.tpr -n ab_${ratio}_${iso}_nonpolar.ndx -per_residue_contacts $output_dir/${s}_chain{}_residue_np_contact.dat -per_inositol_contacts $output_dir/${s}_chain{}_inositol_np_contact.dat -per_residue_table $output_dir/${s}_chain{}_table.dat -per_inositol_phe_contacts $output_dir/per_inositol_phe_contacts.dat -FF_info $output_dir/ff_vs_t.dat -com_dist_xvg $output_dir/per_inositol_phe_com_dists.dat $TEST"
 		fi
 	done
     clean "${iso}_${ratio}_nonpolar"
@@ -86,7 +83,7 @@ function hbonds {
       xtc="${s}_final"
       if [ -e "$DATA/${xtc}.xtc" ]; then
           mkdir -p $output_dir/$s
-          seq $res_start $res_end | parallel -j 8 "echo {} $INS_grp | g_hbond -f $DATA/$xtc -s ${iso}_${ratio}_nosol.tpr -n g_hbond_${ratio}.ndx -nonitacc -nomerge -num $output_dir/$s/{} $xvgr $TEST > /dev/null 2>&1"
+          seq $res_start $res_end | parallel -j 8 "echo {} $INS_grp | g_hbond -f $DATA/$xtc -s ${iso}_${ratio}_nosol.tpr -n g_hbond_${ratio}_${iso}.ndx -nonitacc -nomerge -num $output_dir/$s/{} $xvgr $TEST > /dev/null 2>&1"
       fi
       # python /home/grace/AnalysisScripts/abeta_analysis/abeta_analysis.py sys${s}.h5
     done
@@ -150,11 +147,11 @@ function hbonds {
 #   clean "${iso}_${ratio}_rmsf"
 # }
 
-. ~/.gmx_407
+source ~/.gmx_407
 
 #mode='production'
 
-mode=$1
+mode='production'
 
 TEST="-b 0"
 if [ "$mode" == "production" ]; then
@@ -163,7 +160,7 @@ if [ "$mode" == "production" ]; then
 else
 	echo "testing ..."
 	#set externally bound variables
-	ISO=scyllo
+	ISO=glycerol
 	RATIO=15
 	ANALYSIS=hbonds
 	TEST="-b 1000 -e 1010"
@@ -174,7 +171,7 @@ fi
 #ISO=chiro
 #RATIO=15
 
-# trap 'clean "${ISO}_${RATIO}_${ANALYSIS}"; echo "last process ended with retcode=$?"' TERM INT SIGINT EXIT SIGKILL SIGSTOP SIGTERM
+trap 'echo "last process ended with retcode=$?"' TERM INT SIGINT EXIT SIGKILL SIGSTOP SIGTERM
 
 base_dir=`pwd`
 DATA="$SCRATCH/inositol/abeta42/2/$RATIO/${ISO}_nonsolvent"
