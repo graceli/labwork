@@ -88,13 +88,12 @@ function hbonds {
     clean "${iso}_${ratio}_hbonds"
 }
 
-# TODO test this
 chain_start=0
 chain_end=3
 function chain_hbonds {
     iso=$1
     ratio=$2
-    output_dir=$3/hbonds
+    output_dir=$3/chain_hbonds
     mkdir -p $output_dir
   
     for s in `seq 0 9`; do
@@ -112,27 +111,25 @@ function chain_hbonds {
     clean "${iso}_${ratio}_chain_hbonds"
 }
 
-# TODO test this
 function dssp {
-    export DSSP=/home/grace/src/dssp_ana/dsspcmbi
-    
+    export DSSP=/home/p/pomes/grace/src/dssp_ana/dsspcmbi
+
     for i in `seq 0 9`; do 
       if [ ! -e "$SHM/$i" ]; then
-          mkdir -p $SHM/$i
+          mkdir -p $SHM/dssp/$i
       fi
     done
 
-    seq 0 9 | parallel -j 8 "cd $SHM/{}; echo 1 | do_dssp -f $DATA/{}_final -s $base_dir/${ISO}_${RATIO}_nosol.tpr -o ab_${ISO}_${RATIO}_{}_ss -sc ab_${ISO}_${RATIO}_{}_sc $TEST 2>&1"
+    seq 0 9 | parallel -j 8 "cd $SHM/dssp/{}; echo 1 | do_dssp -f $DATA/{}_final -s $base_dir/${ISO}_${RATIO}_nosol.tpr -o ab_${ISO}_${RATIO}_{}_ss -sc ab_${ISO}_${RATIO}_{}_sc $TEST 2>&1"
 
     clean "${ISO}_${RATIO}_dssp"
 }
 
-# TODO test this
 # calculate the rmsf
 function rmsf_calpha {
     iso=$1
     ratio=$2
-    output_dir=$3/rmsf
+    output_dir=$3/rmsf_calpha
     mkdir -p $output_dir
     calpha=3
 
@@ -155,7 +152,7 @@ else
 	#set externally bound variables
 	ISO=glycerol
 	RATIO=15
-	ANALYSIS=hbonds
+	ANALYSIS=rmsf_calpha
 	TEST="-b 1000 -e 1010"
 fi
 
