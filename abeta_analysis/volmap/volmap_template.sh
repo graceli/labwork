@@ -1,15 +1,28 @@
 #!/bin/sh
-##PBS -l nodes=1:ppn=8,walltime=5:00:00
+#PBS -l nodes=1:ppn=8,walltime=5:00:00
 #PBS -N volmap
 
-#cd $PBS_O_WORKDIR
+trap 'clean; exit $?' TERM KILL EXIT SIGINT
 
-XTC=scyllo_64_volmap_all_fit.xtc
-GRO=scyllo_64_nosol.gro
+function clean {
+    cd /dev/shm/grace
+    tar cvfz $PBS_O_WORKDIR/volmap.tar.gz *
+    rm -rf /dev/shm/grace
+}
 
-if [ "$is_cer" == "1" ]; then
-	vmd -dispdev text -e volmap_cer.tcl -args $XTC $GRO
-else
-	vmd -dispdev text -e volmap.tcl -args $XTC $GRO
-fi
+mkdir /dev/shm/grace
 
+cd $PBS_O_WORKDIR
+
+for r in 64; do
+    for iso in scyllo chiro; do
+        XTC=${iso}_${r}_volmap_all_fit_smaller.xtc
+        GRO=${iso}_${r}_nosol.gro
+
+        if [ "$is_cer" == "1" ]; then
+            vmd -dispdev text -e volmap_cer.tcl -args $XTC $GRO
+        else
+            vmd -dispdev text -e volmap.tcl -args $XTC $GRO > /dev/null 2>&1 &
+        fi
+    done
+done
