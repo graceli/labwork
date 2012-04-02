@@ -27,7 +27,7 @@ mkdir /dev/shm/grace
 
 # ratio and iso variables have passed in values via qsub
 # Batch compute "volume maps" of glucose around Abeta
-
+iso=glucose
 DATA="../../${iso}_Protein_GLCA"
 xtc_file="${iso}_volmap_all"
 TPR="protein_glca.tpr"
