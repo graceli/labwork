@@ -2,9 +2,9 @@
 #$ -N ab_analysis
 #$ -P uix-840-ac
 #$ -A uix-840-ac
-##$ -l h_rt=00:15:00
-##$ -pe default 16
-##$ -q med
+#$ -l h_rt=00:15:00
+#$ -pe default 16
+#$ -q med
 #$ -S /bin/bash
 #$ -cwd
 #$ -notify
@@ -31,7 +31,7 @@ function preprocess {
 
 function dssp {
 	# break dssp analysis to write to different directories because temp file names can conflict
-	# todo: fix these bad temp files??
+	# todo: fix these bd temp files??
 	# note: xvgr is useful for dssp analysis
 
 	export DSSP=/home/grace/labwork/gromacs/dssp_ana/dsspcmbi
@@ -62,7 +62,7 @@ function rmsf {
 
 # calculate the rmsd of the protein using the nmr structure as a reference
 function rmsd {
-	echo 1 1 | g_rms -f $DATA/$NAME -s $DATA/$TPR -o ${NAME}_whole_rmsd_protein.xvg -noxvgr $TEST &
+	echo 1 1 | g_rms -f $DATA/$NAME -s $DATA/$TPR -o ${NAME}_whole_rmsd_protein.xvg -fit rot+trans -noxvgr $TEST &
 }
 
 function gyration {
@@ -73,8 +73,8 @@ function gyration {
 function run_analysis {
 	analysis=$1	
 	for ((s=1; s<=10; s++)); do
-		NAME="sys${s}_${TAG}"
-		TPR="protein_sugar.tpr"
+		NAME="${s}_${TAG}"
+		TPR="protein_glca.tpr"
 		
 		if [ -e "$DATA/${NAME}.xtc" ]; then
 			echo "running task $s"
@@ -87,7 +87,7 @@ function run_analysis {
 
 # run all analysis at once
 function batch_run {
-	for ANALYSIS in gyration; do
+	for ANALYSIS in dssp; do
 		echo "Performing analysis $ANALYSIS"
 
 		if [ ! -e "$ANALYSIS" ]; then
@@ -104,13 +104,13 @@ function batch_run {
 }
 
 base_dir=`pwd`
-DATA="/rap/uix-840-ac/grace/abeta/42/glucose/xtc"
-TAG="c_res_nosol"
-TEST=""
+DATA="/rap/uix-840-ac/grace/abeta/42/glucose_Protein_GLCA"
+TAG="final"
+TEST="-b 1000 -e 2000"
 
 echo "in $PWD"
-echo "running app $1"
+echo "running app"
 
 #exec app from command line
-$1
+batch_run
 
