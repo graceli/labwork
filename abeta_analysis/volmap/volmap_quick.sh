@@ -1,6 +1,8 @@
 #!/bin/sh
-#PBS -l nodes=1:ppn=8,walltime=5:00:00
+#PBS -l nodes=1:ppn=8,walltime=8:00:00
 #PBS -N volmap_quick
+
+set -x
 
 trap 'clean; exit $?' TERM KILL EXIT SIGINT
 
@@ -20,9 +22,10 @@ for r in 15 64; do
         GRO=${iso}_${r}_nosol.gro
 
         if [ "$iso" == "glycerol" ]; then
-            vmd -dispdev text -e volmap_cer.tcl -args $XTC $GRO
+            vmd -dispdev text -e volmap_cer.tcl -args $XTC $GRO > /dev/shm/grace/${XTC}_volmap_quick.log 2>&1 &
         else
-            vmd -dispdev text -e volmap.tcl -args $XTC $GRO > /dev/null 2>&1 &
+            vmd -dispdev text -e volmap.tcl -args $XTC $GRO > /dev/shm/grace/${XTC}_volmap_quick.log 2>&1 &
         fi
     done
+    wait
 done
