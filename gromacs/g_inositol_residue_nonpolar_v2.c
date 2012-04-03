@@ -341,6 +341,8 @@ int main(int argc,char *argv[]) {
 
     string residueName;
     int residue_id;
+    bool first_time = true;
+
     ofstream f_per_residue_contacts(perResidueContacts);
     ofstream f_residue_table(residueTable);
     ofstream f_per_inositol_contacts(perInositolContacts);
@@ -412,10 +414,20 @@ int main(int argc,char *argv[]) {
 #endif
         }
 
-        //output per residue contacts
+        //output header for residue contacts if its its the first frame analyzed
+        if(first_time) {
+            f_per_residue_contacts << "#" << " ";
+            for(map<string,int>::iterator iter = per_residue_contacts_snapshot.begin(); iter != per_residue_contacts_snapshot.end(); iter++) {
+                f_per_residue_contacts << iter-> first << " ";
+            } 
+            f_per_residue_contacts << endl;
+            first_time = false;
+        }
+
+        //output per residue contacts 
+        //this will be outputted for every frame in the trajectory
         f_per_residue_contacts<<t<<" ";
         for(map<string,int>::iterator iter = per_residue_contacts_snapshot.begin(); iter != per_residue_contacts_snapshot.end(); iter++) {
-
 #ifdef DEBUG_KEY
 	    	cerr << iter->first<<" ";
         	cerr << iter->second<<" "<<endl;

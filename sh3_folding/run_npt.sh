@@ -42,22 +42,22 @@ function run {
 
 		# equilibration
 		log "starting equilibration stage"
-		$GROMPP -f $PARAMS/equil.mdp -c em.gro -p ${sysName}.top -o equil 
+		$GROMPP -f $PARAMS/equil_npt.mdp -c em.gro -p ${sysName}.top -o equil_npt
 
-		mpirun -np $NCORES $MDRUN -s equil.tpr -deffnm equil -nosum -dlb auto -npme $NPME
+		mpirun -np $NCORES $MDRUN -s equil_npt.tpr -deffnm equil_npt -nosum -dlb auto -npme $NPME
 		#$MDRUN -s equil.tpr -deffnm equil
 
 	
 		log "making tpr for production run"
 		# production runs
-		$GROMPP -f $PARAMS/prod.mdp -c equil.gro -p ${sysName}.top -o prod.tpr
+		$GROMPP -f $PARAMS/prod_npt.mdp -c equil_npt.gro -p ${sysName}.top -o prod_npt
 	else
 		cpt_file="$base_dir/$PBS_ARRAYID/prod.cpt"
 		echo "INFO: found checkpoint file $cpt_file"
 	fi	
 
 	echo "DEBUG: starting mdrun for $MAXH"
-	mpirun -np $NCORES $MDRUN -s prod -deffnm prod -maxh $MAXH -cpt 720 -nosum -dlb auto -npme $NPME -cpo prod -cpi $cpt_file -noappend
+	mpirun -np $NCORES $MDRUN -s prod_npt -deffnm prod_npt -maxh $MAXH -cpt 720 -nosum -dlb auto -npme $NPME -cpo prod -cpi $cpt_file -noappend
 }
 
 # prepare environment
