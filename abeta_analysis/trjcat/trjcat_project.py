@@ -155,7 +155,7 @@ def list_xtcs(directory):
     
 def main():
     # TODO refactor to configuration file    
-    usage = "usage: %prog [options] project_name N_project_dirs"
+    usage = "usage: %prog [options] name start_idx end_idx"
     parser = optparse.OptionParser(usage, description='Trjcat some trajectories')                                          
 
     parser.add_option("-o", "--project_output", dest="project_output", 
@@ -176,12 +176,13 @@ def main():
     
     # TODO error handling for add_option -- look into how to properly do this 
     # http://docs.python.org/library/optparse.html
-    if len(args) != 2:
+    if len(args) != 3:
           parser.error("Incorrect number of arguments")
 
 
     project_name = args[0]
-    N = int(args[1])
+    start_idx = int(args[1])
+    end_idx = int(args[2])
 
     if not os.path.exists(project_name):
         print "project {0} does not exist".format(project_name)
@@ -196,10 +197,12 @@ def main():
     logging.info("Ran with options=%s and args=%s", options, args)
 
     p = Project(project_name, project_name + ".tpr", options.project_output, index=project_name + ".ndx")
-        
+
     # Read the project directory and build a list of files to trjcat
     all_dirs_failed = True
-    for dir_idx in range(N):
+    
+    # loop through project directories in the interval [start_idx, end_idx]
+    for dir_idx in range(start_idx, end_idx + 1):
         project_subdir = options.subdir_prefix + str(dir_idx)
         p.add_directory(project_subdir)
         
