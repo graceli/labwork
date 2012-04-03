@@ -170,7 +170,7 @@ def main():
     parser.add_option("-c", "--center_system", dest="center_system", 
         help="Use a centering group and output by -pbc res mol", default=False)
     parser.add_option("-n", "--component", dest="system_component",
-        help="The component of the system (in Gromacs index group language) to extract",        default="System")
+        help="The component of the system (in Gromacs index group language) to extract", default="Protein")
 
     (options, args) = parser.parse_args()
     
