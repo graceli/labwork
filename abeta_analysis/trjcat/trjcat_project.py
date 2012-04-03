@@ -156,7 +156,7 @@ def list_xtcs(directory):
 def main():
     # TODO refactor to configuration file    
     usage = "usage: %prog [options] name start_idx end_idx"
-    parser = optparse.OptionParser(usage, description='Trjcat some trajectories')                                          
+    parser = optparse.OptionParser(usage, description='Trjcat some trajectories.  Need to have a name/ directory with name.tpr and name.ndx, where name.tpr contains just the component of interest and the name.ndx contains the indices of the components of interest')                                          
 
     parser.add_option("-o", "--project_output", dest="project_output", 
         help='New project directory', default="Test")
