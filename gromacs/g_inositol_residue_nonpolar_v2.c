@@ -419,8 +419,8 @@ int main(int argc,char *argv[]) {
             f_per_residue_contacts << "#" << " ";
             for(map<string,int>::iterator iter = per_residue_contacts_snapshot.begin(); iter != per_residue_contacts_snapshot.end(); iter++) {
                 f_per_residue_contacts << iter-> first << " ";
-                                
             } 
+            f_per_residue_contacts << endl;
             first_time = false;
         }
 

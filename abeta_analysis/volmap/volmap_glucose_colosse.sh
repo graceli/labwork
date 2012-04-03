@@ -1,8 +1,8 @@
 #!/bin/sh
 # $ -N ab_volmap
 
-set -e
 set -x
+set -u 
 
 function clean {
     cd /dev/shm/grace
