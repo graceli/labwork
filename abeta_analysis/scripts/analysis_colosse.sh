@@ -2,7 +2,7 @@
 #$ -N ab_analysis
 #$ -P uix-840-ac
 #$ -A uix-840-ac
-#$ -l h_rt=00:15:00
+#$ -l h_rt=10:00:00
 #$ -pe default 16
 #$ -q med
 #$ -S /bin/bash
@@ -17,11 +17,15 @@ export OMP_NUM_THREADS=$NSLOTS
 . /home/grace/.gmx
 
 set -u
-set -e
 set -x
 
-trap "exit $?" TERM INT SIGINT EXIT SIGKILL SIGSTOP SIGTERM
+trap "clean; exit $?" TERM INT SIGINT EXIT SIGKILL SIGSTOP SIGTERM
 
+function clean {
+	cd /dev/shm/grace
+	tar cvfz ${base_dir}/analysis.tgz *
+	rm -rf /dev/shm/grace
+}
 #centers and puts entire fibril in box
 function preprocess {
 	for i in `seq 5 9`; do
@@ -34,13 +38,16 @@ function dssp {
 	# todo: fix these bd temp files??
 	# note: xvgr is useful for dssp analysis
 
+	mkdir /dev/shm/grace
+	cd /dev/shm/grace
+
 	export DSSP=/home/grace/labwork/gromacs/dssp_ana/dsspcmbi
 
 	if [ ! -e "$1" ]; then
 		mkdir $1
 	fi
 	cd $1
-	echo 1 | do_dssp -f $DATA/$NAME -s $DATA/$TPR -o ${NAME}_ss -sc ${NAME}_sc $TEST &
+	echo 1 | do_dssp -f $DATA/$NAME -s $DATA/$TPR -o ${NAME}_ss -sc ${NAME}_sc $TEST -dt 10 &
 	cd ../
 }
 
@@ -50,14 +57,15 @@ chain_end=4
 function chain_hbonds {
 	for (( i=${chain_start}; i < ${chain_end}; i++ )); do
 		let next=i+1
-		echo $i $next | g_hbond -f $DATA/$NAME -s $DATA/$TPR -n $DATA/chain.ndx -nonitacc -nomerge -num ${NAME}_chain_${i}_${next}_hbonds -noxvgr $TEST 
+		echo $i $next | g_hbond -f $DATA/$NAME -s $DATA/$TPR -n $DATA/chain.ndx -nonitacc -nomerge -num ${NAME}_chain_${i}_${next}_hbonds -noxvgr $TEST &
 	done
+	wait
 }
 
 # calculate the rmsf for each residue in fibrl
 function rmsf {
     	# backbone fitting for specific parts of the peptide
-	echo "C-alpha" | g_rmsf -f $DATA/$NAME -s $DATA/$TPR -o ${NAME}_rmsf.xvg -fit -res -ox ${NAME}_ox.xvg -noxvgr $TEST 
+	echo "C-alpha" | g_rmsf -f $DATA/$NAME -s $DATA/$TPR -o ${NAME}_rmsf.xvg -fit -res -ox ${NAME}_ox.xvg -noxvgr $TEST &
 }
 
 # calculate the rmsd of the protein using the nmr structure as a reference
@@ -97,7 +105,6 @@ function batch_run {
 
 		cd $ANALYSIS
 		run_analysis $ANALYSIS
-		echo "waiting"
 		wait
 		cd ..
 	done
@@ -106,7 +113,7 @@ function batch_run {
 base_dir=`pwd`
 DATA="/rap/uix-840-ac/grace/abeta/42/glucose_Protein_GLCA"
 TAG="final"
-TEST="-b 1000 -e 2000"
+TEST="-b 0"
 
 echo "in $PWD"
 echo "running app"
