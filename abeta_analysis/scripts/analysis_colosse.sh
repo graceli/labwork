@@ -75,7 +75,27 @@ function rmsd {
 
 function gyration {
 	echo 1 | g_gyrate -f $DATA/$NAME -s $DATA/$TPR -o ${NAME}_rg_protein.xvg -noxvgr $TEST 2> rg.out >&2 &
-} 
+}
+
+function nonpolar {
+    # iso=$1
+    #     ratio=$2
+    #   
+    solute_group=5
+	
+	# trajectory number
+	s=$1
+	
+	# index file for nonpolar analysis
+	INDEX="ab_64_glucose_nonpolar.ndx"
+	TPR="ab_64_glucose_nosol.tpr"
+	
+	seq $chain1 $chain5 | parallel -j 5 "echo {} $solute_group | g_inositol_residue_nonpolar_v2 -f $DATA/$NAME -s $TPR -n $INDEX -per_residue_contacts ${s}_chain{}_residue_np_contact.dat -per_inositol_contacts ${s}_chain{}_inositol_np_contact.dat -per_residue_table ${s}_chain{}_table.dat -per_inositol_phe_contacts per_inositol_phe_contacts.dat -FF_info ff_vs_t.dat -com_dist_xvg per_inositol_phe_com_dists.dat $TEST"
+}
+
+function hbonds {
+    
+}
 
 # task function to run analysis
 function run_analysis {
@@ -95,7 +115,7 @@ function run_analysis {
 
 # run all analysis at once
 function batch_run {
-	for ANALYSIS in dssp; do
+	for ANALYSIS in nonpolar; do
 		echo "Performing analysis $ANALYSIS"
 
 		if [ ! -e "$ANALYSIS" ]; then
