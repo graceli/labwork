@@ -24,7 +24,7 @@ trap "clean; exit $?" TERM INT SIGINT EXIT SIGKILL SIGSTOP SIGTERM
 function clean {
 	cd /dev/shm/grace
 	tar cvfz ${base_dir}/analysis.tgz *
-	rm -rf /dev/shm/grace
+    # rm -rf /dev/shm/grace
 }
 #centers and puts entire fibril in box
 function preprocess {
@@ -93,9 +93,24 @@ function nonpolar {
 	seq $chain1 $chain5 | parallel -j 5 "echo {} $solute_group | g_inositol_residue_nonpolar_v2 -f $DATA/$NAME -s $TPR -n $INDEX -per_residue_contacts ${s}_chain{}_residue_np_contact.dat -per_inositol_contacts ${s}_chain{}_inositol_np_contact.dat -per_residue_table ${s}_chain{}_table.dat -per_inositol_phe_contacts per_inositol_phe_contacts.dat -FF_info ff_vs_t.dat -com_dist_xvg per_inositol_phe_com_dists.dat $TEST"
 }
 
+
+# Calculates the number of hydrogen bonds made with each residue.
+# To calculate this I run g_hbond each time for each residue in the pentamer
+# This is a bit of a hack to get g_hbond to work.
+res_start=0
+res_end=129
+INS_grp=130
+num=0
 function hbonds {
-    
+    solute_group=5	
+	s=$1
+	INDEX="ab_64_glucose_hbonds.ndx"
+	TPR="protein_glca.tpr"
+
+    mkdir $s
+    seq $res_start $res_end | parallel -j 8 "echo {} $solute_group | g_hbond -f $DATA/$NAME -s $DATA/$TPR -n $DATA/$INDEX -nonitacc -nomerge -num $s/{} -noxvgr $TEST > /dev/null 2>&1"
 }
+
 
 # task function to run analysis
 function run_analysis {
@@ -115,7 +130,7 @@ function run_analysis {
 
 # run all analysis at once
 function batch_run {
-	for ANALYSIS in nonpolar; do
+	for ANALYSIS in hbonds; do
 		echo "Performing analysis $ANALYSIS"
 
 		if [ ! -e "$ANALYSIS" ]; then
@@ -133,10 +148,14 @@ function batch_run {
 base_dir=`pwd`
 DATA="/rap/uix-840-ac/grace/abeta/42/glucose_Protein_GLCA"
 TAG="final"
-TEST="-b 0"
+TEST="-b 0 -e 10"
 
 echo "in $PWD"
 echo "running app"
+
+if [ ! -e "/dev/shm/grace" ]; then
+    mkdir /dev/shm/grace
+fi
 
 #exec app from command line
 batch_run
