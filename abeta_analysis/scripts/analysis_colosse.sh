@@ -88,7 +88,7 @@ function nonpolar {
 	
 	# index file for nonpolar analysis
 	INDEX="ab_64_glucose_nonpolar.ndx"
-	TPR="ab_64_glucose_nosol.tpr"
+	TPR="protein_glca.tpr"
 	
 	seq $chain1 $chain5 | parallel -j 5 "echo {} $solute_group | g_inositol_residue_nonpolar_v2 -f $DATA/$NAME -s $TPR -n $INDEX -per_residue_contacts ${s}_chain{}_residue_np_contact.dat -per_inositol_contacts ${s}_chain{}_inositol_np_contact.dat -per_residue_table ${s}_chain{}_table.dat -per_inositol_phe_contacts per_inositol_phe_contacts.dat -FF_info ff_vs_t.dat -com_dist_xvg per_inositol_phe_com_dists.dat $TEST"
 }
