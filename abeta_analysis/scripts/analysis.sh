@@ -47,7 +47,7 @@ function nonpolar {
 			seq $chain1 $chain5 | parallel -j 5 "echo {} $insgrp | g_inositol_residue_nonpolar_v2 -f $DATA/$xtc -s ${iso}_${ratio}_nosol.tpr -n ab_${ratio}_${iso}_nonpolar.ndx -per_residue_contacts $output_dir/${s}_chain{}_residue_np_contact.dat -per_inositol_contacts $output_dir/${s}_chain{}_inositol_np_contact.dat -per_residue_table $output_dir/${s}_chain{}_table.dat -per_inositol_phe_contacts $output_dir/per_inositol_phe_contacts.dat -FF_info $output_dir/ff_vs_t.dat -com_dist_xvg $output_dir/per_inositol_phe_com_dists.dat $TEST"
 		fi
 	done
-    #clean "${iso}_${ratio}_nonpolar"
+    clean "${iso}_${ratio}_nonpolar"
 }
 
 # calculate the rmsd of the protein using the nmr structure as a reference
@@ -141,7 +141,7 @@ function rmsf_calpha {
 
 source ~/.gmx_407
 
-mode='test'
+mode='production'
 
 TEST="-b 0"
 if [ "$mode" == "production" ]; then
@@ -156,7 +156,7 @@ else
 	TEST="-b 1000 -e 1010"
 fi
 
-#trap 'rm -rf /dev/shm/*; echo "last process ended with retcode=$?"' TERM INT SIGINT EXIT SIGKILL SIGSTOP SIGTERM
+trap 'rm -rf /dev/shm/*; echo "last process ended with retcode=$?"' TERM INT SIGINT EXIT SIGKILL SIGSTOP SIGTERM
 
 base_dir=`pwd`
 DATA="$SCRATCH/inositol/abeta42/current/$RATIO/${ISO}_nonsolvent"
