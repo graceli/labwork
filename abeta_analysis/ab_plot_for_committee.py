@@ -40,7 +40,7 @@ def load_into_tables():
                 
 def main():
     """docstring for main"""
-    
+    load_into_tables()
                 
     
 if __name__ == '__main__':
