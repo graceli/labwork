@@ -50,6 +50,30 @@ function nonpolar {
     clean "${iso}_${ratio}_nonpolar"
 }
 
+# Calculates the number of hydrogen bonds made with each residue.
+# To calculate this I run g_hbond each time for each residue in the pentamer
+# This is a bit of a hack to get g_hbond to work.
+
+function hbonds_inositol {
+    iso=$1
+    ratio=$2
+    output_dir=$3/hbonds_inositol
+    mkdir -p $output_dir
+  
+    for s in `seq 0 9`; do
+      xtc="${s}_final"
+      if [ -e "$DATA/${xtc}.xtc" ]; then
+          mkdir -p $output_dir/$s
+          seq 1 $ratio | parallel -j 8 "echo {} Protein | g_hbond -f $DATA/$xtc -s ${iso}_${ratio}_nosol.tpr -n g_hbond_${ratio}_${iso}.ndx -nonitacc -nomerge -num $output_dir/$s/{} $xvgr $TEST > /dev/null 2>&1"
+      fi
+      # python /home/grace/AnalysisScripts/abeta_analysis/abeta_analysis.py sys${s}.h5
+    done
+
+    # Cleaning up
+    clean "${iso}_${ratio}_hbonds_inositol"
+}
+
+
 # calculate the rmsd of the protein using the nmr structure as a reference
 # fitting using rot+trans is done by default by g_rms
 function rmsd {
