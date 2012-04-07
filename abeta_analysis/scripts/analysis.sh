@@ -51,13 +51,17 @@ function nonpolar {
 }
 
 # calculate the rmsd of the protein using the nmr structure as a reference
+# fitting using rot+trans is done by default by g_rms
 function rmsd {
     iso=$1
     ratio=$2
     output_dir=$3/rmsd
+    fit_group='Backbone'
+    calc_group='Backbone'
+
     mkdir -p $output_dir
 
-    seq 0 9 | parallel -j 8 "echo 1 1 | g_rms -f $DATA/{}_final.xtc -s ${iso}_${ratio}_nosol.tpr -o $output_dir/{}_rmsd.xvg -noxvgr $TEST"
+    seq 0 9 | parallel -j 8 "echo $fit_group $calc_group | g_rms -f $DATA/{}_final.xtc -s ${iso}_${ratio}_nosol.tpr -o $output_dir/{}_rmsd.xvg -noxvgr $TEST"
 
     clean "${iso}_${ratio}_rmsd"
 }
