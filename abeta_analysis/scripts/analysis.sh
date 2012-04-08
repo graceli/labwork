@@ -64,7 +64,7 @@ function hbonds_inositol {
       xtc="${s}_final"
       if [ -e "$DATA/${xtc}.xtc" ]; then
           mkdir -p $output_dir/$s
-          seq 1 $ratio | parallel -j 8 "echo {} Protein | g_hbond -f $DATA/$xtc -s ${iso}_${ratio}_nosol.tpr -n g_hbond_${ratio}_${iso}.ndx -nonitacc -nomerge -num $output_dir/$s/{} $xvgr $TEST > /dev/null 2>&1"
+          seq 1 $ratio | parallel -j 8 "echo {} Protein | g_hbond -f $DATA/$xtc -s ${iso}_${ratio}_nosol.tpr -n g_hbond_inositol_${iso}_${ratio}.ndx -nonitacc -nomerge -num $output_dir/$s/{} $xvgr $TEST > /dev/null 2>&1"
       fi
       # python /home/grace/AnalysisScripts/abeta_analysis/abeta_analysis.py sys${s}.h5
     done
@@ -178,9 +178,9 @@ if [ "$mode" == "production" ]; then
 else
 	echo "testing ..."
 	#set externally bound variables
-	ISO=glycerol
-	RATIO=15
-	ANALYSIS=nonpolar
+	ISO=scyllo
+	RATIO=64
+	ANALYSIS=hbonds_inositol
 	TEST="-b 1000 -e 1010"
 fi
 

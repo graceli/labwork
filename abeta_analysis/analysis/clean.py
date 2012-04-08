@@ -24,17 +24,20 @@ def process_hbonds(h5file, analysis_type, num_residues):
     for isomer in config.isomer_list:
         for ratio in config.ratio_list:
             tar_file_name = "analysis_{0}_{1}_hbonds_inositol.tgz".format(isomer, ratio)
+            if analysis_type == "residue":
+                tar_file_name = "analysis_{0}_{1}_hbonds.tgz".format(isomer, ratio)
+            
             tar_file_path = os.path.join(config.data_source, tar_file_name)
             
             if not os.path.exists(tar_file_path):
-                os.system("cp %(tar_file_name)s %(config.data_source)s" % vars())
+                print "copying", tar_file_name, "to", config.data_source
+                os.system("cp {0} {1}".format(tar_file_name, config.data_source))
 
             tar = tarfile.open(tar_file_path)
             
             for sys in range(10):
-                if analysis_type == "inositol":
-                    data_path = os.path.join('hbonds_inositol', str(sys))
-                else:
+                data_path = os.path.join('hbonds_inositol', str(sys))
+                if analysis_type == "residue":
                     data_path = os.path.join('hbonds', str(sys))
                 
                 # Each file here represents a single inositol molecule and 
@@ -47,8 +50,8 @@ def process_hbonds(h5file, analysis_type, num_residues):
                 first_file = True
                 column_stack = []
                 for f in files:
-                    print "Extracting and reading file", f
-                    data = numpy.genfromtxt(tar.extractfile(f))
+                    print "Extracting and reading file", f, "from", tar_file_path
+                    data = numpy.genfromtxt(tar.extractfile(f), comments="#")
                     print data.shape
 
                     if first_file:
@@ -93,7 +96,7 @@ def process_nonpolar(h5file, analysis_type):
                     print "Extracting", data_file
                     
                     member = tar.extractfile(data_file)
-                    a_chain_data = numpy.genfromtxt(member)
+                    a_chain_data = numpy.genfromtxt(member, comments="#")
 
                     if ch == 0:
                         data_all = a_chain_data
@@ -118,7 +121,7 @@ def main():
     print "Munging analysis files into pytables"
     
     # reading hbonds for all inositol molecules
-    process_hbonds(h5file, "inositol", 15)
+    #process_hbonds(h5file, "inositol", 15)
     
     # reading hbonds for all protein residues
     process_hbonds(h5file, "residue", 130)

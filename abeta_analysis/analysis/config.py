@@ -1,7 +1,7 @@
 import os
 
 # System settings
-cluster = False
+cluster = True
 
 # munging settings
 isomer_list = ["chiro"]
