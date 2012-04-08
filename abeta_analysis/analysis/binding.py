@@ -1,7 +1,4 @@
 def intersect(h5file):
-    isomer_list = ["chiro"]
-    ratio_list = [15]
-    
     for ratio in config.ratio_list:
         for isomer in config.isomer_list:
             for sys in range(10):
