@@ -2,8 +2,8 @@ def intersect(h5file):
     isomer_list = ["chiro"]
     ratio_list = [15]
     
-    for ratio in ratio_list:
-        for isomer in isomer_list:
+    for ratio in config.ratio_list:
+        for isomer in config.isomer_list:
             for sys in range(10):
                 nonpolar_name = isomer + '_' + str(ratio) + '_' + 'nonpolar' + '_' + str(sys)
                 polar_name = isomer + '_' + str(ratio) + '_' + 'hbonds_inositol' + '_' + str(sys)
