@@ -78,8 +78,16 @@ def process_hbonds(h5file, isomer, ratio, analysis_type):
 def process_nonpolar(h5file, isomer, ratio, analysis_type):
     print "process_nonpolar: munging files for", analysis_type
 
+
+    tar_file_name = "analysis_{0}_{1}_nonpolar.tgz".format(isomer, ratio)
+    tar_file_path = os.path.join(config.data_source, tar_file_name)
+
+    if not os.path.exists(tar_file_path):
+        print "copying", tar_file_name, "to", config.data_source
+        os.system("cp {0} {1}".format(tar_file_name, config.data_source))
+        
     # read in each of the chains and sum up the matrices
-    tar = tarfile.open(os.path.join(config.data_source, "analysis_{0}_{1}_nonpolar.tgz".format(isomer, ratio)))
+    tar = tarfile.open(tar_file_path)
     # Sum data files from all chains
     # Each file contains the inositol nonpolar contacts to a single chain in the protofibril
     # ie. for each inositol molecule is it bound to chain X, where X=1,2,3,4,5?
