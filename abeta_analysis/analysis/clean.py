@@ -19,7 +19,7 @@ import config
 # 3) Speeds up processing by touching disk less (don't have to extract files to disk, then read from disk)
 #     Could even copy files to memory and then process files from /dev/shm
 def process_hbonds(h5file, isomer, ratio, analysis_type):
-    print "process_hbonds: munging files for", analysis_type, "with", num_residues
+    print "process_hbonds: munging files for", analysis_type
     
     name = "hbonds_inositol"
     if analysis_type == "residue":
@@ -143,7 +143,7 @@ def main():
     if analysis == "nonpolar_inositol":
         process_nonpolar(h5file, isomer, ratio, "inositol")
     
-    if analysis == "nonpolar_residue"
+    if analysis == "nonpolar_residue":
         process_nonpolar(h5file, isomer, ratio, "residue")
     
     h5file.close()
