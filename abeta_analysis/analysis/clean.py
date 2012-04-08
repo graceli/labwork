@@ -19,18 +19,25 @@ import config
 #     Could even copy files to memory and then process files from /dev/shm
 
 
-def process_hbonds_inositol(h5file):
+def process_hbonds(h5file, analysis_type, num_residues):
+    print "process_hbonds: munging files for", analysis_type, "with", num_residues
     for isomer in config.isomer_list:
         for ratio in config.ratio_list:
             tar = tarfile.open(os.path.join(config.data_source, "analysis_{0}_{1}_hbonds_inositol.tgz".format(isomer, ratio)))
             
             for sys in range(10):
-                data_path = os.path.join('hbonds_inositol', str(sys))
-
+                if analysis_type == "inositol":
+                    data_path = os.path.join('hbonds_inositol', str(sys))
+                else:
+                    data_path = os.path.join('hbonds', str(sys))
+                
                 # Each file here represents a single inositol molecule and 
                 # the number of hbonds it froms with the aggregate
                 # Form a matrix with column ordering of 1 ... 64 and save this
-                files = [ os.path.join(data_path, str(i) + '.xvg') for i in range(1, ratio+1) ]
+                files = [os.path.join(data_path, str(i) + '.xvg') for i in range(1, num_residues+1)]
+                if analysis_type == "residue":
+                    files = [os.path.join(data_path, str(i) + '.xvg') for i in range(0, num_residues)]
+                
                 first_file = True
                 column_stack = []
                 for f in files:
@@ -52,15 +59,16 @@ def process_hbonds_inositol(h5file):
                 table_name = isomer + '_' + str(ratio) + '_' + 'hbonds_inositol' + '_' + str(sys)
                 # Each item in list is a row vector, stack them vertically and transpose into a matrix with dimensions time X Ninositols 
                 data_all = numpy.transpose(numpy.vstack(column_stack))
-
+                
                 print "Saving data from", files, "into", h5file.root, table_name
                 atom = tables.Atom.from_dtype(data_all.dtype)
                 filters = tables.Filters(complib='zlib', complevel = 5)
                 h5_carray = h5file.createCArray(h5file.root, table_name, atom, data_all.shape, filters=filters)
-                h5_carray[:] = data_all[10000:,:]
+                h5_carray[:] = data_all
 
-def process_nonpolar_inositol(h5file):
-    """docstring for process_nonpolar_inositol"""
+def process_nonpolar(h5file, analysis_type):
+    print "process_nonpolar: munging files for", analysis_type
+
     # read in each of the chains and sum up the matrices
     for isomer in config.isomer_list:
         for ratio in config.ratio_list:
@@ -73,8 +81,11 @@ def process_nonpolar_inositol(h5file):
                 # nonpolar contacts made by inositol to the protofibril
                 data_all = None
                 for ch in range(5):
-                    data_file = os.path.join('nonpolar', '%(sys)s_chain%(ch)s_inositol_np_contact' % vars() + '.dat')
+                    data_file = os.path.join('nonpolar', '%(sys)s_chain%(ch)s_%(analysis_type)s_np_contact' % vars() + '.dat')
+                    
                     # extract the file from the tar as a file object
+                    print "Extracting", data_file
+                    
                     member = tar.extractfile(data_file)
                     a_chain_data = numpy.genfromtxt(member)
 
@@ -93,13 +104,25 @@ def process_nonpolar_inositol(h5file):
                 atom = tables.Atom.from_dtype(data_all.dtype)
                 filters = tables.Filters(complib='zlib', complevel = 5)
                 h5_carray = h5file.createCArray(h5file.root, table_name, atom, data_all.shape, filters=filters)
-                h5_carray[:] = data_all[9900:,:]
+                h5_carray[:] = data_all
                 
 def main():
     h5file = tables.openFile("analysis.h5", 'w')
-    print "reading"
-    process_hbonds_inositol(h5file)
-    process_nonpolar_inositol(h5file)
+
+    print "Munging analysis files into pytables"
+    
+    # reading hbonds for all inositol molecules
+    process_hbonds(h5file, "inositol", 15)
+    
+    # reading hbonds for all protein residues
+    process_hbonds(h5file, "residue", 130)
+    
+    # nonpolar contact matrix for inositol
+    process_nonpolar(h5file, "inositol")
+    
+    # nonpolar contact matrix for protein residues
+    process_nonpolar(h5file, "residue")
+    
     h5file.close()
 
 if __name__ == '__main__':
