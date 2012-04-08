@@ -23,7 +23,13 @@ def process_hbonds(h5file, analysis_type, num_residues):
     print "process_hbonds: munging files for", analysis_type, "with", num_residues
     for isomer in config.isomer_list:
         for ratio in config.ratio_list:
-            tar = tarfile.open(os.path.join(config.data_source, "analysis_{0}_{1}_hbonds_inositol.tgz".format(isomer, ratio)))
+            tar_file_name = "analysis_{0}_{1}_hbonds_inositol.tgz".format(isomer, ratio)
+            tar_file_path = os.path.join(config.data_source, tar_file_name)
+            
+            if not os.path.exists(tar_file_path):
+                os.system("cp %(tar_file_name)s %(config.data_source)s" % vars())
+
+            tar = tarfile.open(tar_file_path)
             
             for sys in range(10):
                 if analysis_type == "inositol":
