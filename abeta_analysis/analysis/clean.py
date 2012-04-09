@@ -121,7 +121,10 @@ def process_nonpolar_residue(h5file, isomer, ratio, analysis_type):
                 break 
 
             a_chain_data = numpy.genfromtxt(member, comments="#")
-            data_all.append(a_chain_data)
+            if ch == 0:
+                data_all.append(a_chain_data)
+            else:
+                data_all.append(a_chain_data[:, 1:])
 
         if read_fail == False:
             table_name = isomer + '_' + str(ratio) + '_' + 'nonpolar' + '_' + analysis_type + '_' + str(sys_idx)
