@@ -82,6 +82,7 @@ def process_hbonds(h5file, isomer, ratio, analysis_type):
         h5_carray[:] = data_all
         h5_carray.flush()
 
+
 def process_nonpolar_residue(h5file, isomer, ratio, analysis_type):
     print "process_nonpolar: munging files for", analysis_type
 
@@ -102,6 +103,7 @@ def process_nonpolar_residue(h5file, isomer, ratio, analysis_type):
     # nonpolar contacts made by inositol to the protofibril
     for sys_idx in range(10):
         data_all = []
+        read_fail = False
         for ch in range(5):
             data_file = os.path.join('nonpolar', '%(sys_idx)s_chain%(ch)s_%(analysis_type)s_np_contact' % vars() + '.dat')
 
@@ -112,29 +114,29 @@ def process_nonpolar_residue(h5file, isomer, ratio, analysis_type):
                 member = tar.extractfile(data_file)
             except KeyError, e:
                 print "Couldn't find", data_file, "in archive", "skipping ..."
+                read_fail = True
+                break 
 
             a_chain_data = numpy.genfromtxt(member, comments="#")
+            data_all.append(a_chain_data)
 
-            if ch == 0:
-                data_all = a_chain_data
-            else:
-                data_all.append(a_chain_data)
+        if read_fail == False:
+            table_name = isomer + '_' + str(ratio) + '_' + 'nonpolar' + '_' + analysis_type + '_' + str(sys_idx)
 
-        table_name = isomer + '_' + str(ratio) + '_' + 'nonpolar' + '_' + analysis_type + '_' + str(sys_idx)
+            print "Saving data into", h5file.root, table_name
 
-        print "Saving data into", h5file.root, table_name
+            # Saves into h5 file using pytables as a CArray object. Code straight out of documentation
+            # http://readthedocs.org/docs/pytables/en/latest/usersguide/libref.html?highlight=carray#tables.CArray
+            # CArray chosen for homogeneous data
+            data_matrix = numpy.hstack(data_all)
+            print data_matrix.shape
+            
+            atom = tables.Atom.from_dtype(data_matrix.dtype)
+            filters = tables.Filters(complib='zlib', complevel = 5)
+            h5_carray = h5file.createCArray(h5file.root, table_name, atom, data_matrix.shape, filters=filters)
+            h5_carray[:] = data_matrix
+            h5_carray.flush()
 
-        # Saves into h5 file using pytables as a CArray object. Code straight out of documentation
-        # http://readthedocs.org/docs/pytables/en/latest/usersguide/libref.html?highlight=carray#tables.CArray
-        # CArray chosen for homogeneous data
-        data_matrix = numpy.hstack(data_all)
-        print data_matrix.shape
-        
-        atom = tables.Atom.from_dtype(data_all.dtype)
-        filters = tables.Filters(complib='zlib', complevel = 5)
-        h5_carray = h5file.createCArray(h5file.root, table_name, atom, data_matrix.shape, filters=filters)
-        h5_carray[:] = data_matrix
-        h5_carray.flush()
         
 def process_nonpolar(h5file, isomer, ratio, analysis_type):
     print "process_nonpolar: munging files for", analysis_type
@@ -156,6 +158,7 @@ def process_nonpolar(h5file, isomer, ratio, analysis_type):
     # nonpolar contacts made by inositol to the protofibril
     for sys_idx in range(10):
         data_all = None
+        read_fail = False
         for ch in range(5):
             data_file = os.path.join('nonpolar', '%(sys_idx)s_chain%(ch)s_%(analysis_type)s_np_contact' % vars() + '.dat')
 
@@ -166,26 +169,29 @@ def process_nonpolar(h5file, isomer, ratio, analysis_type):
                 member = tar.extractfile(data_file)
             except KeyError, e:
                 print "Couldn't find", data_file, "in archive", "skipping ..."
+                read_fail = True
+                break
 
             a_chain_data = numpy.genfromtxt(member, comments="#")
 
             if ch == 0:
                 data_all = a_chain_data
             else:
-                data_all[:, 1:] += a_chain_data[:,1:]
+                data_all[:, 1:] += a_chain_data[:, 1:]
 
-        table_name = isomer + '_' + str(ratio) + '_' + 'nonpolar' + '_' + analysis_type + '_' + str(sys_idx)
+        if read_fail == False:
+            table_name = isomer + '_' + str(ratio) + '_' + 'nonpolar' + '_' + analysis_type + '_' + str(sys_idx)
 
-        print "Saving data into", h5file.root, table_name
+            print "Saving data into", h5file.root, table_name
 
-        # Saves into h5 file using pytables as a CArray object. Code straight out of documentation
-        # http://readthedocs.org/docs/pytables/en/latest/usersguide/libref.html?highlight=carray#tables.CArray
-        # CArray chosen for homogeneous data
-        atom = tables.Atom.from_dtype(data_all.dtype)
-        filters = tables.Filters(complib='zlib', complevel = 5)
-        h5_carray = h5file.createCArray(h5file.root, table_name, atom, data_all.shape, filters=filters)
-        h5_carray[:] = data_all
-        h5_carray.flush()
+            # Saves into h5 file using pytables as a CArray object. Code straight out of documentation
+            # http://readthedocs.org/docs/pytables/en/latest/usersguide/libref.html?highlight=carray#tables.CArray
+            # CArray chosen for homogeneous data
+            atom = tables.Atom.from_dtype(data_all.dtype)
+            filters = tables.Filters(complib='zlib', complevel = 5)
+            h5_carray = h5file.createCArray(h5file.root, table_name, atom, data_all.shape, filters=filters)
+            h5_carray[:] = data_all
+            h5_carray.flush()
                 
                 
                      
