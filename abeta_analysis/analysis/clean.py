@@ -82,7 +82,7 @@ def process_hbonds(h5file, isomer, ratio, analysis_type):
         h5_carray[:] = data_all
         h5_carray.flush()
 
-def process_nonpolar(h5file, isomer, ratio, analysis_type):
+def process_nonpolar_residue(h5file, isomer, ratio, analysis_type):
     print "process_nonpolar: munging files for", analysis_type
 
 
@@ -93,6 +93,60 @@ def process_nonpolar(h5file, isomer, ratio, analysis_type):
         print "copying", tar_file_name, "to", config.data_source
         os.system("cp {0} {1}".format(tar_file_name, config.data_source))
         
+    # read in each of the chains and sum up the matrices
+    tar = tarfile.open(tar_file_path)
+    # Sum data files from all chains
+    # Each file contains the inositol nonpolar contacts to a single chain in the protofibril
+    # ie. for each inositol molecule is it bound to chain X, where X=1,2,3,4,5?
+    # Note that the sum of all of these matrices is the total number of 
+    # nonpolar contacts made by inositol to the protofibril
+    for sys_idx in range(10):
+        data_all = []
+        for ch in range(5):
+            data_file = os.path.join('nonpolar', '%(sys_idx)s_chain%(ch)s_%(analysis_type)s_np_contact' % vars() + '.dat')
+
+            # extract the file from the tar as a file object
+            print "Extracting", data_file
+
+            try:
+                member = tar.extractfile(data_file)
+            except KeyError, e:
+                print "Couldn't find", data_file, "in archive", "skipping ..."
+
+            a_chain_data = numpy.genfromtxt(member, comments="#")
+
+            if ch == 0:
+                data_all = a_chain_data
+            else:
+                data_all.append(a_chain_data)
+
+        table_name = isomer + '_' + str(ratio) + '_' + 'nonpolar' + '_' + analysis_type + '_' + str(sys_idx)
+
+        print "Saving data into", h5file.root, table_name
+
+        # Saves into h5 file using pytables as a CArray object. Code straight out of documentation
+        # http://readthedocs.org/docs/pytables/en/latest/usersguide/libref.html?highlight=carray#tables.CArray
+        # CArray chosen for homogeneous data
+        data_matrix = numpy.hstack(data_all)
+        print data_matrix.shape
+        
+        atom = tables.Atom.from_dtype(data_all.dtype)
+        filters = tables.Filters(complib='zlib', complevel = 5)
+        h5_carray = h5file.createCArray(h5file.root, table_name, atom, data_matrix.shape, filters=filters)
+        h5_carray[:] = data_matrix
+        h5_carray.flush()
+        
+def process_nonpolar(h5file, isomer, ratio, analysis_type):
+    print "process_nonpolar: munging files for", analysis_type
+
+
+    tar_file_name = "analysis_{0}_{1}_nonpolar.tgz".format(isomer, ratio)
+    tar_file_path = os.path.join(config.data_source, tar_file_name)
+
+    if not os.path.exists(tar_file_path):
+        print "copying", tar_file_name, "to", config.data_source
+        os.system("cp {0} {1}".format(tar_file_name, config.data_source))
+
     # read in each of the chains and sum up the matrices
     tar = tarfile.open(tar_file_path)
     # Sum data files from all chains
@@ -133,6 +187,8 @@ def process_nonpolar(h5file, isomer, ratio, analysis_type):
         h5_carray[:] = data_all
         h5_carray.flush()
                 
+                
+                     
 def main():
     if len(sys.argv) < 2:
         print "usage: clean.py <isomer> <ratio> <analysis>"
@@ -155,7 +211,7 @@ def main():
         process_nonpolar(h5file, isomer, ratio, "inositol")
     
     if analysis == "nonpolar_residue":
-        process_nonpolar(h5file, isomer, ratio, "residue")
+        process_nonpolar_residue(h5file, isomer, ratio, "residue")
     
     h5file.close()
 
