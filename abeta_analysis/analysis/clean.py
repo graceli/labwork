@@ -50,6 +50,13 @@ def process_hbonds(h5file, isomer, ratio, analysis_type):
         column_stack = []
         for f in files:
             print "Extracting and reading file", f, "from", tar_file_path
+            
+            try:
+                member = tar.extractfile(f)
+            except KeyError, e:
+                print "Couldn't find", f, "in archive", "skipping ..."
+                continue
+
             data = numpy.genfromtxt(tar.extractfile(f), comments="#")
             print data.shape
 
@@ -101,7 +108,11 @@ def process_nonpolar(h5file, isomer, ratio, analysis_type):
             # extract the file from the tar as a file object
             print "Extracting", data_file
 
-            member = tar.extractfile(data_file)
+            try:
+                member = tar.extractfile(data_file)
+            except KeyError, e:
+                print "Couldn't find", data_file, "in archive", "skipping ..."
+
             a_chain_data = numpy.genfromtxt(member, comments="#")
 
             if ch == 0:
