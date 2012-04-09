@@ -48,6 +48,7 @@ def process_hbonds(h5file, isomer, ratio, analysis_type):
 
         first_file = True
         column_stack = []
+        read_fail = False
         for f in files:
             print "Extracting and reading file", f, "from", tar_file_path
             
@@ -55,7 +56,8 @@ def process_hbonds(h5file, isomer, ratio, analysis_type):
                 member = tar.extractfile(f)
             except KeyError, e:
                 print "Couldn't find", f, "in archive", "skipping ..."
-                continue
+                read_fail = True
+                break
 
             data = numpy.genfromtxt(tar.extractfile(f), comments="#")
             print data.shape
@@ -70,17 +72,18 @@ def process_hbonds(h5file, isomer, ratio, analysis_type):
                 # only keep the 1st column (get rid of 0th, and 2nd column)
                 column_stack.append(data[:, 1])
 
-        # convert the list into a numpy matrix and save into pytables
-        table_name = isomer + '_' + str(ratio) + '_' + name + '_' + str(sys_idx)
-        # Each item in list is a row vector, stack them vertically and transpose into a matrix with dimensions time X Ninositols 
-        data_all = numpy.transpose(numpy.vstack(column_stack))
+        if read_fail == False:
+            # convert the list into a numpy matrix and save into pytables
+            table_name = isomer + '_' + str(ratio) + '_' + name + '_' + str(sys_idx)
+            # Each item in list is a row vector, stack them vertically and transpose into a matrix with dimensions time X Ninositols 
+            data_all = numpy.transpose(numpy.vstack(column_stack))
 
-        print "Saving data from", files, "into", h5file.root, table_name
-        atom = tables.Atom.from_dtype(data_all.dtype)
-        filters = tables.Filters(complib='zlib', complevel = 5)
-        h5_carray = h5file.createCArray(h5file.root, table_name, atom, data_all.shape, filters=filters)
-        h5_carray[:] = data_all
-        h5_carray.flush()
+            print "Saving data from", files, "into", h5file.root, table_name
+            atom = tables.Atom.from_dtype(data_all.dtype)
+            filters = tables.Filters(complib='zlib', complevel = 5)
+            h5_carray = h5file.createCArray(h5file.root, table_name, atom, data_all.shape, filters=filters)
+            h5_carray[:] = data_all
+            h5_carray.flush()
 
 
 def process_nonpolar_residue(h5file, isomer, ratio, analysis_type):
