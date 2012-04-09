@@ -4,7 +4,7 @@ import os
 cluster = True
 
 # munging settings
-isomer_list = ["chiro", "scyllo", "glycerol"]
+isomer_list = ["chiro", "scyllo", "glycerol", "water"]
 ratio_list = [15, 64]
 
 data_source = os.environ['PWD']

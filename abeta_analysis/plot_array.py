@@ -8,7 +8,7 @@ import utils
 def get_data_from_file(filename):
     data=numpy.genfromtxt(filename)
     return data
-            
+
 def plot_rmsd(iso, ratio, fig, subplot_num):
     #filename="ab_%(iso)s_%(ratio)s_%(subplot_num)s_nosol_whole_rmsd_backbone.xvg" % vars()
     # filename="%(iso)s_%(ratio)s_%(subplot_num)s_rmsd.xvg" % vars()
@@ -28,10 +28,10 @@ def plot_rmsd(iso, ratio, fig, subplot_num):
         return 0
     else:
         print "WARNING: %(filename)s is not found in the current directory" % vars()
-        return 1    
+        return 1
 
 def plot_rmsf(iso, ratio, fig, subplot_num):
-    filename="%(iso)s_%(ratio)s_%(subplot_num)d_rmsf.xvg" % vars()
+    filename="%(ratio)s/%(iso)s/rmsf_calpha/%(iso)s_%(ratio)s_%(subplot_num)d_rmsf.xvg" % vars()
     if os.path.exists(filename):
         print filename
         data=numpy.genfromtxt(filename)
@@ -205,7 +205,7 @@ def main():
 
     num_plotted = 0
     fig = pylab.figure()
-    for i in range(1, 10):
+    for i in range(0, 10):
         if analysis == "rmsf":
             print "plotting rmsf"
             num_plotted += plot_rmsf(iso, ratio, fig, i)
@@ -223,7 +223,7 @@ def main():
 
     # save a rasterized image as a draft b/c for fast viewing  
     # for production figures use pdf/eps
-    output = "%(iso)s_%(ratio)s_analysis" % vars()
+    output = "%(iso)s_%(ratio)s_%(analysis)s" % vars()
 
     pylab.savefig(output + '.pdf')
 

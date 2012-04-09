@@ -262,9 +262,7 @@ def show_rmsf(h5list, name=''):
 	pylab.rcParams['figure.subplot.wspace'] = 0.2
 	pylab.rcParams['figure.subplot.left'] = 0.08
 	pylab.rcParams['figure.subplot.right'] = 0.99
-	
-	
-	
+
 	# nameslist=['scyllo', 'chiro']
 	# nameslist = [ 'h5' + '/' + 'water' + str(i) + '.h5' for i in range(1,11) ]
 	nameslist = [ 'glycerol' ]
