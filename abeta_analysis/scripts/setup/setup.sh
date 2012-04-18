@@ -1,4 +1,7 @@
 #!/bin/bash
+set -x
+set -e 
+set -u
 
 function debug {
     echo "$1"
@@ -62,14 +65,14 @@ for ratio in 15 64; do
         mkdir $ratio
     fi
     cd $ratio
-    for binder in scyllo chiro glycerol water; do
+    for binder in epi; do
         if [ ! -e $binder ]; then
             mkdir $binder
         fi
 
         cd $binder
 
-        for repeat in `seq 1 $MAX_REPEAT`; do 
+        for ((repeat=1;repeat<=$MAX_REPEAT;repeat+=1)); do
             mkdir sys${repeat}
             
             if [ "$binder" == "water" ]; then
