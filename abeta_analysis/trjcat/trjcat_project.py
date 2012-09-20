@@ -72,9 +72,13 @@ class Trajectory:
             index_file = os.path.join(self.project_path, index_file)
             temp_outfile = os.path.join(temp_output, self.name + "_temp")
 
-            trjcat = GromacsCommand('trjcat', xtc=files_str, output=temp_outfile, index=index_file, pipe=index_group)
-            trjcat.run()
-
+            # Skip this step if temp file exist
+            if not options.skip_temp_files:
+                trjcat = GromacsCommand('trjcat', xtc=files_str, output=temp_outfile, index=index_file, pipe=index_group)
+                trjcat.run()
+            else:
+                print "Skipped temp file creation ..."
+            
             final_output = os.path.join(project_output, self.name)
             custom_command = "-pbc whole"
             pipe_command = index_group
@@ -171,6 +175,8 @@ def main():
         help="Use a centering group and output by -pbc res mol", default=False)
     parser.add_option("-n", "--component", dest="system_component",
         help="The component of the system (in Gromacs index group language) to extract", default="Protein")
+    parser.add_option("--skip-temp", dest="skip_temp_files",
+        help="If set to true, temp concatenated files are not created. False by default.", default="false")
 
     (options, args) = parser.parse_args()
     
