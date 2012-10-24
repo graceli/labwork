@@ -1,3 +1,6 @@
+import re
+import os
+import numpy
 import sys
 import csv
 import tables
@@ -96,46 +99,48 @@ def intersection(h5file, ratio):
 	# numpy.savetxt("15to4_intersection.gz", dataList, fmt='%s %d %0.3f %0.3f %0.3f %d')
 	resultsWriter.writerows(dataList)
 
-def nonpolar_residue(h5file, tag):
-	scyllo_pattern = re.compile(r'scyllo')
-	chiro_pattern = re.compile(r'chiro')
-	atype_pattern = re.compile(r'residue_contact')
-	data_list = {'scyllo':[], 'chiro':[]}
-	
-	#fix this number for now
-	N_datapoints = 98000
-	for table in h5file.listNodes("/nonpolar_residue", 'Table'):
-		if atype_pattern.search(table.name):
-			table_path = os.path.join("/nonpolar_residue", table.name)
-			data = myh5.getTableAsMatrix(h5file, table_path)
+def nonpolar_residue_disordered(h5file, tag):
+    scyllo_pattern = re.compile(r'scyllo')
+    chiro_pattern = re.compile(r'chiro')
+    atype_pattern = re.compile(r'residue_contact')
+    data_list = {'scyllo':[], 'chiro':[]}
 
-			sum_over_time = numpy.average(data[20000:N_datapoints, 1:], axis = 0)
-			# print sum_over_time.size
+    #fix this number for now
+    N_datapoints = 98000
+    for table in h5file.listNodes("/nonpolar_residue", 'Table'):
+    	if atype_pattern.search(table.name):
+    		table_path = os.path.join("/nonpolar_residue", table.name)
+    		data = myh5.getTableAsMatrix(h5file, table_path)
+
+    		sum_over_time = numpy.average(data[20000:N_datapoints, 1:], axis = 0)
+            # This matrix is Nres by 4, where 4 is the number of peptides in the system (disordered oligomer)
+            # Each row of this matrix represents a single amino acid
+            # Each column is a peptide sequence A, E, L, K, F, F, V
+    		sum_over_time.shape = (sum_over_time.size / 4, 4)
+    		
+            # Average over all peptides in the system (over columns, hence axis = 1). 
+            # The resulting array of numbers has units of per peptide.
+    		avg_over_peptides = numpy.average(sum_over_time, axis = 1)
+	        
+    		if scyllo_pattern.search(table.name):
+    		    data_list['scyllo'].append(avg_over_peptides)
+    		elif chiro_pattern.search(table.name):
+    			data_list['chiro'].append(avg_over_peptides)
+    		else:
+    			print "No pattern matches", table.name
+
+    # save results to flat files
+    for isomer in data_list.keys():
+    	nparray = numpy.array(data_list[isomer])
 			
-			sum_over_time.shape = (sum_over_time.size / 4, 4)
-			sum_over_peptides = numpy.sum(sum_over_time, axis = 1)
-				
-			if scyllo_pattern.search(table.name):
-				data_list['scyllo'].append(sum_over_peptides)
-			elif chiro_pattern.search(table.name):
-				data_list['chiro'].append(sum_over_peptides)
-			else:
-				print "No pattern matches", table.name
-	
-	# save results to flat files
-	for isomer in data_list.keys():
-		nparray = numpy.array(data_list[isomer])
-				
-		# dump the list of results for each system
-		numpy.savetxt('%(tag)s_nonpolar_residue_inositol_contact_%(isomer)s_counts.txt' % vars(), nparray, fmt='%0.8f')
-		print "saved", isomer, "analysis with shape", nparray.shape
+    	# dump the list of counts for each system
+    	numpy.savetxt('%(tag)s_nonpolar_residue_inositol_contact_%(isomer)s_counts.txt' % vars(), nparray, fmt='%0.8f')
+    	print "saved", isomer, "analysis with shape", nparray.shape
 
-		# average over all the systems; each system is a row in nparray
-		average = numpy.average(nparray, axis=0)
-		std = numpy.std(nparray, axis=0)
-
-		#save the normalized average and std
-		numpy.savetxt('%(tag)s_nonpolar_residue_inositol_contact_%(isomer)s_avg_std.txt' % vars(), [average, std], fmt='%0.8f')
+    	# average over all the systems; each system is a row in nparray
+    	average = numpy.average(nparray, axis=0)
+    	std = numpy.std(nparray, axis=0)
+    	numpy.savetxt('%(tag)s_nonpolar_residue_inositol_contact_%(isomer)s_avg_std.txt' % vars(), [average, std], fmt='%0.8f')
 
 if __name__ == '__main__':
 	if len(sys.argv) < 2:
@@ -147,6 +152,8 @@ if __name__ == '__main__':
 	print filename
 	
 	h5file = tables.openFile(filename)
-	isomer,sys,analysis = filename.split('_')
-	intersection_mon(h5file, isomer, '15to1')
+    # isomer,sys,analysis = filename.split('_')
+	nonpolar_residue_disordered(h5file, 'insanity_15to4')
+    # intersection_mon(h5file, isomer, '15to1')
+    
 		
