@@ -1,0 +1,14 @@
+
+# Variables set by the configuration script:
+LIBS         = -lmd -lgmx -lxml2  -L/usr/X11/lib -R/usr/X11/lib -lfftw3f -lm   -lSM -lICE -lX11   
+LDFLAGS      = -L/usr/local/gromacs/lib -I/opt/local/var/macports/software/fftw-3/3.2.2_0/opt/local/lib  -framework Accelerate
+CFLAGS	     = -O3 -fomit-frame-pointer -finline-functions -Wall -Wno-unused -funroll-all-loops -std=gnu99   -I/usr/X11/include -I/usr/include/libxml2 -I/usr/local/gromacs/include -I/usr/local/gromacs/include/gromacs	
+CC           = cc
+LD           = $(CC)
+
+# The real make targets - note that most make programs support
+# the shortcut $^ instead of listing all object files a second
+# time, but we cannot count on it...
+
+nonpolar:	g_inositol_residue_nonpolar_v2.o
+		$(LD) $(LDFLAGS) -o $@ g_inositol_residue_nonpolar_v2.o $(LIBS)
