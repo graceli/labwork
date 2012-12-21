@@ -150,52 +150,40 @@ void build_residue_atom_counts(t_topology* top, atom_id** index, int* isize, int
     map <string, int>::iterator residue_atom_count_it;
     int total_num_atoms = isize[groupNum];
 
-//cout<<total_num_atoms<<endl;
-
     int phe_index=0;
     for(int i=0; i< total_num_atoms; i++ ) {
         int atomResidueNum = top->atoms.atom[index[groupNum][i]].resnr;  //residue number corresponding 
         string residueName = *( top->atoms.resname[ atomResidueNum ] );
         ostringstream str_out;
 
-        str_out<<residueName<<atomResidueNum;
+        str_out << residueName << atomResidueNum;
 
         string residueNameId = str_out.str();
-
-//cout<<residueNameId<<endl;
-
-
-        residue_atom_count_it = residue_atom_count.find( residueNameId );
+        residue_atom_count_it = residue_atom_count.find(residueNameId);
         if(residue_atom_count_it != residue_atom_count.end() ) {
             residue_atom_count[ residueNameId ]++;
-
-//cout<<residueNameId<<" counted " <<endl;
-
         } else {
             residue_atom_count.insert(pair<string,int>(residueNameId,1));
-
-//cout<<residueNameId<<" inserted " <<endl;
-
         }
     }
 }
 
 void print_map(map<string,int>& m, ofstream& f_residue_table) {
     map<string,int>::iterator iter;
-    for(iter=m.begin(); iter!=m.end(); iter++){
+    for(iter=m.begin(); iter!=m.end(); iter++) {
         f_residue_table<<(*iter).first<<" "<<(*iter).second<<endl;
     }
 }
 
 //initialize a map with the same keys as a reference map
-void initialize_maps(map<string, int>& uninit, map<string, int>&ref){
+void initialize_maps(map<string, int>& uninit, map<string, int>&ref) {
     map<string,int>::iterator ref_iter;
     for(ref_iter=ref.begin(); ref_iter!=ref.end(); ref_iter++) {
         uninit[ref_iter->first]=0;
     }
 }
 
-void initialize_vectors(vector<int> &uninit, map<string,int> &ref){
+void initialize_vectors(vector<int> &uninit, map<string,int> &ref) {
     uninit.resize(ref.size(),0);
 }
 
@@ -209,29 +197,6 @@ bool is_in_contact(t_pbc* pbc, rvec p1, rvec p2, real cutoff, real &dist) {
     }
 
     return false;
-}
-
-/*
- * Calculate the total number of pairs of inositol atom that is less a cutoff from
- * a given protein atom, protein_atom_idx
- *
- * This assumes that each inositol molecule is in its own index group, which means that
- * the user will have to manually separate inositol molecules when preparing the index file
- * or the results of the calculation performed here will be wrong.
- * For now, this is implemented this way because it is the easiest for me to understand
- * conceptually at this point given that I'm in a hurry.
- *
- */
-int total_inositol_atomic_contacts(t_pbc* pbc, int protein_atom_idx, int inositol_group) {
-	int total_contacts = 0;
-	int ins_atom_num = 0;
-	double calculated_dist = 0;
-	for(ins_atom_num = 0; ins_atom_num < NUM_ATOMS_INOSITOL; ins_atom_num++){
-		if(is_in_contact(pbc, x[protein_atom_idx], x[ index[inositol_group][ins_atom_num] ], 0.45, calculated_dist)) {
-			total_contacts++;
-		}
-	}
-	return total_contacts;
 }
 
 int main(int argc,char *argv[]) {
@@ -253,34 +218,34 @@ int main(int argc,char *argv[]) {
     int status;
     int g=0,d=0,i=0,j=0,res=0,teller=0;
     atom_id aid;
+    int ngrps = 2;     /* the number of index groups */
     
-    int     ngrps = 2;     /* the number of index groups */
     atom_id **index = new atom_id*[ngrps];
-    int     *isize = new int[ngrps];    /* the size of each group */
-    char    **grpname = new char*[ngrps]; /* the name of each group */
+    int *isize = new int[ngrps];    /* the size of each group */
+    char **grpname = new char*[ngrps]; /* the name of each group */
 
     atom_id **max;   /* the index for the atom numbers */
 
-    rvec    *com;
-    rvec    *com_phe;
-    real    *mass;
-    FILE    *fp=NULL;
+    rvec *com;
+    rvec *com_phe;
+    real *mass;
+    FILE *fp = NULL;
 
-    t_pbc   pbc;
+    t_pbc pbc;
     //static char *f_contact="residue_nonpolar_contact.dat";
     static char* perResidueContacts = "per_residue_contacts.dat";
     static char* residueTable = "table.dat";
     static char* ffInfo = "ff_vs_t.dat";
     static char* perInositolPheContacts = "per_inositol_phe_contacts.dat";
     static char* perInositolContacts = "per_inositol_contacts.dat";
-    static char* perInositolPheComDists="per_inositol_phe_com_dists.dat";
+    static char* perInositolPheComDists = "per_inositol_phe_com_dists.dat";
     //static int NINS = 2; //total number of inositol groups
     //static int NSIDECHAINS = 7;  //the total number of sidechains to read in
     static int NPHE = 0;
-    real CUTOFF=0.45;     /*the np cbeta-inositol cutoff in nm*/
-    static int bComputeFirstCOM=0;
-    static int bOutputDists=0;
-
+    real CUTOFF = 0.45;     /*the np cbeta-inositol cutoff in nm*/
+    static int bComputeFirstCOM = 0;
+    static int bOutputDists = 0;
+    static int numInositols = 0;
     const char  *leg[4] = { "|d|","d\\sx\\N","d\\sy\\N","d\\sz\\N" };
 
     static t_pargs pa[] = {
@@ -305,12 +270,14 @@ int main(int argc,char *argv[]) {
         { "-FF_info", FALSE, etSTR, {&ffInfo},
          "total FF contacts vs t"},
 
-	{ "-com_dists", FALSE, etINT, {&bOutputDists},
-	"print com distances between all inositol and phes"},
+		{ "-com_dists", FALSE, etINT, {&bOutputDists},
+		"print com distances between all inositol and phes"},
 
-	{"-com_dist_xvg", FALSE, etSTR, {&perInositolPheComDists},
-	"file name to print to"}
+		{"-com_dist_xvg", FALSE, etSTR, {&perInositolPheComDists},
+		"file name to print to"},
 
+        {"-num_inositols", FALSE, etINT, {&numInositols},
+		"number of inositols to read in from index"}
     };
 
     #define NPA asize(pa)
@@ -345,22 +312,24 @@ int main(int argc,char *argv[]) {
     // By setting this index to 0, this forces the user to
     // specify the protein group first when running this tool
     // Here we assume that there is only one protein group
-    const int PROTEIN_GROUP = 0;
-
+    const int PROTEIN_GROUP_START_IDX = 0;
+    
     // Start index of the inositol group
-    const int INOSITOL_GROUP = 1;
-
-    const int NUM_ATOMS_PROTEIN = isize [ PROTEIN_GROUP ]; //number of atoms in the protein group
-    const int NUM_ATOMS_INOSITOL = isize [ INOSITOL_GROUP ]; //number of atoms in the inositol group
+    const int INOSITOL_GROUP_START_IDX = 1;
+	
+	// Number of atoms in the protein group
+    const int NUM_ATOMS_PROTEIN = isize[PROTEIN_GROUP_START_IDX];
+    
+    // Number of atoms in the inositol group
+    const int NUM_ATOMS_INOSITOL = isize[INOSITOL_GROUP_START_IDX];
 
     map <string, int> residue_atom_count;
     map <string, int> per_residue_contacts_snapshot;
-    vector <int> phe_table;
-    vector <int> inositol_table;
+    vector<int> phe_table;
+    vector<int> inositol_table;
 
-    build_residue_atom_counts(top, index, isize, PROTEIN_GROUP, residue_atom_count);
+    build_residue_atom_counts(top, index, isize, PROTEIN_GROUP_START_IDX, residue_atom_count);
     initialize_maps(per_residue_contacts_snapshot, residue_atom_count);
-    //print_map(residue_atom_count, residue_atom_count);
 
     string residue_name;
     int residue_id;
@@ -376,147 +345,75 @@ int main(int argc,char *argv[]) {
     print_map(residue_atom_count,f_residue_table);
     do {
         set_pbc(&pbc, -1, box);
-	    /* GMX v 4.0.5 I think this is needed to make system whole*/
+	    /* GMX v 4.0.5 I think this is needed to make system whole */
 		rm_pbc(&top->idef,ePBC,natoms,box,x,x);
 
         vector<real*> inositol_com;
         vector<real*> phe_com;
-        real dist;
-        vector <int> per_inositol_contacts_snapshot;
+        vector <int> per_inositol_contacts_snapshot(numInositols, 0);
 
-#ifdef EDGES
-    cout<<endl<<t<<" ";
-#endif
-
-        int num_groups_detected = calculate_com(top, index, x, INOSITOL_GROUP, NUM_ATOMS_INOSITOL, inositol_com, inositol_table);
-
-#ifdef DEBUG_INOS
-	    cout<<"num_groups_detected="<<num_groups_detected<<endl;
-#endif            
-
-        if(per_inositol_contacts_snapshot.size() == 0) {
-            per_inositol_contacts_snapshot.resize(num_groups_detected, 0);
-        }
-		
-		bool bInContact = false;
-		int num_inositols = NUM_ATOMS_INOSITOL / 6;
-        for(int ins_group_num = 0; ins_group_num < num_inositols; ins_group_num++) {
-            for(int protein_atom_num = 0; protein_atom_num < NUM_ATOMS_PROTEIN; protein_atom_num++) {
-            	int protein_atom_idx = index[PROTEIN_GROUP][protein_atom_num];
+		real calculated_dist = 0.0;
+		int total_contacts = 0;
+		for(int protein_atom_num = 0; protein_atom_num < NUM_ATOMS_PROTEIN; protein_atom_num++) {
+			for(int ins_group_num = INOSITOL_GROUP_START_IDX; ins_group_num < INOSITOL_GROUP_START_IDX + numInositols; ins_group_num++) {
+				int total_contacts_per_molecule = 0;
+            	int protein_atom_idx = index[PROTEIN_GROUP_START_IDX][protein_atom_num];
                 residue_id = top->atoms.atom[protein_atom_idx].resnr;
                 residue_name = *(top->atoms.resname[residue_id]);
 
-                int num_contacts = total_inositol_atomic_contacts(&pbc, protein_atom_idx, ins_group_num, CUTOFF, dist);
-                if(num_contacts > 0) {
-                    ostringstream key_ss;
-                    key_ss << residue_name << residue_id;
-                    string residue_key_str = key_ss.str();
-
-                    per_residue_contacts_snapshot[residue_key_str] += num_contacts;
-                    per_inositol_contacts_snapshot[i] += num_contacts;
-                }
+                /*
+                 * Calculate the total number of pairs of inositol atom that is less a cutoff from
+                 * a given protein atom, protein_atom_idx
+                 *
+                 * This assumes that each inositol molecule is in its own index group, which means that
+                 * the user will have to manually separate inositol molecules when preparing the index file
+                 * or the results of the calculation performed here will be wrong.
+                 * For now, this is implemented this way because it is the easiest for me to understand
+                 * conceptually at this point given that I'm in a hurry.
+                 *
+                 */
+				for(int ins_atom_num = 0; ins_atom_num < 6; ins_atom_num++) {
+					if(is_in_contact(&pbc, x[protein_atom_idx], x[index[ins_group_num][ins_atom_num]], 0.45, calculated_dist)) {
+						total_contacts_per_molecule++;
+					}
+				}
+				per_inositol_contacts_snapshot[ins_group_num] = total_contacts_per_molecule;
+				total_contacts += total_contacts_per_molecule;
             }
+
+            ostringstream key_ss;
+			key_ss << residue_name << residue_id;
+			string residue_key_str = key_ss.str();
+
+			per_residue_contacts_snapshot[residue_key_str] += total_contacts;
         }
 
-        //output header for residue contacts if its its the first frame analyzed
+        // Output header for residue contacts if its its the first frame analyzed
         if(first_time) {
-            f_per_residue_contacts << "#" << " ";
+            f_per_residue_contacts << "# ";
             for(map<string,int>::iterator iter = per_residue_contacts_snapshot.begin(); iter != per_residue_contacts_snapshot.end(); iter++) {
-                f_per_residue_contacts << iter-> first << " ";
+                f_per_residue_contacts << iter->first << " ";
             } 
             f_per_residue_contacts << endl;
             first_time = false;
         }
 
-        // Output per residue contacts for every frame in the trajectory
+        // Output per residue contacts
         f_per_residue_contacts << t << " ";
         for(map<string,int>::iterator iter = per_residue_contacts_snapshot.begin(); iter != per_residue_contacts_snapshot.end(); iter++) {
-#ifdef DEBUG_KEY
-	    	cerr << iter->first << " ";
-        	cerr << iter->second << " " << endl;
-#endif 
             f_per_residue_contacts << iter->second << " ";
         }
-
         f_per_residue_contacts<<endl;
 
-        // Output per inositol contacts for every frame in the trajectory
+        // Output per inositol contacts
         f_per_inositol_contacts << t << " ";
-        for( int i=0; i<inositol_com.size(); i++) {
+        for(int i = 0; i < numInositols; i++) {
             f_per_inositol_contacts << per_inositol_contacts_snapshot[i] << " ";
         }
         f_per_inositol_contacts << endl;
 
-        vector<int>per_inositol_COM_contacts_snapshot;
-        per_inositol_COM_contacts_snapshot.resize(num_groups_detected,0);
-
-        if(bComputeFirstCOM) {
-            int total_FF_contact=0;
-            int num_phe_detected = calculate_com(top, index, x, PROTEIN_GROUP, NUM_ATOMS_PROTEIN, phe_com, phe_table);
-            //output inositol phe contacts
-            f_inos_phe_contacts<<t<<" ";
-            f_phe_com_dists<<t<<" ";
-            for(int i=0; i < inositol_com.size(); i++) {
-                for(int j=0; j < phe_com.size(); j++) {
-                    if( is_in_contact(&pbc, inositol_com[i], phe_com[j], CUTOFF, dist) ) {
-                        per_inositol_COM_contacts_snapshot[i]++;
-
-#ifdef DEBUG_COM
-                        cout <<t<<" "<< inositol_table[i] << " ";
-                        for(int d=0; d<3;d++){
-                            cout<<inositol_com[i][d]<<" ";
-                        }
-
-                        cout << phe_table[j] << " ";
-                        for(int d=0; d<3; d++){
-                            cout<<phe_com[j][d]<<" ";
-                        }
-                        cout<<dist<<endl;
-#endif
-                    }
-		    if(bOutputDists){
-			f_phe_com_dists<<dist<<" ";
-		    }
-                }
-                f_inos_phe_contacts<<per_inositol_COM_contacts_snapshot[i]<<" ";
-            }
-
-            if(bOutputDists){
-                    f_phe_com_dists<<endl;
-            }
-            
-
-            f_inos_phe_contacts<<endl;
-            
-
-            //output phe phe contacts
-            f_phe_phe_contacts<<t<<" ";
-            for(int j=0; j < phe_com.size(); j++) {
-                for(int k=j+1; k < phe_com.size(); k++) {
-                    if( is_in_contact( &pbc, phe_com[j], phe_com[k], CUTOFF, dist ) ) {
-                        total_FF_contact++;
-#ifdef DEBUG_COM
-//                         cout << phe_table[j] << " ";
-//                         for(int d=0; d<3;d++){
-//                             cout<<phe_com[j][d]<<" ";
-//                         }
-// 
-//                         cout << phe_table[k] << " ";
-//                         for(int d=0; d<3; d++){
-//                             cout<<phe_com[k][d]<<" ";
-//                         }
-//                         cout<<dist<<" ";
-#endif 
-
-                    }
-                }
-            }
-            f_phe_phe_contacts<<total_FF_contact<<endl;
-        }
-
-        //do some clean up
-        delete_vector(inositol_com);
-        initialize_maps(per_residue_contacts_snapshot, residue_atom_count); //reinitialize
+		// Reinitialize the map
+        initialize_maps(per_residue_contacts_snapshot, residue_atom_count); 
     } while(read_next_x(status, &t, natoms, x, box));
 }
 
