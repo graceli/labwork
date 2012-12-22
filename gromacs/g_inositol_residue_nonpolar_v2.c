@@ -218,11 +218,6 @@ int main(int argc,char *argv[]) {
     int status;
     int g=0,d=0,i=0,j=0,res=0,teller=0;
     atom_id aid;
-    int ngrps = 2;     /* the number of index groups */
-    
-    atom_id **index = new atom_id*[ngrps];
-    int *isize = new int[ngrps];    /* the size of each group */
-    char **grpname = new char*[ngrps]; /* the name of each group */
 
     atom_id **max;   /* the index for the atom numbers */
 
@@ -274,7 +269,7 @@ int main(int argc,char *argv[]) {
 		"print com distances between all inositol and phes"},
 
 		{"-com_dist_xvg", FALSE, etSTR, {&perInositolPheComDists},
-		"file name to print to"}
+		"file name to print to"},
 
         {"-num_inositols", FALSE, etINT, {&numInositols},
 		"number of inositols to read in from index"}
@@ -304,6 +299,12 @@ int main(int argc,char *argv[]) {
 
     //read_tps_conf(ftp2fn(efTPS,NFILE,fnm), title, top, &xtop, NULL, box, TRUE);
     //sfree(xtop);
+
+    int ngrps = 1 + numInositols;     /* the number of index groups */
+    
+    atom_id **index = new atom_id*[ngrps];
+    int *isize = new int[ngrps];    /* the size of each group */
+    char **grpname = new char*[ngrps]; /* the name of each group */
 
     get_index(&top->atoms, ftp2fn(efNDX,NFILE,fnm), ngrps, isize, index, grpname);
     int natoms = read_first_x(&status,ftp2fn(efTRX,NFILE,fnm),&t,&x,box);
