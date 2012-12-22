@@ -378,7 +378,7 @@ int main(int argc,char *argv[]) {
 						total_contacts_per_molecule++;
 					}
 				}
-				per_inositol_contacts_snapshot[ins_group_num] = total_contacts_per_molecule;
+				per_inositol_contacts_snapshot[ins_group_num - INOSITOL_GROUP_START_IDX] += total_contacts_per_molecule;
 				total_contacts += total_contacts_per_molecule;
             }
 
