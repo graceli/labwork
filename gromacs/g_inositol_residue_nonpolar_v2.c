@@ -354,13 +354,15 @@ int main(int argc,char *argv[]) {
         vector <int> per_inositol_contacts_snapshot(numInositols, 0);
 
 		real calculated_dist = 0.0;
-		int total_contacts = 0;
+
 		for(int protein_atom_num = 0; protein_atom_num < NUM_ATOMS_PROTEIN; protein_atom_num++) {
+        	int protein_atom_idx = index[PROTEIN_GROUP_START_IDX][protein_atom_num];
+            residue_id = top->atoms.atom[protein_atom_idx].resnr;
+            residue_name = *(top->atoms.resname[residue_id]);
+
+            int total_contacts_per_protein_atom = 0;
 			for(int ins_group_num = INOSITOL_GROUP_START_IDX; ins_group_num < INOSITOL_GROUP_START_IDX + numInositols; ins_group_num++) {
 				int total_contacts_per_molecule = 0;
-            	int protein_atom_idx = index[PROTEIN_GROUP_START_IDX][protein_atom_num];
-                residue_id = top->atoms.atom[protein_atom_idx].resnr;
-                residue_name = *(top->atoms.resname[residue_id]);
 
                 /*
                  * Calculate the total number of pairs of inositol atom that is less a cutoff from
@@ -379,14 +381,12 @@ int main(int argc,char *argv[]) {
 					}
 				}
 				per_inositol_contacts_snapshot[ins_group_num - INOSITOL_GROUP_START_IDX] += total_contacts_per_molecule;
-				total_contacts += total_contacts_per_molecule;
+				total_contacts_per_protein_atom += total_contacts_per_molecule;
             }
 
             ostringstream key_ss;
 			key_ss << residue_name << residue_id;
-			string residue_key_str = key_ss.str();
-
-			per_residue_contacts_snapshot[residue_key_str] += total_contacts;
+			per_residue_contacts_snapshot[key_ss.str()] += total_contacts_per_protein_atom;
         }
 
         // Output header for residue contacts if its its the first frame analyzed
