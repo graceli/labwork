@@ -320,9 +320,13 @@ int main(int argc,char *argv[]) {
 	
 	// Number of atoms in the protein group
     const int NUM_ATOMS_PROTEIN = isize[PROTEIN_GROUP_START_IDX];
-    
+   
+    // cout << NUM_ATOMS_PROTEIN << endl;
+ 
     // Number of atoms in the inositol group
     const int NUM_ATOMS_INOSITOL = isize[INOSITOL_GROUP_START_IDX];
+    
+    // cout << NUM_ATOMS_INOSITOL << endl;
 
     map <string, int> residue_atom_count;
     map <string, int> per_residue_contacts_snapshot;
@@ -379,6 +383,7 @@ int main(int argc,char *argv[]) {
 					if(is_in_contact(&pbc, x[protein_atom_idx], x[index[ins_group_num][ins_atom_num]], 0.45, calculated_dist)) {
 						total_contacts_per_molecule++;
 					}
+                    // cout << "protein index: " << protein_atom_idx << " inositol group: " << ins_group_num << " atom_num: " << ins_atom_num << " index:" << index[ins_group_num][ins_atom_num] << " dist:" << calculated_dist << endl;
 				}
 				per_inositol_contacts_snapshot[ins_group_num - INOSITOL_GROUP_START_IDX] += total_contacts_per_molecule;
 				total_contacts_per_protein_atom += total_contacts_per_molecule;
