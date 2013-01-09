@@ -42,7 +42,7 @@ extern "C" {
 
 //#define DEBUG_INOS
 //#define DEBUG_COM
-//#define DEBUG_CONTACT
+#define DEBUG_CONTACT
 //#define EDGES
 //#define DEBUG_KEY
 
@@ -381,9 +381,11 @@ int main(int argc,char *argv[]) {
                  */
 				for(int ins_atom_num = 0; ins_atom_num < 6; ins_atom_num++) {
 					if(is_in_contact(&pbc, x[protein_atom_idx], x[index[ins_group_num][ins_atom_num]], 0.45, calculated_dist)) {
+                    #ifdef
+                        cout << "CONTACT protein index:" << protein_atom_idx << " " << residue_name << residue_id << " inositol group:" << ins_group_num << " index:" << index[ins_group_num][ins_atom_num] << " dist:" << calculated_dist << endl;
+                    #endif
 						total_contacts_per_molecule++;
 					}
-                    // cout << "protein index: " << protein_atom_idx << " inositol group: " << ins_group_num << " atom_num: " << ins_atom_num << " index:" << index[ins_group_num][ins_atom_num] << " dist:" << calculated_dist << endl;
 				}
 				per_inositol_contacts_snapshot[ins_group_num - INOSITOL_GROUP_START_IDX] += total_contacts_per_molecule;
 				total_contacts_per_protein_atom += total_contacts_per_molecule;
