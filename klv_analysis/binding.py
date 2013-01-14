@@ -143,17 +143,18 @@ def nonpolar_residue_disordered(h5file, tag):
     	numpy.savetxt('%(tag)s_nonpolar_residue_inositol_contact_%(isomer)s_avg_std.txt' % vars(), [average, std], fmt='%0.8f')
 
 if __name__ == '__main__':
-	if len(sys.argv) < 2:
-		parser.error("Please specify a .h5 input file")
+	if len(sys.argv) < 3:
+		parser.error("Please specify a .h5 input file and a tag for output")
 	
 	filename = sys.argv[1]
+	tag = sys.argv[2]
 	# option = sys.argv[2]
 	# use_flat_flag = False
 	print filename
 	
 	h5file = tables.openFile(filename)
     # isomer,sys,analysis = filename.split('_')
-	nonpolar_residue_disordered(h5file, 'insanity_15to4')
+	nonpolar_residue_disordered(h5file, tag)
     # intersection_mon(h5file, isomer, '15to1')
     
 		
