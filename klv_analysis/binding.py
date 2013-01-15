@@ -1,8 +1,10 @@
 import re
 import os
-import numpy
 import sys
 import csv
+import glob
+import math
+import numpy
 import tables
 import plot_and_save2hdf5 as myh5
 import utils
@@ -40,7 +42,7 @@ def intersection_mon(h5file, isomer, ratio):
 	csv.writeRow(counts[1])
 	
 
-def intersection(h5file, ratio):
+def intersection_disordered(h5file, ratio):
 	"""intersection analysis for disordered oligomers"""
 
 	#nasty fix for different table names
@@ -99,6 +101,106 @@ def intersection(h5file, ratio):
 	# numpy.savetxt("15to4_intersection.gz", dataList, fmt='%s %d %0.3f %0.3f %0.3f %d')
 	resultsWriter.writerows(dataList)
 
+def intersection_beta():
+    for sys in range(0, 6):
+        nonpolar_file = "nonpolar/t%(sys)d_per_inositol_contacts.dat" % vars()
+        polar_file = "polar/data/t%(sys)d_inos_total.dat" % vars()
+
+        nonpolar_matrix_full = numpy.genfromtxt(nonpolar_file)
+        polar_matrix = numpy.genfromtxt(polar_file)
+        nonpolar_matrix = nonpolar_matrix_full[::2,:]
+
+        print polar_matrix.shape
+        print nonpolar_matrix.shape
+
+        assert polar_matrix.shape == nonpolar_matrix.shape, "the two matrices are expected to have the same dimensions"
+
+        nrows, ncols = polar_matrix.shape
+        counts = {'polar_only' : 0, 'nonpolar_only' : 0, 'polar_nonpolar' : 0}
+        total = 0.0
+        for i in range(1, nrows):
+            for j in range(1, ncols):
+                total += 1.0
+                if polar_matrix[i][j] and nonpolar_matrix[i][j]:
+                    counts['polar_nonpolar'] += 1
+                elif polar_matrix[i][j]:
+                    counts['polar_only'] += 1
+                elif nonpolar_matrix[i][j]:
+                    counts['nonpolar_only'] += 1
+
+        # normalize
+        total = counts['polar_nonpolar'] + counts['polar_only'] + counts['nonpolar_only']
+        counts['polar_nonpolar'] = counts['polar_nonpolar'] / float(total)
+        counts['polar_only'] = counts['polar_only'] / float(total)
+        counts['nonpolar_only'] = counts['nonpolar_only'] / float(total)
+
+        # class csv.DictWriter(csvfile, fieldnames[, restval=''[, extrasaction='raise'[, dialect='excel'[, *args, **kwds]]]])
+        print sys, counts
+
+        writer = csv.DictWriter(open('intersection%(sys)d.csv' % vars(), 'wb'), counts.keys())
+        writer.writerow(counts)
+            
+
+# This function used to be a script that I used to calculate the nonpolar_residue contact binding bar plots 
+# for the monomeric system at a high concentration.
+# Note that the concentration is mostly irrelevant for the coding.  
+# This was originally written as a script only for computing this subset of monomer data.
+# The difference lies in the nature of the dataset. I should extract out the common logic which is that 
+# for N system, you calculate a average and a standard deviation.
+def nonpolar_residue_monomer_15to1():
+    # open X number of files for the monomer (there are 500)
+    # chiro_sys249_per_res_contacts.dat
+    fileList = glob.glob("*per_res_contacts.dat")
+    TOTAL_FILES = len(fileList)
+    NRES = 7
+    segments = [[0]*NRES, [0]*NRES, [0]*NRES, [0]*NRES, [0]*NRES]
+    average = [0]*NRES
+
+    seg = 0
+    filesProcessed = 0
+    for file in fileList:
+    	print "processing", file
+
+    	r = csv.reader(open(file), delimiter=' ')	
+    	nrows = 0
+    	for row in r:
+    		time = float(row[0])
+    		for i in range(1,NRES+1):
+    			value = int(row[i])
+    			segments[seg][i-1] += value
+    			average[i-1] += value
+    		nrows += 1
+
+    	filesProcessed += 1
+    	print "processed", filesProcessed
+
+    	if filesProcessed == 100:
+    		seg += 1	
+    		print "at seg", seg
+    		filesProcessed = 0
+
+    # compute the standard deviation for each value in the array 
+    sd = [0]*7
+    TOTAL_FRAMES = nrows
+    NSEGS = seg
+
+    print "total frames", TOTAL_FRAMES, "NSEGS", seg
+
+    for i in range(0, NRES):
+    	for s in range(0, seg):
+    		sd[i] += math.pow(float(segments[s][i])/(100*TOTAL_FRAMES) - float(average[i])/(TOTAL_FILES*TOTAL_FRAMES),2)
+    	sd[i] = math.sqrt(sd[i]/NSEGS)
+
+    # output the file 
+    # one column for the final values, second column is the stdev
+    print "# residue average sd"
+    print "# files Processed", filesProcessed
+    print "# total frames per file", TOTAL_FRAMES
+    print "$ total segments", seg
+    for i in range(0,NRES):
+    	print i, float(average[i]) / (TOTAL_FILES * TOTAL_FRAMES), sd[i]
+
+
 def nonpolar_residue_disordered(h5file, tag):
     scyllo_pattern = re.compile(r'scyllo')
     chiro_pattern = re.compile(r'chiro')
@@ -141,6 +243,42 @@ def nonpolar_residue_disordered(h5file, tag):
     	average = numpy.average(nparray, axis=0)
     	std = numpy.std(nparray, axis=0)
     	numpy.savetxt('%(tag)s_nonpolar_residue_inositol_contact_%(isomer)s_avg_std.txt' % vars(), [average, std], fmt='%0.8f')
+
+# This was originally the script binding_pattern.py which operates on the beta oligomer nonpolar residue
+# binding dataset
+def nonpolar_residue_beta(isomer):
+    data_list = []
+
+    for i in range(0, 6):
+        file = "%(isomer)s_t%(i)d_per_residue_contacts.dat" % vars()
+        print "analyzing ", file
+
+        # read in the file
+        data = numpy.genfromtxt(file, comments="#", dtype='float')
+        nrows,ncols = data.shape
+        print nrows
+
+        # sum over rows
+        time_avg = numpy.average(data[:,1:], axis=0)
+        print time_avg.shape
+        time_avg.shape = (time_avg.size / 16, 16) 
+        print time_avg.shape
+        sum_over_peptides = numpy.sum(time_avg, axis = 1)
+
+        data_list.append(sum_over_peptides)
+
+    # save results to flat files
+    nparray = numpy.array(data_list)
+
+    # dump the list of results for each system
+    numpy.savetxt('%(isomer)s_nonpolar_residue_contact.txt' % vars(), nparray, fmt='%0.8f')
+
+    # average over all the systems; each system is a row in nparray
+    average = numpy.average(nparray, axis=0) / 16 
+    std = numpy.std(nparray, axis=0) / 16 / math.sqrt(6)
+
+    #save the normalized average and std
+    numpy.savetxt('%(isomer)s_nonpolar_residue_contact_avg_std.txt' % vars(), [average, std], fmt='%0.8f')
 
 if __name__ == '__main__':
 	if len(sys.argv) < 3:
