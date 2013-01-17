@@ -9,7 +9,7 @@ import tables
 import plot_and_save2hdf5 as myh5
 import utils
 
-def intersection_mon(h5file, isomer, ratio):
+def intersection_mon(h5file, csv_file, isomer, ratio):
     polar_matrix = myh5.getTableAsMatrix(h5file, '/inositol/inos_total')
     nonpolar_matrix = myh5.getTableAsMatrix(h5file, '/residue/per_inos_contacts')
     
@@ -19,28 +19,35 @@ def intersection_mon(h5file, isomer, ratio):
     assert polar_matrix.shape == nonpolar_matrix.shape, "the two matrices are expected to have the same dimensions"
     
     nrows, ncols = polar_matrix.shape
-    counts = [{'polar_only' : 0, 'nonpolar_only' : 0, 'polar_nonpolar' : 0}, {'polar_only' : 0, 'nonpolar_only' : 0, 'polar_nonpolar' : 0}]
-    for i in nrows: 
+    counts = [{'polar_only':0, 'nonpolar_only':0, 'polar_nonpolar':0}, {'polar_only':0, 'nonpolar_only':0, 'polar_nonpolar':0}]
+    for i in range(0, nrows): 
         for j in range(1, ncols):
-            if polar_matrx[i][0] < 7500:
+            if polar_matrix[i][0] < 7500:
                 if polar_matrix[i][j] and nonpolar_matrix[i][j]:
                     counts[0]['polar_nonpolar'] += 1
                 elif polar_matrix[i][j]:
                     counts[0]['polar_only'] += 1
-                elif nonpolarMatrix[i][j]:
+                elif nonpolar_matrix[i][j]:
                     counts[0]['nonpolar_only'] += 1
             else:
                 if polar_matrix[i][j] and nonpolar_matrix[i][j]:
                     counts[1]['polar_nonpolar'] += 1
                 elif polar_matrix[i][j]:
                     counts[1]['polar_only'] += 1
-                elif nonpolarMatrix[i][j]:
+                elif nonpolar_matrix[i][j]:
                     counts[1]['nonpolar_only'] += 1
+
     # class csv.DictWriter(csvfile, fieldnames[, restval=''[, extrasaction='raise'[, dialect='excel'[, *args, **kwds]]]])
-    csv.DictWriter(open('intersection_mon.csv', 'wb'), counts.keys())
-    csv.writeRow(counts[0])
-    csv.writeRow(counts[1])
-    
+    total = counts[0]['polar_only'] + counts[0]['nonpolar_only'] + counts[0]['polar_nonpolar']
+    fraction = {'polar_only': float(counts[0]['polar_only']) / total, 'nonpolar_only' : float(counts[0]['nonpolar_only']) / total, 'polar_nonpolar' : float(counts[0]['polar_nonpolar']) / total}
+
+    print counts[0]
+
+    writer = csv.DictWriter(open(csv_file, 'wb'), counts[0].keys())
+    writer.writeheader()
+    writer.writerow(counts[0])
+    writer.writerow(fraction)
+ 
 
 def intersection_disordered(h5file, ratio, system_indices):
     """intersection analysis for disordered oligomers"""
@@ -54,7 +61,7 @@ def intersection_disordered(h5file, ratio, system_indices):
     nonpolarPath = "/nonpolar_residue"
     dataList = [['isomer', 'system#', 'polar_only', 'polar_and_nonpolar', 'nonpolar_only', 'total']]
     
-    resultsWriter = csv.writer(open(ratio + '_intersection.txt', 'wb'), delimiter=' ')
+    resultsWriter = csvwriter.writer(open(ratio + '_intersection.txt', 'wb'), delimiter=' ')
     
     print system_indices
     
@@ -305,6 +312,4 @@ if __name__ == '__main__':
     h5file = tables.openFile(filename)
     # isomer,sys,analysis = filename.split('_')
     nonpolar_residue_disordered(h5file, tag)
-    # intersection_mon(h5file, isomer, '15to1')
-    
-        
+    # intersection_mon(h5file, isomer, '15to1') 
