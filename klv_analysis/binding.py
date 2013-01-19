@@ -9,38 +9,77 @@ import tables
 import plot_and_save2hdf5 as myh5
 import utils
 
+def compute_disordered_binding_constant(h5file, inositol_ratio, inositol_concentration, system_indices=[]):
+    assert len(system_indices) > 0, "List of system indices should be non-empty."
+    
+    polarName = {'15to4' : 'whole_nosol_0-200ns_inos_total.dat', '45to4' : 'whole_nosol_0-200_inos_total.dat'}
+    nonpolarName = {'15to4' : 'whole_nosol_0-200ns_per_inositol_contacts.dat', '45to4' : 'whole_nosol_0-200_per_inositol_contacts.dat'}
 
-def binding_constant_disordered(h5file, inositol_ratio, inositol_concentration, system_indices):
-     polarName = {'15to4' : 'whole_nosol_0-200ns_inos_total.dat', '45to4' : 'whole_nosol_0-200_inos_total.dat'}
-     nonpolarName = {'15to4' : 'whole_nosol_0-200ns_per_inositol_contacts.dat', '45to4' : 'whole_nosol_0-200_per_inositol_contacts.dat'}
+    isomerList = ["scyllo", "chiro"]
+    polarPath = "/polar"
+    nonpolarPath = "/nonpolar_residue"
+    csv_header = ["isomer", "sys_idx", "binding_constant", "inos_conc"]
+    writer = csv.writer(open(inositol_ratio + '_binding_constants.csv', 'wb'), delimiter=' ')
+    writer.writerow(csv_header)
 
-     isomerList = ["scyllo", "chiro"]
-     polarPath = "/polar"
-     nonpolarPath = "/nonpolar_residue"
-     csv_header = ["isomer", "sys_idx", "binding_constant", "inos_conc"]
-     writer = csv.writer(open(inositol_ratio + '_binding_constants.csv', 'wb'), delimiter=' ')
-     writer.writerow(csv_header)
+    for iso in isomerList:
+        data = []
+        for sys in system_indices[iso]:
+            polarFile = os.path.join(polarPath, "%(iso)s_sys%(sys)s_%(inositol_ratio)s_" % vars() + polarName[inositol_ratio])
+            print "analyzing", polarFile
+            polarMatrix = myh5.getTableAsMatrix(h5file, polarFile, dtype=numpy.float64)
+            print polarMatrix.shape 
 
-     for iso in isomerList:
-         data = []
-         for sys in system_indices[iso]:
-             polarFile = os.path.join(polarPath, "%(iso)s_sys%(sys)s_%(inositol_ratio)s_" % vars() + polarName[inositol_ratio])
-             print "analyzing", polarFile
-             polarMatrix = myh5.getTableAsMatrix(h5file, polarFile, dtype=numpy.float64)
-             print polarMatrix.shape 
+            nonpolarFile = os.path.join(nonpolarPath, "%(iso)s_sys%(sys)s_%(inositol_ratio)s_" % vars() + nonpolarName[inositol_ratio])
+            nonpolarMatrix = myh5.getTableAsMatrix(h5file, nonpolarFile, dtype=numpy.float64)[::2, :]
+            print nonpolarMatrix.shape
+            binding_constant = _binding_constant(polarMatrix, nonpolarMatrix, inositol_concentration)             
+            writer.writerow([iso, sys, binding_constant, inositol_concentration]) 
 
-             nonpolarFile = os.path.join(nonpolarPath, "%(iso)s_sys%(sys)s_%(inositol_ratio)s_" % vars() + nonpolarName[inositol_ratio])
-             nonpolarMatrix = myh5.getTableAsMatrix(h5file, nonpolarFile, dtype=numpy.float64)[::2, :]
-             print nonpolarMatrix.shape 
 
-             total_binding_per_inositol = polarMatrix[:,1:] + nonpolarMatrix[:,1:]
-             total_binding_all_inositols = numpy.sum(total_binding_per_inositol, axis=1)
-             
-             bound = numpy.count_nonzero(total_binding_all_inositols)
-             unbound = total_binding_all_inositols.size - bound
-             print bound, unbound
-             binding_constant = float(unbound) * inositol_concentration / bound 
-             writer.writerow([iso, sys, binding_constant, inositol_concentration]) 
+def compute_beta_binding_constant(h5file, inositol_ratio, inositol_concentration, system_indices=[]):
+    assert len(system_indices) > 0, "List of system indices should be non-empty."
+    
+    isomerList = ["scyllo", "chiro"]
+    polar_path = "/polar"
+    nonpolar_path = "/nonpolar_residue"
+    csv_header = ["isomer", "sys_idx", "binding_constant", "inos_conc"]
+
+    writer = csv.writer(open(inositol_ratio + '_binding_constants.csv', 'wb'), delimiter=' ')
+    writer.writerow(csv_header)
+
+    for iso in isomerList:
+        for sys in system_indices[iso]:
+            nonpolar_file = os.path.join(nonpolar_path, "%(iso)s_t%(sys)d_per_inositol_contacts.dat" % vars())
+            polar_file = os.path.join(polar_path, "%(iso)s_t%(sys)d_inos_total.dat" % vars())
+
+            nonpolar_matrix = myh5.getTableAsMatrix(h5file, nonpolar_file, dtype=numpy.float64)
+            polar_matrix = myh5.getTableAsMatrix(h5file, polar_file, dtype=numpy.float64)
+            
+            binding_constant = _binding_constant(polarMatrix, nonpolarMatrix, inositol_concentration)
+            writer.writerow([iso, sys, binding_constant, inositol_concentration])
+
+
+def compute_monomer_binding_constant(h5file, inositol_ratio, inositol_concentration, system_indices=[]):
+    polar_matrix = myh5.getTableAsMatrix(h5file, '/inositol/inos_total')
+    nonpolar_matrix = myh5.getTableAsMatrix(h5file, '/residue/per_inos_contacts')
+
+    writer = csv.writer(open(inositol_ratio + '_binding_constants.csv', 'wb'), delimiter=' ')
+    writer.writerow(csv_header)
+    binding_constant = _binding_constant(polarMatrix, nonpolarMatrix, inositol_concentration)
+    writer.writerow([iso, binding_constant, inositol_concentration])
+
+
+def _binding_constant(polarMatrix, nonpolarMatrix, inositol_concentration):
+    total_binding_per_inositol = polarMatrix[:,1:] + nonpolarMatrix[:,1:]
+    total_binding_all_inositols = numpy.sum(total_binding_per_inositol, axis=1)
+    
+    bound = numpy.count_nonzero(total_binding_all_inositols)
+    unbound = total_binding_all_inositols.size - bound
+    print bound, unbound
+    binding_constant = float(unbound) * inositol_concentration / bound 
+    
+    return binding_constant
 
 
 def intersection_mon(h5file, csv_file, isomer, ratio):
