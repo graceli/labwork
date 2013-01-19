@@ -9,6 +9,12 @@ import tables
 import plot_and_save2hdf5 as myh5
 import utils
 
+# First look for the code I've written before ... I definitely remember doing this before
+# def binding_constant():
+    # Add up polar and nonpolar matrices and sum over axis=1
+    # Count the number of nonzero elements
+
+    
 def intersection_mon(h5file, csv_file, isomer, ratio):
     polar_matrix = myh5.getTableAsMatrix(h5file, '/inositol/inos_total')
     nonpolar_matrix = myh5.getTableAsMatrix(h5file, '/residue/per_inos_contacts')
@@ -116,43 +122,47 @@ def intersection_disordered(h5file, ratio, system_indices):
     resultsWriter.writerows(dataList)
 
 def intersection_beta():
-    for sys in range(0, 6):
-        nonpolar_file = "nonpolar/t%(sys)d_per_inositol_contacts.dat" % vars()
-        polar_file = "polar/data/t%(sys)d_inos_total.dat" % vars()
+    isomerList = ["scyllo", "chiro"]
+    polar_path = "/polar"
+    nonpolar_path = "/nonpolar_residue"
+    
+    for iso in isomerList:
+        for sys in range(0, 6):
+            nonpolar_file = os.path.join(nonpolar_path, "%(iso)s_t%(sys)d_per_inositol_contacts.dat" % vars())
+            polar_file = os.path.join(polar_path, "%(iso)s_t%(sys)d_inos_total.dat" % vars())
 
-        nonpolar_matrix_full = numpy.genfromtxt(nonpolar_file)
-        polar_matrix = numpy.genfromtxt(polar_file)
-        nonpolar_matrix = nonpolar_matrix_full[::2,:]
+            nonpolar_matrix = numpy.genfromtxt(nonpolar_file)
+            polar_matrix = numpy.genfromtxt(polar_file)
 
-        print polar_matrix.shape
-        print nonpolar_matrix.shape
+            print polar_matrix.shape
+            print nonpolar_matrix.shape
 
-        assert polar_matrix.shape == nonpolar_matrix.shape, "the two matrices are expected to have the same dimensions"
+            assert polar_matrix.shape == nonpolar_matrix.shape, "the two matrices are expected to have the same dimensions"
 
-        nrows, ncols = polar_matrix.shape
-        counts = {'polar_only' : 0, 'nonpolar_only' : 0, 'polar_nonpolar' : 0}
-        total = 0.0
-        for i in range(1, nrows):
-            for j in range(1, ncols):
-                total += 1.0
-                if polar_matrix[i][j] and nonpolar_matrix[i][j]:
-                    counts['polar_nonpolar'] += 1
-                elif polar_matrix[i][j]:
-                    counts['polar_only'] += 1
-                elif nonpolar_matrix[i][j]:
-                    counts['nonpolar_only'] += 1
+            nrows, ncols = polar_matrix.shape
+            counts = {'polar_only' : 0, 'nonpolar_only' : 0, 'polar_nonpolar' : 0}
+            total = 0.0
+            for i in range(1, nrows):
+                for j in range(1, ncols):
+                    total += 1.0
+                    if polar_matrix[i][j] and nonpolar_matrix[i][j]:
+                        counts['polar_nonpolar'] += 1
+                    elif polar_matrix[i][j]:
+                        counts['polar_only'] += 1
+                    elif nonpolar_matrix[i][j]:
+                        counts['nonpolar_only'] += 1
 
-        # normalize
-        total = counts['polar_nonpolar'] + counts['polar_only'] + counts['nonpolar_only']
-        counts['polar_nonpolar'] = counts['polar_nonpolar'] / float(total)
-        counts['polar_only'] = counts['polar_only'] / float(total)
-        counts['nonpolar_only'] = counts['nonpolar_only'] / float(total)
+            # normalize
+            total = counts['polar_nonpolar'] + counts['polar_only'] + counts['nonpolar_only']
+            counts['polar_nonpolar'] = counts['polar_nonpolar'] / float(total)
+            counts['polar_only'] = counts['polar_only'] / float(total)
+            counts['nonpolar_only'] = counts['nonpolar_only'] / float(total)
 
-        # class csv.DictWriter(csvfile, fieldnames[, restval=''[, extrasaction='raise'[, dialect='excel'[, *args, **kwds]]]])
-        print sys, counts
+            # class csv.DictWriter(csvfile, fieldnames[, restval=''[, extrasaction='raise'[, dialect='excel'[, *args, **kwds]]]])
+            print sys, counts
 
-        writer = csv.DictWriter(open('intersection%(sys)d.csv' % vars(), 'wb'), counts.keys())
-        writer.writerow(counts)
+            writer = csv.DictWriter(open('%(iso)s_intersection%(sys)d.csv' % vars(), 'wb'), counts.keys())
+            writer.writerow(counts)
             
 
 # This function used to be a script that I used to calculate the nonpolar_residue contact binding bar plots 
