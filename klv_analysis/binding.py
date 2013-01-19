@@ -9,12 +9,37 @@ import tables
 import plot_and_save2hdf5 as myh5
 import utils
 
-# First look for the code I've written before ... I definitely remember doing this before
-# def binding_constant():
-    # Add up polar and nonpolar matrices and sum over axis=1
-    # Count the number of nonzero elements
 
-    
+def binding_constant(h5file, inositol_ratio, inositol_concentration, system_indices):
+     polarName = {'15to4' : 'whole_nosol_0-200ns_inos_total.dat', '45to4' : 'whole_nosol_0-200_inos_total.dat'}
+     nonpolarName = {'15to4' : 'whole_nosol_0-200ns_per_inositol_contacts.dat', '45to4' : 'whole_nosol_0-200_per_inositol_contacts.dat'}
+
+     isomerList = ["scyllo", "chiro"]
+     polarPath = "/polar"
+     nonpolarPath = "/nonpolar_residue"
+     csv_header = ["isomer", "sys_idx", "binding_constant", "inos_conc"]
+     writer = csv.writer(open(inositol_ratio + '_binding_constants.csv', 'wb'), delimiter=' ')
+     writer.writerow(csv_header)
+
+     for iso in isomerList:
+         data = []
+         for sys in system_indices[iso]:
+             polarFile = os.path.join(polarPath, "%(iso)s_sys%(sys)s_%(inositol_ratio)s_" % vars() + polarName[inositol_ratio])
+             print "analyzing", polarFile
+             polarMatrix = myh5.getTableAsMatrix(h5file, polarFile, dtype=numpy.float64)
+             
+             nonpolarFile = os.path.join(nonpolarPath, "%(iso)s_sys%(sys)s_%(inositol_ratio)s_" % vars() + nonpolarName[inositol_ratio])
+             nonpolarMatrix = myh5.getTableAsMatrix(h5file, nonpolarFile, dtype=numpy.float64)[::2, :]
+             
+             total_binding_per_inositol = polarMatrix + nonpolarMatrix
+             total_binding_all_inositols = numpy.sum(total_binding_per_inositol, axis=1)
+             
+             bound = numpy.count_nonzero(total_binding_all_inositol)
+             unbound = total_binding_all_inositols.size - bound
+             binding_constant = float(unbound) / bound * inositol_concentration
+             writer.writerow([iso, sys, binding_constant, inositol_concentration]) 
+
+
 def intersection_mon(h5file, csv_file, isomer, ratio):
     polar_matrix = myh5.getTableAsMatrix(h5file, '/inositol/inos_total')
     nonpolar_matrix = myh5.getTableAsMatrix(h5file, '/residue/per_inos_contacts')
