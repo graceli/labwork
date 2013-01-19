@@ -56,7 +56,7 @@ def compute_beta_binding_constant(h5file, inositol_ratio, inositol_concentration
             nonpolar_matrix = myh5.getTableAsMatrix(h5file, nonpolar_file, dtype=numpy.float64)
             polar_matrix = myh5.getTableAsMatrix(h5file, polar_file, dtype=numpy.float64)
             
-            binding_constant = _binding_constant(polarMatrix, nonpolarMatrix, inositol_concentration)
+            binding_constant = _binding_constant(polar_matrix, nonpolar_matrix, inositol_concentration)
             writer.writerow([iso, sys, binding_constant, inositol_concentration])
 
 
