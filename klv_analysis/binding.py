@@ -10,7 +10,7 @@ import plot_and_save2hdf5 as myh5
 import utils
 
 
-def binding_constant(h5file, inositol_ratio, inositol_concentration, system_indices):
+def binding_constant_disordered(h5file, inositol_ratio, inositol_concentration, system_indices):
      polarName = {'15to4' : 'whole_nosol_0-200ns_inos_total.dat', '45to4' : 'whole_nosol_0-200_inos_total.dat'}
      nonpolarName = {'15to4' : 'whole_nosol_0-200ns_per_inositol_contacts.dat', '45to4' : 'whole_nosol_0-200_per_inositol_contacts.dat'}
 
@@ -27,16 +27,19 @@ def binding_constant(h5file, inositol_ratio, inositol_concentration, system_indi
              polarFile = os.path.join(polarPath, "%(iso)s_sys%(sys)s_%(inositol_ratio)s_" % vars() + polarName[inositol_ratio])
              print "analyzing", polarFile
              polarMatrix = myh5.getTableAsMatrix(h5file, polarFile, dtype=numpy.float64)
-             
+             print polarMatrix.shape 
+
              nonpolarFile = os.path.join(nonpolarPath, "%(iso)s_sys%(sys)s_%(inositol_ratio)s_" % vars() + nonpolarName[inositol_ratio])
              nonpolarMatrix = myh5.getTableAsMatrix(h5file, nonpolarFile, dtype=numpy.float64)[::2, :]
-             
-             total_binding_per_inositol = polarMatrix + nonpolarMatrix
+             print nonpolarMatrix.shape 
+
+             total_binding_per_inositol = polarMatrix[:,1:] + nonpolarMatrix[:,1:]
              total_binding_all_inositols = numpy.sum(total_binding_per_inositol, axis=1)
              
-             bound = numpy.count_nonzero(total_binding_all_inositol)
+             bound = numpy.count_nonzero(total_binding_all_inositols)
              unbound = total_binding_all_inositols.size - bound
-             binding_constant = float(unbound) / bound * inositol_concentration
+             print bound, unbound
+             binding_constant = float(unbound) * inositol_concentration / bound 
              writer.writerow([iso, sys, binding_constant, inositol_concentration]) 
 
 
