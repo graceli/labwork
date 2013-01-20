@@ -41,6 +41,55 @@ extern "C" {
 
 //#define DEBUG_INOS
 
+class PheMolecule {
+	// This class represents the phenyl group of phenylalanine (with the Cbeta atom attached)
+	public:
+		PheMolecule(int residueNumber, const string &residueName);
+//		~PheMolecule();
+		void addAtom(real* atom);
+		void center_of_geometry(real* com);
+//		void addResidueNumber(int residueNumber);
+//		void addResidueName(const string &residueName);
+
+	private:
+		vector<real*> atoms;
+		int residueNumber;
+		string residueName;
+};
+
+PheMolecule::PheMolecule(int resNumber, const string &resName) {
+	residueNumber = resNumber;
+	residueName.assign(resName);
+}
+
+void PheMolecule::addAtom(real* atom) {
+	atoms.push_back(atom);
+}
+
+void PheMolecule::center_of_geometry(real* com) {
+	com[0] = 0;
+	com[1] = 0;
+	com[2] = 0;
+
+	for(int i = 0; i < atoms.size(); i++) {
+		for(int d = 0; d < DIM; d++) {
+			com[d] += atoms.at(i)[d];
+		}
+	}
+
+	for(int d = 0; d < DIM; d++) {
+		com[d] = com[d] / atoms.size();
+	}
+}
+
+//void PheMolecule::addResidueNumber(int residueNumber) {
+//	residueNumber = residueNumber;
+//}
+//
+//void PheMolecule::addResidueName(const string &residueName) {
+//	residueName(residueName);
+//}
+
 
 //takes a topology structure
 //and outputs atom index, atom name, and the residue the atom is in
@@ -70,33 +119,33 @@ void dump_index ( t_topology *top, atom_id ** index, int* isize, int ngrps ) {
 	}
 }
 
-int calculate_com ( t_topology *top, atom_id** index, rvec* x, int groupNum, int groupSize, real* com) {
-	com[0] = 0;
-	com[1] = 0;
-	com[2] = 0;
-
-	int num_atoms_in_residue = 0;
-	int atomIndex=0;
-	for(int i = 0; i < groupSize; i++) {
-		atomIndex = index[groupNum][i];
-
-		inositol_com.push_back(com);
-
-		for(int d = 0; d < DIM); d++) {
-			com[d] += x[atomIndex][d];
-		}
-	}
-
-	for(int d = 0; d < DIM; d++) {
-		com[d] = com[d] / num_atoms_in_residue;
-	}
-
-
-#ifdef DEBUG_COM
-	cerr << "current = " << currentResnum << " " << num_atoms_in_residue << endl;
-	cerr << com[0]*10 << " " << com[1]*10 << " " << com[2]*10 << endl;
-#endif
-}
+//int calculate_com ( t_topology *top, atom_id** index, rvec* x, int groupNum, int groupSize, real* com) {
+//	com[0] = 0;
+//	com[1] = 0;
+//	com[2] = 0;
+//
+//	int num_atoms_in_residue = 0;
+//	int atomIndex=0;
+//	for(int i = 0; i < groupSize; i++) {
+//		atomIndex = index[groupNum][i];
+//
+//		inositol_com.push_back(com);
+//
+//		for(int d = 0; d < DIM); d++) {
+//			com[d] += x[atomIndex][d];
+//		}
+//	}
+//
+//	for(int d = 0; d < DIM; d++) {
+//		com[d] = com[d] / num_atoms_in_residue;
+//	}
+//
+//
+//#ifdef DEBUG_COM
+//	cerr << "current = " << currentResnum << " " << num_atoms_in_residue << endl;
+//	cerr << com[0]*10 << " " << com[1]*10 << " " << com[2]*10 << endl;
+//#endif
+//}
 
 int calculate_com_for_inositols ( t_topology *top, atom_id** index, rvec* x, int start_group_num, int num_inositols,
 								  int group_size, vector<real*> &inositol_com, vector<int> &inositol_residue_indices ) {
@@ -257,62 +306,66 @@ int main(int argc,char *argv[]) {
 	get_index(&top->atoms, ftp2fn(efNDX, NFILE, fnm), ngrps, isize, index, grpname);
 	int natoms = read_first_x(&status, ftp2fn(efTRX, NFILE, fnm), &t, &x, box);
 
-	string residueName;
+	string residue_name;
 	int residue_id;
 	bool first_time = true;
 
 //	ofstream f_inos_phe_contacts(perInositolPheContacts);
-	vector<int> inositol_residue_indices;
-	do {
-		set_pbc(&pbc, -1, box);
-		// GMX v 4.0.5 I think this is needed to make system whole
-		rm_pbc(&top->idef, ePBC, natoms, box, x, x);
-
-		vector<real*> inositol_com;
-		vector<real*> phe_atoms;
-		real* phe_com = new real[3];
-		real dist;
-
-		// Calculate the COM of all the inositols in the system and populate a list of these vectors
-		int num_inositols_found = calculate_com_for_inositols(top, index, x, INOSITOL_GROUP_START_IDX, numInositols,
-																	 NUM_ATOMS_INOSITOL, inositol_com, inositol_residue_indices);
-
-		for(int i = 0; i < inositol_com.size(); i++) {
-			for(int protein_atom_num = 0; protein_atom_num < NUM_ATOMS_PROTEIN; protein_atom_num++) {
-				// TODO: get the residue name
-	        	int protein_atom_idx = index[PROTEIN_GROUP_START_IDX][protein_atom_num];
-	            residue_id = top->atoms.atom[protein_atom_idx].resnr;
-	            residue_name = *(top->atoms.resname[residue_id]);
-
-				if(residue_name == "PHE") {
-					phe_atoms.push_back(phe_atom);
-				}
-
-				if(phe_atoms.size() == 6) {
-					calculate_com(top, index, phe_atoms, phe_com);
-
-					if(is_in_contact(&pbc, inositol_com[i], phe_com, CUTOFF, dist)) {
-						// TODO: Calculate the planar angle between this inositol molecule and the PHE residue that
-						// it is in contact with
-
-#ifdef DEBUG_COM
-						cout <<t<<" "<< inositol_residue_indices[i] << " ";
-						for(int d=0; d<3;d++){
-							cout<<inositol_com[i][d]<<" ";
-						}
-
-						cout << phe_table[j] << " ";
-						for(int d=0; d<3; d++){
-							cout<<phe_com[j][d]<<" ";
-						}
-						cout<<dist<<endl;
-#endif
-
-						// TODO: Perform various result outputs
-					}
-				}
-			}
-		}
-		delete_vector(inositol_com);
-	} while (read_next_x(status, &t, natoms, x, box));
+//	vector<int> inositol_residue_indices;
+//	do {
+//		set_pbc(&pbc, -1, box);
+//		// GMX v 4.0.5 I think this is needed to make system whole
+//		rm_pbc(&top->idef, ePBC, natoms, box, x, x);
+//
+//		vector<real*> inositol_com;
+//		vector<real*> phe_atoms;
+//		real* phe_com = new real[3];
+//		real dist;
+//
+//		// Calculate the COM of all the inositols in the system and populate a list of these vectors
+//		int num_inositols_found = calculate_com_for_inositols(top, index, x, INOSITOL_GROUP_START_IDX, numInositols,
+//																	 NUM_ATOMS_INOSITOL, inositol_com, inositol_residue_indices);
+//
+//		// TODO: Parse out the coordinates of all PHE residues in a list of PHE molecules
+//
+//		// TODO: Calculate the COM of the phe residues -- populate a list of phe center of masses
+//
+//		for(int i = 0; i < inositol_com.size(); i++) {
+//			for(int protein_atom_num = 0; protein_atom_num < NUM_ATOMS_PROTEIN; protein_atom_num++) {
+//				// TODO: get the residue name
+//	        	int protein_atom_idx = index[PROTEIN_GROUP_START_IDX][protein_atom_num];
+//	            residue_id = top->atoms.atom[protein_atom_idx].resnr;
+//	            residue_name = *(top->atoms.resname[residue_id]);
+//
+//				if(residue_name == "PHE") {
+//					phe_atoms.push_back(phe_atom);
+//				}
+//
+//				if(phe_atoms.size() == 6) {
+//					calculate_com(top, index, phe_atoms, phe_com);
+//
+//					if(is_in_contact(&pbc, inositol_com[i], phe_com, CUTOFF, dist)) {
+//						// TODO: Calculate the planar angle between this inositol molecule and the PHE residue that
+//						// it is in contact with
+//
+//#ifdef DEBUG_COM
+//						cout <<t<<" "<< inositol_residue_indices[i] << " ";
+//						for(int d=0; d<3;d++){
+//							cout<<inositol_com[i][d]<<" ";
+//						}
+//
+//						cout << phe_table[j] << " ";
+//						for(int d=0; d<3; d++){
+//							cout<<phe_com[j][d]<<" ";
+//						}
+//						cout<<dist<<endl;
+//#endif
+//
+//						// TODO: Perform various result outputs
+//					}
+//				}
+//			}
+//		}
+//		delete_vector(inositol_com);
+//	} while (read_next_x(status, &t, natoms, x, box));
 }
