@@ -52,9 +52,12 @@ def compute_beta_binding_constant(h5file, inositol_ratio, inositol_concentration
         for sys in system_indices[iso]:
             nonpolar_file = os.path.join(nonpolar_path, "%(iso)s_t%(sys)d_per_inositol_contacts.dat" % vars())
             polar_file = os.path.join(polar_path, "%(iso)s_t%(sys)d_inos_total.dat" % vars())
+            print polar_file, nonpolar_file
 
             nonpolar_matrix = myh5.getTableAsMatrix(h5file, nonpolar_file, dtype=numpy.float64)
             polar_matrix = myh5.getTableAsMatrix(h5file, polar_file, dtype=numpy.float64)
+
+            print polar_matrix.shape, nonpolar_matrix.shape
             
             binding_constant = _binding_constant(polar_matrix, nonpolar_matrix, inositol_concentration)
             writer.writerow([iso, sys, binding_constant, inositol_concentration])
@@ -65,15 +68,22 @@ def compute_monomer_binding_constant(h5file, inositol_ratio, inositol_concentrat
     nonpolar_matrix = myh5.getTableAsMatrix(h5file, '/residue/per_inos_contacts')
 
     writer = csv.writer(open(inositol_ratio + '_binding_constants.csv', 'wb'), delimiter=' ')
+    csv_header = ["isomer", "binding_constant", "inos_conc"]
     writer.writerow(csv_header)
-    binding_constant = _binding_constant(polarMatrix, nonpolarMatrix, inositol_concentration)
-    writer.writerow([iso, binding_constant, inositol_concentration])
+    binding_constant = _binding_constant(polar_matrix, nonpolar_matrix, inositol_concentration)
+    writer.writerow([inositol_ratio, binding_constant, inositol_concentration])
 
 
 def _binding_constant(polarMatrix, nonpolarMatrix, inositol_concentration):
     total_binding_per_inositol = polarMatrix[:,1:] + nonpolarMatrix[:,1:]
+    print "polar matrix nonzero counts", numpy.count_nonzero(numpy.sum(polarMatrix[:, 1:], axis=1))
+    print "nonpolar matrix nonzero counts", numpy.count_nonzero(numpy.sum(nonpolarMatrix[:, 1:], axis=1))
+
+    print total_binding_per_inositol 
     total_binding_all_inositols = numpy.sum(total_binding_per_inositol, axis=1)
-    
+
+    print total_binding_all_inositols
+ 
     bound = numpy.count_nonzero(total_binding_all_inositols)
     unbound = total_binding_all_inositols.size - bound
     print bound, unbound
