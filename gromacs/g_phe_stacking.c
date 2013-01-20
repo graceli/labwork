@@ -34,7 +34,7 @@ extern "C" {
 #include "rmpbc.h"
 #include "names.h"
 #include "atomprop.h"
-#include "physics.h"`
+#include "physics.h"
 #include "gstat.h"
 #include "tpxio.h"
 }
@@ -311,8 +311,8 @@ int main(int argc,char *argv[]) {
 	vector <int> phe_table;
 	vector <int> inositol_table;
 
-	build_residue_atom_counts(top, index, isize, PROTEIN, residue_atom_count);
-	initialize_maps(per_residue_contacts_snapshot, residue_atom_count);
+	//	build_residue_atom_counts(top, index, isize, PROTEIN, residue_atom_count);
+	//	initialize_maps(per_residue_contacts_snapshot, residue_atom_count);
 	//print_map(residue_atom_count, residue_atom_count);
 
 	string residueName;
@@ -324,9 +324,9 @@ int main(int argc,char *argv[]) {
 	//    ofstream f_per_inositol_contacts(perInositolContacts);
 	ofstream f_inos_phe_contacts(perInositolPheContacts);
 	//    ofstream f_phe_phe_contacts(ffInfo);
-//	ofstream f_phe_com_dists(perInositolPheComDists);
+	//	ofstream f_phe_com_dists(perInositolPheComDists);
 
-	print_map(residue_atom_count,f_residue_table);
+	//	print_map(residue_atom_count,f_residue_table);
 	do {
 		set_pbc(&pbc, -1, box);
 		/* GMX v 4.0.5 I think this is needed to make system whole */
@@ -370,10 +370,9 @@ int main(int argc,char *argv[]) {
 				f_inos_phe_contacts<<per_inositol_COM_contacts_snapshot[i]<<" ";
 			}
 			f_inos_phe_contacts<<endl;
-
-			//do some clean up
-			delete_vector(inositol_com);
-			initialize_maps(per_residue_contacts_snapshot, residue_atom_count); //reinitialize
-		} while (read_next_x(status, &t, natoms, x, box));
-	}
+		}
+		//do some clean up
+		delete_vector(inositol_com);
+		//			initialize_maps(per_residue_contacts_snapshot, residue_atom_count); //reinitialize
+	} while (read_next_x(status, &t, natoms, x, box));
 }

@@ -2,8 +2,8 @@
 # Variables set by the configuration script:
 LIBS         = -lmd -lgmx -lxml2  -L/usr/X11/lib -R/usr/X11/lib -lfftw3f -lm   -lSM -lICE -lX11   
 LDFLAGS      = -L/usr/local/gromacs/lib -I/opt/local/var/macports/software/fftw-3/3.2.2_0/opt/local/lib  -framework Accelerate
-CFLAGS	     = -O3 -fomit-frame-pointer -finline-functions -Wall -Wno-unused -funroll-all-loops -std=gnu99   -I/usr/X11/include -I/usr/include/libxml2 -I/usr/local/gromacs/include -I/usr/local/gromacs/include/gromacs	
-CC           = cc
+CFLAGS	     = -O3 -fomit-frame-pointer -finline-functions -Wall -Wno-unused -funroll-all-loops -I/usr/X11/include -I/usr/include/libxml2 -I/usr/local/gromacs/include -I/usr/local/gromacs/include/gromacs	
+CC           = c++
 LD           = $(CC)
 
 # The real make targets - note that most make programs support
@@ -12,3 +12,5 @@ LD           = $(CC)
 
 nonpolar:	g_inositol_residue_nonpolar_v2.o
 		$(LD) $(LDFLAGS) -o $@ g_inositol_residue_nonpolar_v2.o $(LIBS)
+stacking:	g_phe_stacking.o
+		$(LD) $(LDFLAGS) -o $@ g_phe_stacking.o $(LIBS)
