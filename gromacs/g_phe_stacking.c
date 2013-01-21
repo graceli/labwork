@@ -45,14 +45,16 @@ class PheMolecule {
 	// This class represents the phenyl group of phenylalanine (with the Cbeta atom attached)
 	public:
 		PheMolecule(int residueNumber, const string &residueName);
-//		~PheMolecule();
-		void addAtom(real* atom);
+		~PheMolecule();
+		void add_atom(int atom_index, real* atom);
 		void center_of_geometry(real* com);
-//		void addResidueNumber(int residueNumber);
-//		void addResidueName(const string &residueName);
+		void get_angle_index_group(atom_id* index);
+		int get_resid();
+		const string& get_resname();
 
 	private:
 		vector<real*> atoms;
+		vector<int> atom_indices;
 		int residueNumber;
 		string residueName;
 };
@@ -62,7 +64,22 @@ PheMolecule::PheMolecule(int resNumber, const string &resName) {
 	residueName.assign(resName);
 }
 
-void PheMolecule::addAtom(real* atom) {
+PheMolecule::~PheMolecule() {
+	for(int i = 0; i<atoms.size(); i++) {
+		delete atoms.at(i);
+	}
+}
+
+const string& PheMolecule::get_resname() {
+	return residueName;
+}
+
+int PheMolecule::get_resid() {
+	return residueNumber;
+}
+
+void PheMolecule::add_atom(int atom_index, real* atom) {
+	atom_indices.push_back(atom_index);
 	atoms.push_back(atom);
 }
 
@@ -82,14 +99,12 @@ void PheMolecule::center_of_geometry(real* com) {
 	}
 }
 
-//void PheMolecule::addResidueNumber(int residueNumber) {
-//	residueNumber = residueNumber;
-//}
-//
-//void PheMolecule::addResidueName(const string &residueName) {
-//	residueName(residueName);
-//}
-
+void PheMolecule::get_angle_index_group(atom_id* index) {
+	// Pick every 2nd atom to use for the planar group for plane-plane angle calculation
+	index[0] = atom_indices.at(0);
+	index[1] = atom_indices.at(2);
+	index[2] = atom_indices.at(4);
+}
 
 //takes a topology structure
 //and outputs atom index, atom name, and the residue the atom is in
@@ -119,59 +134,114 @@ void dump_index ( t_topology *top, atom_id ** index, int* isize, int ngrps ) {
 	}
 }
 
-//int calculate_com ( t_topology *top, atom_id** index, rvec* x, int groupNum, int groupSize, real* com) {
-//	com[0] = 0;
-//	com[1] = 0;
-//	com[2] = 0;
-//
-//	int num_atoms_in_residue = 0;
-//	int atomIndex=0;
-//	for(int i = 0; i < groupSize; i++) {
-//		atomIndex = index[groupNum][i];
-//
-//		inositol_com.push_back(com);
-//
-//		for(int d = 0; d < DIM); d++) {
-//			com[d] += x[atomIndex][d];
-//		}
-//	}
-//
-//	for(int d = 0; d < DIM; d++) {
-//		com[d] = com[d] / num_atoms_in_residue;
-//	}
-//
-//
-//#ifdef DEBUG_COM
-//	cerr << "current = " << currentResnum << " " << num_atoms_in_residue << endl;
-//	cerr << com[0]*10 << " " << com[1]*10 << " " << com[2]*10 << endl;
-//#endif
-//}
+/* 	GROMACS SGANGLE START */
+static void calculate_normal(atom_id index[],rvec x[],rvec result,rvec center) {
+	rvec c1,c2;
+	int i;
 
-int calculate_com_for_inositols ( t_topology *top, atom_id** index, rvec* x, int start_group_num, int num_inositols,
-								  int group_size, vector<real*> &inositol_com, vector<int> &inositol_residue_indices ) {
+	/* calculate centroid of triangle spanned by the three points */
+	for(i=0;i<3;i++)
+		center[i] = (x[index[0]][i] + x[index[1]][i] + x[index[2]][i])/3;
 
-	real* com = new real[3];
-	com[0] = 0;
-	com[1] = 0;
-	com[2] = 0;
+	/* use P1P2 x P1P3 to calculate normal, given three points P1-P3 */
+	rvec_sub(x[index[1]],x[index[0]],c1);    /* find two vectors */
+	rvec_sub(x[index[2]],x[index[0]],c2);
 
-	int resnum = 0;
+	cprod(c1,c2,result);                    /* take crossproduct between these */
+}
+
+/* calculate the angle and distance between the two groups */
+static void calc_angle(int ePBC,matrix box,rvec x[], atom_id index1[],
+		atom_id index2[], int gnx1, int gnx2,
+		real *angle,      real *distance,
+		real *distance1,  real *distance2)
+
+/* distance is distance between centers, distance 1 between center of plane
+   and atom one of vector, distance 2 same for atom two
+ */
+{
+	rvec
+	normal1,normal2,  	/* normals on planes of interest */
+	center1,center2,  	/* center of triangle of points given to define plane,*/
+	/* or center of vector if a vector is given */
+	h1,h2,h3,h4,h5;  	/* temp. vectors */
+	t_pbc pbc;
+
+	set_pbc(&pbc,ePBC,box);
+
+	switch(gnx1)
+	{
+	case 3:           /* group 1 defines plane */
+		calculate_normal(index1,x,normal1,center1);
+		break;
+	default:          /* group 1 does none of the above */
+		gmx_fatal(FARGS,"Something wrong with contents of index file.\n");
+	}
+
+	switch(gnx2)
+	{
+	case 3:          /* group 2 defines plane */
+		calculate_normal(index2,x,normal2,center2);
+		break;
+	default:         /* group 2 does none of the above */
+		gmx_fatal(FARGS,"Something wrong with contents of index file.\n");
+	}
+
+	*angle = cos_angle(normal1,normal2);
+
+	if (box)
+		pbc_dx(&pbc,center1,center2,h3);
+	else
+		rvec_sub(center1,center2,h3);
+	*distance = norm(h3);
+
+	// Case 3
+	*distance1 = 0; *distance2 = 0;
+}
+/* GROMACS SGANGLE END */
+
+void populate_inositol_coordinates(t_topology *top, atom_id** index, rvec* x, int start_group_num, int num_inositols,
+								int group_size, vector<PheMolecule*> &inositol_molecules) {
 	int atomIndex = 0;
-
-	for(int ins_idx = 0; ins_idx < num_inositols; ins_idx++) {
-		for(int i = 0; i < group_size; i++ ) {
+	PheMolecule* aInositol;
+	for(int ins_idx = start_group_num; ins_idx < start_group_num + num_inositols; ins_idx++) {
+		int resid = top->atoms.atom[atomIndex].resnr;
+		aInositol = new PheMolecule(resid, "INS");
+		for(int i = 0; i < group_size; i++) {
 			atomIndex = index[ins_idx][i];
-			for(int d = 0; d < DIM; d++) {
-				com[d] += x[atomIndex][d] / group_size;
-			}
-			resnum = top->atoms.atom[atomIndex].resnr;
+			aInositol->add_atom(atomIndex, x[atomIndex]);
 		}
-		inositol_com.push_back(com);
-		inositol_residue_indices.push_back(resnum);
+		inositol_molecules.push_back(aInositol);
 	}
 }
 
-void delete_vector(vector<real*> &v) {
+void populate_phe_coordinates(t_topology *top, atom_id** index, rvec* x, int group_start_num, int group_size,
+							  vector<PheMolecule*> &phe_molecules) {
+	// Parse out the coordinates of all PHE residues in a list of PHE molecules
+	bool firstAtom = true;
+	PheMolecule* aPheMolecule;
+	int residue_id;
+	string residue_name;
+	for(int protein_atom_num = 0; protein_atom_num < group_size; protein_atom_num++) {
+		// Get the residue name corresponding to this protein atom number
+		int protein_atom_idx = index[group_start_num][protein_atom_num];
+		residue_id = top->atoms.atom[protein_atom_idx].resnr;
+		residue_name = *(top->atoms.resname[residue_id]);
+
+		if(residue_name == "PHE") {
+			if(firstAtom) {
+				aPheMolecule = new PheMolecule(residue_id, residue_name);
+				firstAtom = false;
+			} else {
+				// Store both atom index and its coordinates
+				aPheMolecule->add_atom(protein_atom_idx, x[protein_atom_idx]);
+			}
+		}
+		phe_molecules.push_back(aPheMolecule);
+	}
+}
+
+void delete_vector(vector<PheMolecule*> &v) {
 	for(int i = 0; i < v.size(); i++) {
 		delete v[i];
 	}
@@ -311,61 +381,57 @@ int main(int argc,char *argv[]) {
 	bool first_time = true;
 
 //	ofstream f_inos_phe_contacts(perInositolPheContacts);
-//	vector<int> inositol_residue_indices;
-//	do {
-//		set_pbc(&pbc, -1, box);
-//		// GMX v 4.0.5 I think this is needed to make system whole
-//		rm_pbc(&top->idef, ePBC, natoms, box, x, x);
-//
-//		vector<real*> inositol_com;
-//		vector<real*> phe_atoms;
-//		real* phe_com = new real[3];
-//		real dist;
-//
-//		// Calculate the COM of all the inositols in the system and populate a list of these vectors
-//		int num_inositols_found = calculate_com_for_inositols(top, index, x, INOSITOL_GROUP_START_IDX, numInositols,
-//																	 NUM_ATOMS_INOSITOL, inositol_com, inositol_residue_indices);
-//
-//		// TODO: Parse out the coordinates of all PHE residues in a list of PHE molecules
-//
-//		// TODO: Calculate the COM of the phe residues -- populate a list of phe center of masses
-//
-//		for(int i = 0; i < inositol_com.size(); i++) {
-//			for(int protein_atom_num = 0; protein_atom_num < NUM_ATOMS_PROTEIN; protein_atom_num++) {
-//				// TODO: get the residue name
-//	        	int protein_atom_idx = index[PROTEIN_GROUP_START_IDX][protein_atom_num];
-//	            residue_id = top->atoms.atom[protein_atom_idx].resnr;
-//	            residue_name = *(top->atoms.resname[residue_id]);
-//
-//				if(residue_name == "PHE") {
-//					phe_atoms.push_back(phe_atom);
-//				}
-//
-//				if(phe_atoms.size() == 6) {
-//					calculate_com(top, index, phe_atoms, phe_com);
-//
-//					if(is_in_contact(&pbc, inositol_com[i], phe_com, CUTOFF, dist)) {
-//						// TODO: Calculate the planar angle between this inositol molecule and the PHE residue that
-//						// it is in contact with
-//
-//#ifdef DEBUG_COM
-//						cout <<t<<" "<< inositol_residue_indices[i] << " ";
-//						for(int d=0; d<3;d++){
-//							cout<<inositol_com[i][d]<<" ";
-//						}
-//
-//						cout << phe_table[j] << " ";
-//						for(int d=0; d<3; d++){
-//							cout<<phe_com[j][d]<<" ";
-//						}
-//						cout<<dist<<endl;
-//#endif
-//
-//						// TODO: Perform various result outputs
-//					}
-//				}
-//			}
-//		}
-//		delete_vector(inositol_com);
-//	} while (read_next_x(status, &t, natoms, x, box));
+
+	vector<int> inositol_residue_indices;
+	do {
+		set_pbc(&pbc, -1, box);
+		// GMX v 4.0.5 I think this is needed to make system whole
+		rm_pbc(&top->idef, ePBC, natoms, box, x, x);
+
+		vector<PheMolecule*> inositol_molecules;
+		vector<PheMolecule*> phe_molecules;
+		real* phe_com = new real[3];
+		real* inositol_com = new real[3];
+		real dist;
+
+		// Parse inositol coordinates
+		populate_inositol_coordinates(top, index, x, INOSITOL_GROUP_START_IDX, numInositols,
+									  NUM_ATOMS_INOSITOL, inositol_molecules);
+
+		// Parse phe coordinates
+		populate_phe_coordinates(top, index, x, PROTEIN_GROUP_START_IDX, NUM_ATOMS_PROTEIN, phe_molecules);
+
+		atom_id* phe_angle_index = new atom_id[3];
+		atom_id* inositol_angle_index = new atom_id[3];
+		real angle, distance, distance1, distance2;
+		for(int ins_num = 0; ins_num < inositol_molecules.size(); ins_num++) {
+			for(int phe_num = 0; phe_num < phe_molecules.size(); phe_num++) {
+				phe_molecules.at(phe_num)->center_of_geometry(phe_com);
+				inositol_molecules.at(ins_num)->center_of_geometry(inositol_com);
+				if(is_in_contact(&pbc, inositol_com, phe_com, CUTOFF, dist)) {
+					// Calculate the planar angle between this inositol molecule and the PHE residue that
+					// it is in contact with.
+
+					// Gets the index of the atoms for the phe molecules which are used in the angle calculations
+					phe_molecules.at(phe_num)->get_angle_index_group(phe_angle_index);
+
+					// Gets the index of the atoms for the phe molecules which are used
+					inositol_molecules.at(ins_num)->get_angle_index_group(inositol_angle_index);
+
+					calc_angle(ePBC, box, x, phe_angle_index, inositol_angle_index, 3, 3,
+							   &angle, &distance, &distance1, &distance2);
+
+					// fprintf(sg_angle, "%12g  %12g  %12g\n", t, angle, acos(angle)*180.0 / M_PI);
+
+					// TODO: Perform various result outputs
+					cout << t << "(" << phe_molecules.at(phe_num)->get_resname() << phe_molecules.at(phe_num)->get_resid() << ","
+						 << inositol_molecules.at(ins_num)->get_resname() << inositol_molecules.at(ins_num)->get_resid() << ") ";
+				}
+			}
+		}
+		cout << endl;
+
+		delete_vector(inositol_molecules);
+		delete_vector(phe_molecules);
+	} while (read_next_x(status, &t, natoms, x, box));
 }
