@@ -418,6 +418,8 @@ int main(int argc,char *argv[]) {
 	ofstream f_phe_stacking(per_phe_stacking_fname);
 	ofstream f_phe_bound(per_phe_bound_fname);
 
+	cerr << endl;
+
 	do {
 		set_pbc(&pbc, -1, box);
 		// GMX v 4.0.5 I think this is needed to make system whole
@@ -481,18 +483,18 @@ int main(int argc,char *argv[]) {
                     					      << phe_molecules.at(phe_num)->get_resid() << ","
                     						  << inositol_molecules.at(ins_num)->get_resname()
                     						  << inositol_molecules.at(ins_num)->get_resid() << ") "
-                    						  << "angle=" << angle_degrees << " dist=" << dist << " " << endl;
+                    						  << "angle=" << angle_degrees << " dist=" << dist << " ";
                 }
 
 				if(in_contact) {
                     if(angle_degrees < 15.0 || (180 - angle_degrees) < 15) {
-                        cerr << "STACKED ";
+                        cerr << "STACKED " << endl;
                         phe_stacking[phe_num]++;
                         inos_stacking[ins_num]++;
                     	phe_bound[phe_num]++;
                     	inos_bound[ins_num]++;
                     } else {
-                    	cerr << "BOUND ";
+                    	cerr << "BOUND " << endl;
                     	phe_bound[phe_num]++;
                     	inos_bound[ins_num]++;
                     }
