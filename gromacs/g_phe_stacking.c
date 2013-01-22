@@ -417,8 +417,9 @@ int main(int argc,char *argv[]) {
 	ofstream f_inos_bound(per_inositol_bound_fname);
 	ofstream f_phe_stacking(per_phe_stacking_fname);
 	ofstream f_phe_bound(per_phe_bound_fname);
+	ofstream f_debug(stacking_info);
 
-	cerr << endl;
+	f_debug << endl;
 
 	do {
 		set_pbc(&pbc, -1, box);
@@ -479,7 +480,7 @@ int main(int argc,char *argv[]) {
                 bool in_contact = is_in_contact(&pbc, inositol_com, phe_com, CUTOFF, dist);
 
                 if(dist < 0.8) {
-                    cerr << "t=" << t << " (" << phe_molecules.at(phe_num)->get_resname()
+                    f_debug << "t=" << t << " (" << phe_molecules.at(phe_num)->get_resname()
                     					      << phe_molecules.at(phe_num)->get_resid() << ","
                     						  << inositol_molecules.at(ins_num)->get_resname()
                     						  << inositol_molecules.at(ins_num)->get_resid() << ") "
