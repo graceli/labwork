@@ -337,6 +337,8 @@ int main(int argc,char *argv[]) {
 	//static char *f_contact="residue_nonpolar_contact.dat";
 	static char* per_phe_stacking_fname = "per_phe_stacking.dat";
 	static char* per_inositol_stacking_fname = "per_inositol_stacking.dat";
+	static char* per_phe_bound_fname = "per_phe_bound.dat";
+	static char* per_inositol_bound_fname = "per_inositol_bound.dat";
 	static char* stacking_info = "stacking_info.dat";
 	static int numInositols = 0;
 	static int NPHE = 0;
@@ -344,23 +346,26 @@ int main(int argc,char *argv[]) {
 
 	static t_pargs pa[] = {
 		{ "-dist",      FALSE, etREAL, {&CUTOFF},
-		"the cutoff"},
+		  "cutoff used for com-com calculations"},
 
-		{"-per_phe_stacking_fname", FALSE, etSTR, {&per_phe_stacking_fname},
-		"Dataset describing whether the Phe residues are stacked, bound, or not for each time frame.  "
-		"Stacked = 2; Bound = 1; Unbound = 0"},
+		{ "-per_phe_stacking_fname", FALSE, etSTR, {&per_phe_stacking_fname},
+		  "Number of times each Phe residues are stacked"},
 
-		{"-per_inositol_phe_contacts", FALSE, etSTR, {&per_inositol_stacking_fname},
-		"Dataset describing whether each inositol molecule is stacked, bound, or not for each time frame. "
-		"Stacked = 2; Bound = 1; Unbound = 0"},
+		{ "-per_phe_bound_fname", FALSE, etSTR, {&per_phe_stacking_fname},
+		  "Number of times each phe is bound"},
 
-		{"-stacking_info", FALSE, etSTR, {&stacking_info},
-		"Dataset with the residue numbers of (phe, inosito) pairs which are stacked. This data file is useful for "
-		"debugging purposes."},
+		{ "-per_inositol_stacking_fname", FALSE, etSTR, {&per_inositol_stacking_fname},
+		  "Dataset describing the number of times each inositol molecule is stacked"},
 
-		{"-num_inositols", FALSE, etINT, {&numInositols},
-			"number of inositols to read in from index"
-		}
+		{ "-per_inositol_bound_fname", FALSE, etSTR, {&per_inositol_bound_fname},
+		  "Dataset describing the number of times inositol molecule is stacked."},
+
+		{ "-stacking_info", FALSE, etSTR, {&stacking_info},
+		  "Dataset with the residue numbers of (phe, inosito) pairs which are stacked. This data file is useful for "
+		  "debugging purposes."},
+
+		{ "-num_inositols", FALSE, etINT, {&numInositols},
+		  "number of inositols to read in from index"}
 	};
 
 	t_filenm fnm[] = {
@@ -372,7 +377,6 @@ int main(int argc,char *argv[]) {
 
 #define NPA asize(pa)
 #define NFILE asize(fnm)
-
 
 	char title[STRLEN];
 
@@ -409,8 +413,11 @@ int main(int argc,char *argv[]) {
 	int residue_id;
 	bool first_time = true;
 
-//	ofstream f_inos_phe_contacts(perInositolPheContacts);
-	vector<int> inositol_residue_indices;
+	ofstream f_inos_stacking(per_inositol_stacking_fname);
+	ofstream f_inos_bound(per_inositol_bound_fname);
+	ofstream f_phe_stacking(per_phe_stacking_fname);
+	ofstream f_phe_bound(per_phe_bound_fname);
+
 	do {
 		set_pbc(&pbc, -1, box);
 		// GMX v 4.0.5 I think this is needed to make system whole
@@ -418,6 +425,7 @@ int main(int argc,char *argv[]) {
 
 		vector<PheMolecule*> inositol_molecules;
 		vector<PheMolecule*> phe_molecules;
+
 		real* phe_com = new real[3];
 		real* inositol_com = new real[3];
 		real dist;
@@ -428,6 +436,12 @@ int main(int argc,char *argv[]) {
 
 		// Parse phe coordinates
 		populate_phe_coordinates(top, index, x, PROTEIN_GROUP_START_IDX, NUM_ATOMS_PROTEIN, phe_molecules);
+
+		vector<int> phe_stacking(phe_molecules.size());
+		vector<int> phe_bound(phe_molecules.size());
+
+		vector<int> inos_stacking(numInositols);
+		vector<int> inos_bound(numInositols);
 
 		atom_id* phe_angle_index = new atom_id[3];
 		atom_id* inositol_angle_index = new atom_id[3];
@@ -459,24 +473,56 @@ int main(int argc,char *argv[]) {
 
                 // fprintf(sg_angle, "%12g  %12g  %12g\n", t, angle, acos(angle)*180.0 / M_PI);
 
-                // TODO: Perform various result outputs
-                double angle_degrees = acos(angle)*180.0 / M_PI; 
-				if(is_in_contact(&pbc, inositol_com, phe_com, CUTOFF, dist)) {
-					cout << "t=" << t << " (" << phe_molecules.at(phe_num)->get_resname() << phe_molecules.at(phe_num)->get_resid() << ","
-						 << inositol_molecules.at(ins_num)->get_resname() << inositol_molecules.at(ins_num)->get_resid() << ") " << "angle=" << angle_degrees << " dist=" << dist << " ";
+                double angle_degrees = acos(angle)*180.0 / M_PI;
+                bool in_contact = is_in_contact(&pbc, inositol_com, phe_com, CUTOFF, dist);
 
-                    if(angle_degrees < 15.0 || (180 - angle_degrees) < 15) {
-                        cout << "STACKED " << endl;
-                    }
-				} else {
-                    if(dist < 0.8) {
-                        cout << "t=" << t << " (" << phe_molecules.at(phe_num)->get_resname() << phe_molecules.at(phe_num)->get_resid() << ","
-                             << inositol_molecules.at(ins_num)->get_resname() << inositol_molecules.at(ins_num)->get_resid() << ") " << "angle=" << angle_degrees << " dist=" << dist << " ";
-                    }
+                if(dist < 0.8) {
+                    cerr << "t=" << t << " (" << phe_molecules.at(phe_num)->get_resname()
+                    					      << phe_molecules.at(phe_num)->get_resid() << ","
+                    						  << inositol_molecules.at(ins_num)->get_resname()
+                    						  << inositol_molecules.at(ins_num)->get_resid() << ") "
+                    						  << "angle=" << angle_degrees << " dist=" << dist << " ";
                 }
+
+				if(in_contact) {
+                    if(angle_degrees < 15.0 || (180 - angle_degrees) < 15) {
+                        cerr << "STACKED ";
+                        phe_stacking[phe_num]++;
+                        inos_stacking[ins_num]++;
+                    } else {
+                    	cerr << "BOUND ";
+                    	phe_bound[phe_num]++;
+                    	inos_bound[ins_num]++;
+                    }
+				}
 			}
 		}
-		cout << endl;
+		cerr << endl;
+
+		f_phe_stacking << t << " ";
+		f_inos_stacking << t << " ";
+		f_phe_bound << t << " ";
+		f_inos_bound << t << " ";
+
+		// Output stacking count for phes
+		for(int i = 0; i < phe_stacking.size(); i++) {
+			f_phe_stacking << phe_stacking[i] << " ";
+		}
+
+		// Output bound count for phes
+		for(int i = 0; i < phe_bound.size(); i++) {
+			f_phe_bound << phe_bound[i] << " ";
+		}
+
+		// Output stacking count for phes
+		for(int i = 0; i < inos_stacking.size(); i++) {
+			f_inos_stacking << inos_stacking[i] << " ";
+		}
+
+		// Output bound count for inositol
+		for(int i = 0; i < inos_bound.size(); i++) {
+			f_inos_bound << inos_bound[i] << " ";
+		}
 
 //		delete_vector(inositol_molecules);
 //		delete_vector(phe_molecules);
