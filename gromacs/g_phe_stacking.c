@@ -475,6 +475,12 @@ int main(int argc,char *argv[]) {
                 // fprintf(sg_angle, "%12g  %12g  %12g\n", t, angle, acos(angle)*180.0 / M_PI);
 
                 double angle_degrees = acos(angle)*180.0 / M_PI;
+                double angle_corrected = angle_degrees;
+
+                if(angle_degrees > 90) {
+                    angle_corrected = 180 - angle_degrees;
+                }
+
                 bool in_contact = is_in_contact(&pbc, inositol_com, phe_com, CUTOFF, dist);
 
                 if(dist < 0.8) {
@@ -482,11 +488,12 @@ int main(int argc,char *argv[]) {
                     					      << phe_molecules.at(phe_num)->get_resid() << ","
                     						  << inositol_molecules.at(ins_num)->get_resname()
                     						  << inositol_molecules.at(ins_num)->get_resid() << ") "
-                    						  << "angle=" << angle_degrees << " dist=" << dist << " ";
+                    						  << "angle=" << angle_degrees << " angle_corrected=" 
+                                              << angle_corrected << " dist=" << dist << " ";
                 }
 
 				if(in_contact) {
-                    if(angle_degrees < 15.0 || (180 - angle_degrees) < 15) {
+                    if(angle_degrees < 15.0 || (180 - angle_degrees) < 15.0) {
                     	f_debug << "STACKED " << endl;
                         phe_stacking[phe_num]++;
                         inos_stacking[ins_num]++;
@@ -497,7 +504,12 @@ int main(int argc,char *argv[]) {
                     	phe_bound[phe_num]++;
                     	inos_bound[ins_num]++;
                     }
-				}
+				} else {
+                    if(dist < 0.8) {
+                        f_debug << endl;
+                    }
+                }
+                
 			}
 		}
 
