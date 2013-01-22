@@ -481,7 +481,7 @@ int main(int argc,char *argv[]) {
                     					      << phe_molecules.at(phe_num)->get_resid() << ","
                     						  << inositol_molecules.at(ins_num)->get_resname()
                     						  << inositol_molecules.at(ins_num)->get_resid() << ") "
-                    						  << "angle=" << angle_degrees << " dist=" << dist << " ";
+                    						  << "angle=" << angle_degrees << " dist=" << dist << " " << endl;
                 }
 
 				if(in_contact) {
@@ -489,6 +489,8 @@ int main(int argc,char *argv[]) {
                         cerr << "STACKED ";
                         phe_stacking[phe_num]++;
                         inos_stacking[ins_num]++;
+                    	phe_bound[phe_num]++;
+                    	inos_bound[ins_num]++;
                     } else {
                     	cerr << "BOUND ";
                     	phe_bound[phe_num]++;
@@ -497,7 +499,6 @@ int main(int argc,char *argv[]) {
 				}
 			}
 		}
-		cerr << endl;
 
 		f_phe_stacking << t << " ";
 		f_inos_stacking << t << " ";
@@ -523,6 +524,11 @@ int main(int argc,char *argv[]) {
 		for(int i = 0; i < inos_bound.size(); i++) {
 			f_inos_bound << inos_bound[i] << " ";
 		}
+
+		f_phe_stacking << endl;
+		f_inos_stacking << endl;
+		f_phe_bound << endl;
+		f_inos_bound << endl;
 
 //		delete_vector(inositol_molecules);
 //		delete_vector(phe_molecules);
