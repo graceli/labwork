@@ -448,13 +448,26 @@ int main(int argc,char *argv[]) {
 		atom_id* inositol_angle_index = new atom_id[3];
 		real angle, distance, distance1, distance2;
 
-		// for(int ins_num = 0; ins_num < inositol_molecules.size(); ins_num++) {
-        //   inositol_molecules.at(ins_num)->print_info(); 
-        //}
- 
-		//for(int phe_num = 0; phe_num < phe_molecules.size(); phe_num++) {
-        //   phe_molecules.at(phe_num)->print_info(); 
-        //}
+        if(first_time == true) {
+            f_inos_stacking << "# ";
+            f_inos_bound << "# ";
+            for(int ins_num = 0; ins_num < inositol_molecules.size(); ins_num++) {
+                f_inos_stacking << inositol_molecules.at(ins_num)->get_resname() << inositol_molecules.at(ins_num)->get_resid() << " "; 
+                f_inos_bound << inositol_molecules.at(ins_num)->get_resname() << inositol_molecules.at(ins_num)->get_resid() << " "; 
+            }
+            f_inos_stacking << endl;
+            f_inos_bound << endl;
+    
+            f_phe_stacking << "# "; 
+            f_phe_bound << "# ";
+            for(int phe_num = 0; phe_num < phe_molecules.size(); phe_num++) {
+               f_phe_stacking << phe_molecules.at(phe_num)->get_resname() << phe_molecules.at(phe_num)->get_resid() << " "; 
+               f_phe_bound << phe_molecules.at(phe_num)->get_resname() << phe_molecules.at(phe_num)->get_resid() << " "; 
+            }
+            f_phe_stacking << endl;
+            f_phe_bound << endl;
+            first_time = false;
+        }
 
 		for(int ins_num = 0; ins_num < inositol_molecules.size(); ins_num++) {
 			for(int phe_num = 0; phe_num < phe_molecules.size(); phe_num++) {
