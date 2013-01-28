@@ -309,6 +309,41 @@ def nonpolar_residue_monomer_15to1():
         print i, float(average[i]) / (TOTAL_FILES * TOTAL_FRAMES), sd[i]
 
 
+def nonpolar_residue_monomer_2to1(h5file, tag):
+    for isomer in ['scyllo', 'chiro']:
+        for i in range(0, 6):
+            # chiro_run_set4_per_residue_contacts.dat
+            file = "%(isomer)s_run_set%(i)d_per_residue_contacts.dat" % vars()
+            print "analyzing ", file
+
+            # read in the file
+            data = numpy.genfromtxt(file, comments="#", dtype='float')
+            nrows,ncols = data.shape
+            print nrows
+
+            # sum over rows
+            time_avg = numpy.average(data[:,1:], axis=0)
+            print time_avg.shape
+            # time_avg.shape = (time_avg.size, ) 
+            print time_avg.shape
+            sum_over_peptides = numpy.sum(time_avg, axis=1)
+
+            data_list.append(sum_over_peptides)
+
+    # save results to flat files
+    nparray = numpy.array(data_list)
+
+    # dump the list of results for each system
+    numpy.savetxt('%(isomer)s_%(tag)s_nonpolar_residue_contact.txt' % vars(), nparray, fmt='%0.8f')
+
+    # average over all the systems; each system is a row in nparray
+    average = numpy.average(nparray, axis=0)
+    std = numpy.std(nparray, axis=0) / math.sqrt(5)
+
+    #save the normalized average and std
+    numpy.savetxt('%(isomer)s_%(tag)s_nonpolar_residue_contact_avg_std.txt' % vars(), [average, std], fmt='%0.8f')
+    
+
 def nonpolar_residue_disordered(h5file, tag):
     scyllo_pattern = re.compile(r'scyllo')
     chiro_pattern = re.compile(r'chiro')
