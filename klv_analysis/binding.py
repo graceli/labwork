@@ -402,13 +402,16 @@ def nonpolar_residue_disordered(h5file, tag):
     for table in h5file.listNodes("/nonpolar_residue", 'Table'):
         if atype_pattern.search(table.name):
             table_path = os.path.join("/nonpolar_residue", table.name)
+
+            print table_path
+
             data = myh5.getTableAsMatrix(h5file, table_path, dtype=numpy.float64)
             
-            print data
+            # print data
             
             sum_over_time = numpy.average(data[20000:N_datapoints, 1:], axis = 0)
             
-            print sum_over_time
+            # print sum_over_time
             
             # This matrix is Nres by 4, where 4 is the number of peptides in the system (disordered oligomer)
             # Each row of this matrix represents a single amino acid
