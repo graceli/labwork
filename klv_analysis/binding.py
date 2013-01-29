@@ -89,15 +89,32 @@ def compute_monomer_2to1_binding_constants(h5file, inositol_concentration):
             binding_constant = _binding_constant(polar_matrix, nonpolar_matrix, inositol_concentration)
             writer.writerow([iso, i, binding_constant, inositol_concentration])
 
-def compute_monomer_binding_constant(h5file, inositol_ratio, inositol_concentration, system_indices=[]):
-    polar_matrix = myh5.getTableAsMatrix(h5file, '/inositol/inos_total')
-    nonpolar_matrix = myh5.getTableAsMatrix(h5file, '/residue/per_inos_contacts')
-
-    writer = csv.writer(open(inositol_ratio + '_binding_constants.csv', 'wb'), delimiter=' ')
-    csv_header = ["isomer", "binding_constant", "inos_conc"]
+def compute_monomer_15to1_binding_constant(h5file, inositol_ratio, inositol_concentration):
+    writer = csv.writer(open('monomer_' + inositol_ratio + '_binding_constants.csv', 'wb'), delimiter=' ')
+    csv_header = ["isomer", "inositol_ratio", "binding_constant", "inos_conc"]
     writer.writerow(csv_header)
-    binding_constant = _binding_constant(polar_matrix, nonpolar_matrix, inositol_concentration)
-    writer.writerow([inositol_ratio, binding_constant, inositol_concentration])
+    for isomer in ["scyllo", "chiro"]:
+        for k in range(1, 6):
+            polar_big_matrix = numpy.array([], dtype=numpy.float64)
+            nonpolar_big_matrix = numpy.array([], dtype=numpy.float64)
+            from_idx = (k-1)*100 + 1
+            to_idx = k*100 + 1
+            
+            print "Computing run_set", k, "with systems from", from_idx, "to", to_idx-1
+            
+            for i in range(from_idx, to_idx):
+                polar_matrix = myh5.getTableAsMatrix(h5file, '/polar/%(isomer)s_sys%(i)d_inos_total.dat' % vars())
+                nonpolar_matrix = myh5.getTableAsMatrix(h5file, '/nonpolar/%(isomer)s_sys%(i)d_per_inositol_contacts.dat' % vars())
+                
+                if polar_matrix is not None and nonpolar_matrix is not None:
+                    polar_big_matrix = numpy.concatenate((polar_big_matrix, polar_matrix))
+                    nonpolar_big_matrix = numpy.concatenate((nonpolar_big_matrix, nonpolar_matrix))
+                else:
+                    print "data files (polar and nonpolar) for system", i, "was not found"
+            
+            binding_constant = _binding_constant(polar_big_matrix, nonpolar_matrix, inositol_concentration)
+            writer.writerow([isomer, inositol_ratio, binding_constant, inositol_concentration])     
+        # binding_constant = _binding_constant(polar_matrix, nonpolar_matrix, inositol_concentration)
 
 
 def _binding_constant(polarMatrix, nonpolarMatrix, inositol_concentration):
