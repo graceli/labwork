@@ -228,7 +228,7 @@ def intersection_disordered(h5file, ratio, system_indices):
         print data
         print numpy.array(data)
         average = numpy.average(numpy.array(data), axis=0)
-        std = numpy.std(numpy.array(data), axis=0)
+        std = numpy.std(numpy.array(data), axis=0) / len(system_indices)
         print average.tolist()
         print std.tolist()
         # 
