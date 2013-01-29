@@ -194,11 +194,19 @@ def intersection_disordered(h5file, ratio, system_indices):
     for iso in isomerList:
         data = []
         for sys in system_indices[iso]:
-            polarFile = os.path.join(polarPath, "%(iso)s_sys%(sys)s_%(ratio)s_" % vars() + polarName[ratio])
+            if ratio == "4to2":
+                polarFile = os.path.join(polarPath, "%(iso)s_sys%(sys)s_" % vars() + polarName[ratio])
+            else:
+                polarFile = os.path.join(polarPath, "%(iso)s_sys%(sys)s_%(ratio)s_" % vars() + polarName[ratio])
+
             print "analyzing", polarFile
             polarMatrix = myh5.getTableAsMatrix(h5file, polarFile, dtype=numpy.float64)
             print polarMatrix
-            nonpolarFile = os.path.join(nonpolarPath, "%(iso)s_sys%(sys)s_%(ratio)s_" % vars() + nonpolarName[ratio])
+            
+            if ratio == "4to2":
+                nonpolarFile = os.path.join(nonpolarPath, "%(iso)s_sys%(sys)s_" % vars() + nonpolarName[ratio])
+            else:
+                nonpolarFile = os.path.join(nonpolarPath, "%(iso)s_sys%(sys)s_%(ratio)s_" % vars() + nonpolarName[ratio])
             print "analyzing", nonpolarFile
 
             nonpolarMatrix = myh5.getTableAsMatrix(h5file, nonpolarFile, dtype=numpy.float64)[::2, :]
