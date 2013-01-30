@@ -281,12 +281,12 @@ def intersection_disordered(h5file, ratio, system_indices):
     resultsWriter.writerows(dataList)
 
 def intersection_beta_low_molar(h5file):
-    for iso in isomerList:
-        for sys in range(0, 6):
-            for i in range(1,6):
-                nonpolar_file = os.path.join(nonpolar_path, "%(iso)s_sys%(sys)d_t%(i)d_per_inositol_contacts.dat" % vars())
-                polar_file = os.path.join(polar_path, "%(iso)s_sys%(sys)d_t%(i)d_inos_total.dat" % vars())
-                _intersection(h5file, polar_file, nonpolar_file, "beta_low_molar_ratio")
+    for iso in ["scyllo", "chiro"]:
+        for sys in range(0, 3):
+            for i in range(1, 6):
+                nonpolar_file = os.path.join('/nonpolar_revision', "%(iso)s_sys%(sys)d_t%(i)d_per_inositol_contacts.dat" % vars())
+                polar_file = os.path.join('/polar', "%(iso)s_sys%(sys)d_t%(i)d_inos_total.dat" % vars())
+                _intersection(h5file, polar_file, nonpolar_file, "%(iso)s_beta_low_molar_ratio_sys%(sys)d_t%(i)d" % vars())
                 
 def _intersection(h5file, polar_file, nonpolar_file, tag):
     nonpolar_matrix = myh5.getTableAsMatrix(h5file, nonpolar_file, dtype=numpy.float64)
@@ -318,11 +318,9 @@ def _intersection(h5file, polar_file, nonpolar_file, tag):
         counts['nonpolar_only'] = counts['nonpolar_only'] / float(total)
 
 
-    writer = csv.DictWriter(open('%(tag)s_intersection%(sys)d.csv' % vars(), 'wb'), counts.keys())
-    if write_header is False:
-        writer.writeheader()
-    else:
-        write_header = True
+    writer = csv.DictWriter(open('%(tag)s_intersection.csv' % vars(), 'wb'), counts.keys())
+    writer.writeheader()
+    write_header = True
 
     # class csv.DictWriter(csvfile, fieldnames[, restval=''[, extrasaction='raise'[, dialect='excel'[, *args, **kwds]]]])
     print sys, counts
