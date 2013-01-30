@@ -251,6 +251,54 @@ def intersection_disordered(h5file, ratio, system_indices):
     # numpy.savetxt("15to4_intersection.gz", dataList, fmt='%s %d %0.3f %0.3f %0.3f %d')
     resultsWriter.writerows(dataList)
 
+def intersection_beta_low_molar(h5file):
+    for iso in isomerList:
+        for sys in range(0, 6):
+            for i in range(1,6):
+                nonpolar_file = os.path.join(nonpolar_path, "%(iso)s_sys%(sys)d_t%(i)d_per_inositol_contacts.dat" % vars())
+                polar_file = os.path.join(polar_path, "%(iso)s_sys%(sys)d_t%(i)d_inos_total.dat" % vars())
+                _intersection(h5file, polar_file, nonpolar_file, "beta_low_molar_ratio")
+                
+def _intersection(h5file, polar_file, nonpolar_file, tag):
+    nonpolar_matrix = myh5.getTableAsMatrix(h5file, nonpolar_file, dtype=numpy.float64)
+    polar_matrix = myh5.getTableAsMatrix(h5file, polar_file, dtype=numpy.float64)
+
+    counts = {'polar_only' : 0, 'nonpolar_only' : 0, 'polar_nonpolar' : 0}
+
+    if polar_matrix is not None and nonpolar_matrix is not None:
+        print polar_matrix.shape
+        print nonpolar_matrix.shape
+
+        assert polar_matrix.shape == nonpolar_matrix.shape, "the two matrices are expected to have the same dimensions"
+
+        nrows, ncols = polar_matrix.shape
+        for i in range(1, nrows):
+            for j in range(1, ncols):
+                if polar_matrix[i][j] and nonpolar_matrix[i][j]:
+                    counts['polar_nonpolar'] += 1
+                elif polar_matrix[i][j]:
+                    counts['polar_only'] += 1
+                elif nonpolar_matrix[i][j]:
+                    counts['nonpolar_only'] += 1
+
+    # normalize
+    total = counts['polar_nonpolar'] + counts['polar_only'] + counts['nonpolar_only']
+    if total != 0:
+        counts['polar_nonpolar'] = counts['polar_nonpolar'] / float(total)
+        counts['polar_only'] = counts['polar_only'] / float(total)
+        counts['nonpolar_only'] = counts['nonpolar_only'] / float(total)
+
+
+    writer = csv.DictWriter(open('%(tag)s_intersection%(sys)d.csv' % vars(), 'wb'), counts.keys())
+    if write_header is False:
+        writer.writeheader()
+    else:
+        write_header = True
+
+    # class csv.DictWriter(csvfile, fieldnames[, restval=''[, extrasaction='raise'[, dialect='excel'[, *args, **kwds]]]])
+    print sys, counts
+    writer.writerow(counts)
+               
 def intersection_beta(h5file, tag):
     isomerList = ["scyllo", "chiro"]
     polar_path = "/polar"
