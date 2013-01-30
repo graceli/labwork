@@ -163,6 +163,47 @@ def _binding_constant(polarMatrix, nonpolarMatrix, inositol_concentration):
     
     return binding_constant
 
+def intersection_mon_low_molar_ratio(h5file, ratio):
+    for iso in ['scyllo', 'chiro']:
+        for run_set in range(0, 6):
+            polar_matrix = myh5.getTableAsMatrix(h5file, os.path.join('/polar', '%(iso)d_sys%(run_set)d_mon_2to1_inos_total.dat' % vars())
+            nonpolar_matrix = myh5.getTableAsMatrix(h5file, os.path.join('/nonpolar_residue', '%(iso)d_sys%(run_set)d_mon_2to1_inos_total.dat' % vars())
+
+            print polar_matrix.shape
+            print nonpolar_matrix.shape
+
+            assert polar_matrix.shape == nonpolar_matrix.shape, "the two matrices are expected to have the same dimensions"
+
+            nrows, ncols = polar_matrix.shape
+            counts = [{'polar_only':0, 'nonpolar_only':0, 'polar_nonpolar':0}, {'polar_only':0, 'nonpolar_only':0, 'polar_nonpolar':0}]
+            for i in range(0, nrows): 
+                for j in range(1, ncols):
+                    if polar_matrix[i][0] < 7500:
+                        if polar_matrix[i][j] and nonpolar_matrix[i][j]:
+                            counts[0]['polar_nonpolar'] += 1
+                        elif polar_matrix[i][j]:
+                            counts[0]['polar_only'] += 1
+                        elif nonpolar_matrix[i][j]:
+                            counts[0]['nonpolar_only'] += 1
+                    else:
+                        if polar_matrix[i][j] and nonpolar_matrix[i][j]:
+                            counts[1]['polar_nonpolar'] += 1
+                        elif polar_matrix[i][j]:
+                            counts[1]['polar_only'] += 1
+                        elif nonpolar_matrix[i][j]:
+                            counts[1]['nonpolar_only'] += 1
+
+            # class csv.DictWriter(csvfile, fieldnames[, restval=''[, extrasaction='raise'[, dialect='excel'[, *args, **kwds]]]])
+            total = counts[0]['polar_only'] + counts[0]['nonpolar_only'] + counts[0]['polar_nonpolar']
+            fraction = {'polar_only': float(counts[0]['polar_only']) / total, 'nonpolar_only' : float(counts[0]['nonpolar_only']) / total, 'polar_nonpolar' : float(counts[0]['polar_nonpolar']) / total}
+
+            print counts[0]
+
+            writer = csv.DictWriter(open('%(iso)d_sys%(run_set)d_mon_2to1_inos_total.dat' % vars(), 'wb'), counts[0].keys())
+            writer.writeheader()
+            writer.writerow(counts[0])
+            writer.writerow(fraction)
+
 
 def intersection_mon(h5file, csv_file, isomer, ratio):
     polar_matrix = myh5.getTableAsMatrix(h5file, '/inositol/inos_total')
