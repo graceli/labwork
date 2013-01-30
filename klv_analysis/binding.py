@@ -72,7 +72,7 @@ def compute_beta_binding_constant(h5file, inositol_ratio, inositol_concentration
 
 
 def compute_beta_low_molar_binding_constant(h5file, inositol_ratio, inositol_concentration):
-    assert len(system_indices) > 0, "List of system indices should be non-empty."
+    # assert len(system_indices) > 0, "List of system indices should be non-empty."
     
     isomerList = ["scyllo", "chiro"]
     polar_path = "/polar"
@@ -166,10 +166,11 @@ def _binding_constant(polarMatrix, nonpolarMatrix, inositol_concentration):
 def intersection_mon_low_molar_ratio(h5file, ratio):
     for iso in ['scyllo', 'chiro']:
         for run_set in range(0, 6):
-            polar_matrix = myh5.getTableAsMatrix(h5file, os.path.join('/polar', '%(iso)d_sys%(run_set)d_mon_2to1_inos_total.dat' % vars())
-            nonpolar_matrix = myh5.getTableAsMatrix(h5file, os.path.join('/nonpolar_residue', '%(iso)d_sys%(run_set)d_mon_2to1_inos_total.dat' % vars())
-
+            polar_matrix = myh5.getTableAsMatrix(h5file, os.path.join('/polar', '%(iso)s_sys%(run_set)d_mon_2to1_inos_total.dat' % vars()), dtype=numpy.float64)
+            print polar_matrix
             print polar_matrix.shape
+            nonpolar_matrix = myh5.getTableAsMatrix(h5file, os.path.join('/nonpolar_residue', '%(iso)s_sys%(run_set)d_mon_2to1_per_inositol_contacts.dat' % vars()), dtype=numpy.float64)
+            print nonpolar_matrix
             print nonpolar_matrix.shape
 
             assert polar_matrix.shape == nonpolar_matrix.shape, "the two matrices are expected to have the same dimensions"
@@ -178,20 +179,12 @@ def intersection_mon_low_molar_ratio(h5file, ratio):
             counts = [{'polar_only':0, 'nonpolar_only':0, 'polar_nonpolar':0}, {'polar_only':0, 'nonpolar_only':0, 'polar_nonpolar':0}]
             for i in range(0, nrows): 
                 for j in range(1, ncols):
-                    if polar_matrix[i][0] < 7500:
-                        if polar_matrix[i][j] and nonpolar_matrix[i][j]:
-                            counts[0]['polar_nonpolar'] += 1
-                        elif polar_matrix[i][j]:
-                            counts[0]['polar_only'] += 1
-                        elif nonpolar_matrix[i][j]:
-                            counts[0]['nonpolar_only'] += 1
-                    else:
-                        if polar_matrix[i][j] and nonpolar_matrix[i][j]:
-                            counts[1]['polar_nonpolar'] += 1
-                        elif polar_matrix[i][j]:
-                            counts[1]['polar_only'] += 1
-                        elif nonpolar_matrix[i][j]:
-                            counts[1]['nonpolar_only'] += 1
+                    if polar_matrix[i][j] and nonpolar_matrix[i][j]:
+                        counts[0]['polar_nonpolar'] += 1
+                    elif polar_matrix[i][j]:
+                        counts[0]['polar_only'] += 1
+                    elif nonpolar_matrix[i][j]:
+                        counts[0]['nonpolar_only'] += 1
 
             # class csv.DictWriter(csvfile, fieldnames[, restval=''[, extrasaction='raise'[, dialect='excel'[, *args, **kwds]]]])
             total = counts[0]['polar_only'] + counts[0]['nonpolar_only'] + counts[0]['polar_nonpolar']
@@ -199,7 +192,7 @@ def intersection_mon_low_molar_ratio(h5file, ratio):
 
             print counts[0]
 
-            writer = csv.DictWriter(open('%(iso)d_sys%(run_set)d_mon_2to1_inos_total.dat' % vars(), 'wb'), counts[0].keys())
+            writer = csv.DictWriter(open('%(iso)s_sys%(run_set)d_mon_2to1_intersection.csv' % vars(), 'wb'), counts[0].keys())
             writer.writeheader()
             writer.writerow(counts[0])
             writer.writerow(fraction)
