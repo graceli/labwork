@@ -486,6 +486,52 @@ def nonpolar_residue_beta(isomer):
     #save the normalized average and std
     numpy.savetxt('%(isomer)s_nonpolar_residue_contact_avg_std.txt' % vars(), [average, std], fmt='%0.8f')
 
+
+# This was originally the script binding_pattern.py which operates on the beta oligomer nonpolar residue
+# binding dataset
+def nonpolar_residue_beta_low_molar(h5file, system_indices=[]):
+    assert len(system_indices) > 0, "The list of system_indices should not be empty"
+
+    for isomer in ["scyllo", "chiro"]:
+        data_list = []
+        for s in system_indices:
+            nonpolar_residue_large = numpy.array([])
+            for i in range(0,3):
+                nonpolar_residue_path = "/nonpolar/%(isomer)s_sys%(s)d_t%(i)d_per_residue_contacts.dat" % vars()
+                print "analyzing ", nonpolar_residue_path
+
+                # read in the file
+                data = myh5.getTableAsMatrix(h5file, nonpolar_residue_path, dtype=numpy.float64)
+                
+                nonpolar_residue_large = numpy.concatenate(nonpolar_residue_large, data)
+                
+                # data = numpy.genfromtxt(file, comments="#", dtype='float')
+                nrows,ncols = nonpolar_residue_large.shape
+                print nrows, ncols
+
+            # sum over rows
+            time_avg = numpy.average(nonpolar_residue_large[:,1:], axis=0)
+            print time_avg.shape
+            time_avg.shape = (time_avg.size / 16, 16) 
+            print time_avg.shape
+            sum_over_peptides = numpy.sum(time_avg, axis = 1)
+
+            data_list.append(sum_over_peptides)
+
+    # save results to flat files
+    nparray = numpy.array(data_list)
+
+    # dump the list of results for each system
+    numpy.savetxt('%(isomer)s_low_molar_nonpolar_residue_contact.txt' % vars(), nparray, fmt='%0.8f')
+
+    # average over all the systems; each system is a row in nparray
+    average = numpy.average(nparray, axis=0) / 16 
+    std = numpy.std(nparray, axis=0) / 16 / math.sqrt()
+
+    #save the normalized average and std
+    numpy.savetxt('%(isomer)s_low_molar_nonpolar_residue_contact_avg_std.txt' % vars(), [average, std], fmt='%0.8f')
+
+
 if __name__ == '__main__':
     if len(sys.argv) < 3:
         parser.error("Please specify a .h5 input file and a tag for output")
