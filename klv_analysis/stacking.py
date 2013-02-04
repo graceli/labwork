@@ -76,17 +76,21 @@ def oligomer_stacking(h5file, type, system_indices = []):
 
         print stacked_system_total, bound_system_total, stacked_system_total / float(bound_system_total)
 
-
-# TODO: refactor this to work for both ratios for the monomer system
-def monomer_stacking_2to1(h5file):
-    # h5file = tables.openFile('monomer_2to1.h5')
-        
+def monomer_stacking(h5file, ratio):
     for i in range(0, 6):
-        residue_file = '/nonpolar_residue/scyllo_sys%(i)d_mon_2to1_per_residue_contacts.dat' % vars()
-
-        # /stacking/scyllo_sys9_per_phe_stacking.dat
-        phe_stacking_file = '/stacking/scyllo_sys%(i)d_per_phe_stacking.dat' % vars()
-
+        residue_file = ""
+        phe_stacking_file = ""
+        if ratio == "2to1":
+            residue_file = '/nonpolar_residue/scyllo_sys%(i)d_mon_2to1_per_residue_contacts.dat' % vars()
+            phe_stacking_file = '/stacking/scyllo_sys%(i)d_per_phe_stacking.dat' % vars()
+        elif ratio == "15to1":
+            residue_file = '/nonpolar/scyllo_sys%(i)d_per_residue_contacts.dat' % vars()
+            phe_stacking_file = '/stacking/scyllo_sys%(i)d_per_phe_stacking.dat' % vars()
+        else:
+            # TODO: Throw a custom exception here
+            print "ratio ", ratio, "is not recognized"
+            sys.exit()
+            
         residue_matrix = myh5.getTableAsMatrix(h5file, residue_file, dtype=numpy.float64)
         phe_stacking  = myh5.getTableAsMatrix(h5file, phe_stacking_file, dtype=numpy.float64)
 
