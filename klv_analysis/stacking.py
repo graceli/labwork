@@ -1,5 +1,7 @@
 import tables
 import numpy
+import sys
+import csv
 
 import plot_and_save2hdf5 as myh5
 
@@ -76,16 +78,21 @@ def oligomer_stacking(h5file, type, system_indices = []):
 
         print stacked_system_total, bound_system_total, stacked_system_total / float(bound_system_total)
 
-def monomer_stacking(h5file, ratio):
-    for i in range(0, 6):
+def monomer_stacking(h5file, ratio, system_indices):
+    writer = csv.writer(open(ratio + '_monomer_stacking.csv', 'wb'))
+    header = ["stacked","bound", "stacked/bound"]
+    writer.writerow(header)
+    for i in system_indices:
         residue_file = ""
         phe_stacking_file = ""
         if ratio == "2to1":
             residue_file = '/nonpolar_residue/scyllo_sys%(i)d_mon_2to1_per_residue_contacts.dat' % vars()
             phe_stacking_file = '/stacking/scyllo_sys%(i)d_per_phe_stacking.dat' % vars()
+            print residue_file, phe_stacking_file
         elif ratio == "15to1":
             residue_file = '/nonpolar/scyllo_sys%(i)d_per_residue_contacts.dat' % vars()
             phe_stacking_file = '/stacking/scyllo_sys%(i)d_per_phe_stacking.dat' % vars()
+            print residue_file, phe_stacking_file
         else:
             # TODO: Throw a custom exception here
             print "ratio ", ratio, "is not recognized"
@@ -94,8 +101,15 @@ def monomer_stacking(h5file, ratio):
         residue_matrix = myh5.getTableAsMatrix(h5file, residue_file, dtype=numpy.float64)
         phe_stacking  = myh5.getTableAsMatrix(h5file, phe_stacking_file, dtype=numpy.float64)
 
-        nrows, ncols = residue_matrix.shape
+        if residue_matrix is None or phe_stacking is None:
+            print residue_file, "or", phe_stacking_file, "does not exist"
+            continue
+
         print residue_matrix.shape, phe_stacking.shape
+        assert residue_matrix.shape[0] == phe_stacking.shape[0], "Residue and phe stacking matrices must have the same number of lines"
+
+        nrows, ncols = residue_matrix.shape
+
         bound = 0.0
         stacked = 0.0
         for k in range(0, nrows):
@@ -111,4 +125,4 @@ def monomer_stacking(h5file, ratio):
             if phe_stacking[k][2] > 0:
                 stacked = stacked + 1
 
-        print stacked, bound, stacked / float(bound)
+        writer.writerow([stacked, bound, stacked / float(bound)])
