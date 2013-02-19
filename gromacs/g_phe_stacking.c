@@ -343,8 +343,12 @@ int main(int argc,char *argv[]) {
 	static int numInositols = 0;
 	static int NPHE = 0;
 	real CUTOFF = 0.45;     /*the np cbeta-inositol cutoff in nm*/
+    real DEGREE_CUTOFF = 20.0;
 
 	static t_pargs pa[] = {
+        { "-deg",       FALSE, etREAL, {&DEGREE_CUTOFF},
+          "cutoff used for planar angle of inositol and phenyl ring"},
+
 		{ "-dist",      FALSE, etREAL, {&CUTOFF},
 		  "cutoff used for com-com calculations"},
 
@@ -506,7 +510,7 @@ int main(int argc,char *argv[]) {
                 }
 
 				if(in_contact) {
-                    if(angle_degrees < 15.0 || (180 - angle_degrees) < 15.0) {
+                    if(angle_degrees < DEGREE_CUTOFF || (180 - angle_degrees) < DEGREE_CUTOFF) {
                     	f_debug << "STACKED " << endl;
                         phe_stacking[phe_num]++;
                         inos_stacking[ins_num]++;

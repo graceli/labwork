@@ -159,12 +159,12 @@ int main(int argc,char *argv[])
 	j=index[1][i];
 	pbc_dx(&pbc,x[j],com[0],dx);
 	dist2 = norm2(dx);
-	if (dist2<cut2) {
+	/*if (dist2<cut2) {
 	  res=top->atoms.atom[j].resnr;
 	  fprintf(stdout,"\rt: %g  %d %s %d %s  %g (nm)\n",
 		  t,res+1,*top->atoms.resname[res],
 		  j+1,*top->atoms.atomname[j],sqrt(dist2));     
-	} 
+	} */
       }
     }
     

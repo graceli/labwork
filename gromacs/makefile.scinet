@@ -6,14 +6,13 @@ LDFLAGS      = -L /project/p/pomes/cneale/GPC/exe/intel/gromacs-4.0.5/exec/lib -
 CFLAGS       = -ggdb3 -O3 -w -funroll-all-loops -std=gnu99  -I/project/p/pomes/cneale/GPC/exe/intel/gromacs-4.0.5/exec/lib -I/project/p/pomes/cneale/GPC/exe/intel/gromacs-4.0.5/exec/include/gromacs
 CC           = c++
 LD           = $(CC)
-
-BIN 	     = g_pp_nonpolar g_inositol_residue_nonpolar_v2 g_eed g_mdmat_g 
+BIN 	     = g_pp_nonpolar g_inositol_residue_nonpolar_v2 g_eed g_mdmat_g clustering stacking 
 HOME         = /home/p/pomes/grace
 # The real make targets - note that most make programs support
 # the shortcut $^ instead of listing all object files a second
 # time, but we cannot count on it...
 
-all: g_pp_nonpolar g_inositol_residue_nonpolar_v2
+all: $(BIN) 
 
 g_pp_nonpolar:  g_pp_nonpolar.o
 	$(LD) $(LDFLAGS) -o $(HOME)/bin/$@ g_pp_nonpolar.o $(LIBS)
@@ -23,6 +22,9 @@ g_inositol_residue_nonpolar_v2: g_inositol_residue_nonpolar_v2.o
 
 stacking: g_phe_stacking.o
 	$(LD) $(LDFLAGS) -o $(HOME)/bin/$@ g_phe_stacking.o $(LIBS)
+
+clustering: g_clustsize_grace.o
+	$(LD) $(LDFLAGS) -o $(HOME)/bin/$@ g_clustsize_grace.o $(LIBS)
 
 g_eed: g_eed.o
 	$(LD) $(LDFLAGS) -o $(HOME)/bin/$@ g_eed.o $(LIBS)
