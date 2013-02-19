@@ -3,9 +3,11 @@
 using namespace std;
 
 //c++ libraries
+#include <map>
 #include <set>
 #include <vector>
 #include <sstream>
+#include <iostream>
 #include <fstream>
 
 extern "C" {
@@ -41,9 +43,11 @@ extern "C" {
 #include "mtop_util.h"
 }
 
-void output_cluster_info(t_topology *top, int* clust_index) {
+void output_cluster_info(gmx_mtop_t *mtop, const string &output, int* clust_index, int nindex, real t) {
 	// Transform clust_index into a data structure that can be outputted to identify the inositol molecules in a particular
 	// cluster
+
+	t_topology top = gmx_mtop_t_to_t_topology(mtop);
 
 	typedef map<int, set<int> >::iterator MapIter;
 	typedef set<int>::iterator SetIter;
@@ -53,8 +57,8 @@ void output_cluster_info(t_topology *top, int* clust_index) {
 
 	// This vector maps cluster id to a set containing the residue ids of inositol
 	map<int, set<int> > cluster_info;
-	for(i=0; (i < nindex); i++) {
-		int inos_residue_id = top->atoms.atom[i].resnr;
+	for(int i=0; (i < nindex); i++) {
+		int inos_residue_id = top.atoms.atom[i].resnr;
 		int cluster_id = clust_index[i];
 		cluster_info[cluster_id].insert(inos_residue_id);
 	}
@@ -62,21 +66,21 @@ void output_cluster_info(t_topology *top, int* clust_index) {
 	// Find all the clusters with only one molecule
 	set<int> unclustered_residue_ids;
 	for(map_iter = cluster_info.begin(); (map_iter != cluster_info.end()); ++map_iter) {
-		set<int>* cluster = map_iter->second;
-		if(cluster->size() == 1) {
+		set<int> cluster = map_iter->second;
+		if(cluster.size() == 1) {
 			// Since the set has only one element, the first element pointed to by the iterator
 			// should be that element.
-			unclustered_residue_ids.insert(*(cluster->begin()));
+			unclustered_residue_ids.insert(*(cluster.begin()));
 		}
 	}
 
-	ofstream f_cluster_info(cluster_info);
+	ofstream f_cluster_info(output.c_str());
 	// Output the cluster info data
 	for(map_iter = cluster_info.begin(); map_iter != cluster_info.end(); ++map_iter) {
-		set<int>* a_cluster = map_iter->second;
-		if(a_cluster->size() > 1) {
+		set<int> a_cluster = map_iter->second;
+		if(a_cluster.size() > 1) {
 			f_cluster_info << t << " yes";
-			for(set_iter = a_cluster->begin(); set_iter != a_cluster->end(); ++set_iter) {
+			for(set_iter = a_cluster.begin(); set_iter != a_cluster.end(); ++set_iter) {
 				f_cluster_info << " " << *set_iter;
 			}
 			f_cluster_info << endl;
@@ -278,7 +282,7 @@ static void clust_size(char *ndx, char *trx, char *xpm,
 				fprintf(gp,"%14.6e  %10.3f\n",fr.time,cav/nav);
 			fprintf(hp, "%14.6e  %10d\n",fr.time,max_clust_size);
 
-			output_cluster_info();
+			output_cluster_info(mtop, "cluster_test.dat", clust_index, nindex, fr.time);
 		}
 		/* Analyse velocities, if present */
 		if (fr.bV) {
@@ -381,22 +385,22 @@ static void clust_size(char *ndx, char *trx, char *xpm,
 int gmx_clustsize(int argc,char *argv[])
 {
 	static char *desc[] = {
-			"This program computes the size distributions of molecular/atomic clusters in",
-			"the gas phase. The output is given in the form of a XPM file.",
-			"The total number of clusters is written to a XVG file.[PAR]",
-			"When the [TT]-mol[tt] option is given clusters will be made out of",
-			"molecules rather than atoms, which allows clustering of large molecules.",
-			"In this case an index file would still contain atom numbers",
-			"or your calculcation will die with a SEGV.[PAR]",
-			"When velocities are present in your trajectory, the temperature of",
-			"the largest cluster will be printed in a separate xvg file assuming",
-			"that the particles are free to move. If you are using constraints,",
-			"please correct the temperature. For instance water simulated with SHAKE",
-			"or SETTLE will yield a temperature that is 1.5 times too low. You can",
-			"compensate for this with the -ndf option. Remember to take the removal",
-			"of center of mass motion into account.[PAR]",
-			"The [TT]-mc[tt] option will produce an index file containing the",
-			"atom numbers of the largest cluster."
+		"This program computes the size distributions of molecular/atomic clusters in",
+		"the gas phase. The output is given in the form of a XPM file.",
+		"The total number of clusters is written to a XVG file.[PAR]",
+		"When the [TT]-mol[tt] option is given clusters will be made out of",
+		"molecules rather than atoms, which allows clustering of large molecules.",
+		"In this case an index file would still contain atom numbers",
+		"or your calculcation will die with a SEGV.[PAR]",
+		"When velocities are present in your trajectory, the temperature of",
+		"the largest cluster will be printed in a separate xvg file assuming",
+		"that the particles are free to move. If you are using constraints,",
+		"please correct the temperature. For instance water simulated with SHAKE",
+		"or SETTLE will yield a temperature that is 1.5 times too low. You can",
+		"compensate for this with the -ndf option. Remember to take the removal",
+		"of center of mass motion into account.[PAR]",
+		"The [TT]-mc[tt] option will produce an index file containing the",
+		"atom numbers of the largest cluster."
 	};
 
 	static real cutoff   = 0.35;

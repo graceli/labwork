@@ -14,3 +14,6 @@ nonpolar:	g_inositol_residue_nonpolar_v2.o
 		$(LD) $(LDFLAGS) -o $@ g_inositol_residue_nonpolar_v2.o $(LIBS)
 stacking:	g_phe_stacking.o
 		$(LD) $(LDFLAGS) -o $@ g_phe_stacking.o $(LIBS)
+clustering: g_clustsize_grace.o
+		$(LD) $(LDFLAGS) -o $@ g_clustsize_grace.o $(LIBS)
+
