@@ -3,7 +3,7 @@
 # Variables set by the configuration script:
 LIBS         = -lxml2 -lmd -lgmx -lnsl -lfftw3f
 LDFLAGS      = -L /project/p/pomes/cneale/GPC/exe/intel/gromacs-4.0.5/exec/lib -L /project/p/pomes/cneale/GPC/exe/intel/fftw-3.1.2/exec/lib
-CFLAGS       = -ggdb3 -O3 -w -funroll-all-loops -std=gnu99  -I/project/p/pomes/cneale/GPC/exe/intel/gromacs-4.0.5/exec/lib -I/project/p/pomes/cneale/GPC/exe/intel/gromacs-4.0.5/exec/include/gromacs
+CFLAGS       = -fpermissive -ggdb3 -O3 -w -funroll-all-loops -std=gnu99  -I/project/p/pomes/cneale/GPC/exe/intel/gromacs-4.0.5/exec/lib -I/project/p/pomes/cneale/GPC/exe/intel/gromacs-4.0.5/exec/include/gromacs
 CC           = c++
 LD           = $(CC)
 BIN 	     = g_pp_nonpolar g_inositol_residue_nonpolar_v2 g_eed g_mdmat_g clustering stacking 

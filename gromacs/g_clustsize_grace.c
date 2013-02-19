@@ -43,11 +43,12 @@ extern "C" {
 #include "mtop_util.h"
 }
 
-void output_cluster_info(gmx_mtop_t *mtop, const string &output, int* clust_index, int nindex, real t) {
+void output_cluster_info(gmx_mtop_t *mtop, atom_id* index, ofstream &f_cluster_info, int* clust_index, int nindex, real t) {
 	// Transform clust_index into a data structure that can be outputted to identify the inositol molecules in a particular
 	// cluster
 
-	t_topology top = gmx_mtop_t_to_t_topology(mtop);
+	// t_topology top = gmx_mtop_t_to_t_topology(mtop);
+    cout << "A" << endl;
 
 	typedef map<int, set<int> >::iterator MapIter;
 	typedef set<int>::iterator SetIter;
@@ -58,10 +59,13 @@ void output_cluster_info(gmx_mtop_t *mtop, const string &output, int* clust_inde
 	// This vector maps cluster id to a set containing the residue ids of inositol
 	map<int, set<int> > cluster_info;
 	for(int i=0; (i < nindex); i++) {
-		int inos_residue_id = top.atoms.atom[i].resnr;
+		//int inos_residue_id = top.atoms.atom[i].resnr;
+	    int inos_residue_id = mtop->moltype->atoms.atom[index[i]].resnr;
 		int cluster_id = clust_index[i];
 		cluster_info[cluster_id].insert(inos_residue_id);
 	}
+
+    cout << "B" << endl;
 
 	// Find all the clusters with only one molecule
 	set<int> unclustered_residue_ids;
@@ -74,7 +78,8 @@ void output_cluster_info(gmx_mtop_t *mtop, const string &output, int* clust_inde
 		}
 	}
 
-	ofstream f_cluster_info(output.c_str());
+    cout << "C" << endl;
+
 	// Output the cluster info data
 	for(map_iter = cluster_info.begin(); map_iter != cluster_info.end(); ++map_iter) {
 		set<int> a_cluster = map_iter->second;
@@ -87,18 +92,21 @@ void output_cluster_info(gmx_mtop_t *mtop, const string &output, int* clust_inde
 		}
 	}
 
+    cout << "D" << endl;
+
 	// Output the molecules that are not in a cluster on a single row
 	f_cluster_info << t << " no";
 	for(set_iter = unclustered_residue_ids.begin(); set_iter != unclustered_residue_ids.end(); ++set_iter) {
 		f_cluster_info << " " << *set_iter;
 	}
 	f_cluster_info << endl;
+    cout << "E" << endl;
 }
 
 static void clust_size(char *ndx, char *trx, char *xpm,
 		char *xpmw, char *ncl, char *acl,
 		char *mcl, char *histo, char *tempf,
-		char *mcn, bool bMol, bool bPBC, char *tpr,
+		char *mcn, char* cluster_info_output_name, bool bMol, bool bPBC, char *tpr,
 		real cut, int nskip, int nlevels,
 		t_rgb rmid, t_rgb rhi, int ndf)
 {
@@ -183,6 +191,8 @@ static void clust_size(char *ndx, char *trx, char *xpm,
 	max_clust_size = 1;
 	max_clust_ind  = -1;
 
+
+    ofstream f_cluster_info(cluster_info_output_name);
 	do {
 		if ((nskip == 0) || ((nskip > 0) && ((nframe % nskip) == 0))) {
 			if (bPBC)
@@ -282,19 +292,17 @@ static void clust_size(char *ndx, char *trx, char *xpm,
 				fprintf(gp,"%14.6e  %10.3f\n",fr.time,cav/nav);
 			fprintf(hp, "%14.6e  %10d\n",fr.time,max_clust_size);
 
-			output_cluster_info(mtop, "cluster_test.dat", clust_index, nindex, fr.time);
+			output_cluster_info(mtop, index, f_cluster_info, clust_index, nindex, fr.time);
 		}
 		/* Analyse velocities, if present */
-		if (fr.bV) {
+		/* if (fr.bV) {
 			if (!tpr) {
 				if (bTPRwarn) {
 					printf("You need a tpr file to analyse temperatures\n");
 					bTPRwarn = FALSE;
 				}
-			}
-			else {
+			} else {
 				v = fr.v;
-				/* Loop over clusters and for each cluster compute 1/2 m v^2 */
 				if (max_clust_ind >= 0) {
 					ekin = 0;
 					for(i=0; (i<nindex); i++)
@@ -306,8 +314,8 @@ static void clust_size(char *ndx, char *trx, char *xpm,
 					temp = (ekin*2.0)/(3.0*tfac*max_clust_size*BOLTZ);
 					fprintf(tp,"%10.3f  %10.3f\n",fr.time,temp);
 				}
-			}
-		}
+			} 
+		} */
 		nframe++;
 	} while (read_next_frame(status,&fr));
 	close_trx(status);
@@ -411,9 +419,12 @@ int gmx_clustsize(int argc,char *argv[])
 	static bool bPBC     = TRUE;
 	static rvec rlo      = { 1.0, 1.0, 0.0 };
 	static rvec rhi      = { 0.0, 0.0, 1.0 };
+    char* clust_info_output_name = "clust_info.dat";
 	t_pargs pa[] = {
 		{ "-cut",      FALSE, etREAL, {&cutoff},
 		"Largest distance (nm) to be considered in a cluster" },
+        { "-clust-info", FALSE, etSTR, {&clust_info_output_name},
+        "Outputs the cluster information for inositol clusters detected"},
 		{ "-mol",      FALSE, etBOOL, {&bMol},
 		"Cluster molecules rather than atoms (needs tpr file)" },
 		{ "-pbc",      FALSE, etBOOL, {&bPBC},
@@ -445,7 +456,7 @@ int gmx_clustsize(int argc,char *argv[])
 			{ efXVG, "-ac","avclust",     ffWRITE },
 			{ efXVG, "-hc","histo-clust", ffWRITE },
 			{ efXVG, "-temp","temp",     ffOPTWR },
-			{ efNDX, "-mcn", "maxclust", ffOPTWR }
+			{ efNDX, "-mcn", "maxclust", ffOPTWR },
 	};
 #define NFILE asize(fnm)
 
@@ -466,6 +477,7 @@ int gmx_clustsize(int argc,char *argv[])
 			opt2fn("-nc",NFILE,fnm),opt2fn("-ac",NFILE,fnm),
 			opt2fn("-mc",NFILE,fnm),opt2fn("-hc",NFILE,fnm),
 			opt2fn("-temp",NFILE,fnm),opt2fn("-mcn",NFILE,fnm),
+            clust_info_output_name,
 			bMol, bPBC, fnTPR,
 			cutoff, nskip, nlevels, rgblo, rgbhi, ndf);
 
