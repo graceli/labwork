@@ -296,7 +296,7 @@ static void clust_size(char *ndx, char *trx, char *xpm,
 			output_cluster_info(mtop, index, f_cluster_info, clust_index, nindex, fr.time);
 		}
 		/* Analyse velocities, if present */
-		/* if (fr.bV) {
+		if (fr.bV) {
 			if (!tpr) {
 				if (bTPRwarn) {
 					printf("You need a tpr file to analyse temperatures\n");
@@ -316,7 +316,7 @@ static void clust_size(char *ndx, char *trx, char *xpm,
 					fprintf(tp,"%10.3f  %10.3f\n",fr.time,temp);
 				}
 			} 
-		} */
+		}
 		nframe++;
 	} while (read_next_frame(status,&fr));
 	close_trx(status);
@@ -425,7 +425,7 @@ int gmx_clustsize(int argc,char *argv[])
 		{ "-cut",      FALSE, etREAL, {&cutoff},
 		"Largest distance (nm) to be considered in a cluster" },
         { "-clust-info", FALSE, etSTR, {&clust_info_output_name},
-        "Outputs the cluster information for inositol clusters detected"},
+        "Outputs the cluster information for inositol clusters detected. Note: With this option, the tpr needs to be passed in or else the program will crash with a segmentation fault."},
 		{ "-mol",      FALSE, etBOOL, {&bMol},
 		"Cluster molecules rather than atoms (needs tpr file)" },
 		{ "-pbc",      FALSE, etBOOL, {&bPBC},
