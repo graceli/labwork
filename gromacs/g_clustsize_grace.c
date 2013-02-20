@@ -48,8 +48,6 @@ void output_cluster_info(gmx_mtop_t *mtop, atom_id* index, ofstream &f_cluster_i
 	// cluster
 
 	// t_topology top = gmx_mtop_t_to_t_topology(mtop);
-    cout << "A" << endl;
-
 	typedef map<int, set<int> >::iterator MapIter;
 	typedef set<int>::iterator SetIter;
 
@@ -65,8 +63,6 @@ void output_cluster_info(gmx_mtop_t *mtop, atom_id* index, ofstream &f_cluster_i
 		cluster_info[cluster_id].insert(inos_residue_id);
 	}
 
-    cout << "B" << endl;
-
 	// Find all the clusters with only one molecule
 	set<int> unclustered_residue_ids;
 	for(map_iter = cluster_info.begin(); (map_iter != cluster_info.end()); ++map_iter) {
@@ -78,29 +74,34 @@ void output_cluster_info(gmx_mtop_t *mtop, atom_id* index, ofstream &f_cluster_i
 		}
 	}
 
-    cout << "C" << endl;
-
 	// Output the cluster info data
 	for(map_iter = cluster_info.begin(); map_iter != cluster_info.end(); ++map_iter) {
 		set<int> a_cluster = map_iter->second;
 		if(a_cluster.size() > 1) {
-			f_cluster_info << t << " yes";
-			for(set_iter = a_cluster.begin(); set_iter != a_cluster.end(); ++set_iter) {
-				f_cluster_info << " " << *set_iter;
+			f_cluster_info << t << ",yes,";
+            set_iter = a_cluster.begin();
+			while(set_iter != a_cluster.end()) {
+				f_cluster_info << *set_iter;
+                ++set_iter;
+                if(set_iter != a_cluster.end()) {
+                    f_cluster_info << " ";
+                }
 			}
 			f_cluster_info << endl;
 		}
 	}
 
-    cout << "D" << endl;
-
 	// Output the molecules that are not in a cluster on a single row
-	f_cluster_info << t << " no";
-	for(set_iter = unclustered_residue_ids.begin(); set_iter != unclustered_residue_ids.end(); ++set_iter) {
-		f_cluster_info << " " << *set_iter;
+	f_cluster_info << t << ",no,";
+    set_iter = unclustered_residue_ids.begin();
+	while(set_iter != unclustered_residue_ids.end()) {
+		f_cluster_info << *set_iter;
+        ++set_iter;
+        if(set_iter != unclustered_residue_ids.end()) {
+            f_cluster_info << " ";
+        }
 	}
 	f_cluster_info << endl;
-    cout << "E" << endl;
 }
 
 static void clust_size(char *ndx, char *trx, char *xpm,
