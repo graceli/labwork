@@ -9,6 +9,21 @@ import tables
 import plot_and_save2hdf5 as myh5
 import utils
 
+# This function estimates the number of binding events if provided a timeseries
+def num_binding_events(timeseries):
+    # while there is still data
+    #     while number of contacts > 0
+    #         continue
+    #     
+    #     binding_event += 1
+    #     
+    #     while number of contacts == 0
+    #         continue
+    #         
+    #     binding_event += 1            
+    pass
+
+
 def compute_disordered_binding_constant(h5file, inositol_ratio, inositol_concentration, system_indices=[]):
     assert len(system_indices) > 0, "List of system indices should be non-empty."
     
