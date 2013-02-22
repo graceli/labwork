@@ -9,19 +9,45 @@ import tables
 import plot_and_save2hdf5 as myh5
 import utils
 
+def _num_binding_events_beta(contact_ts):    
+    total_contacts_ts = numpy.sum(contacts_ts,[:,1:] axis=1)
+    num_binding_events = 0
+    while i < len(total_contacts_ts):
+        while total_contacts_ts[i] > 0:
+            i += 1
+            continue
+        
+        num_binding_events += 1
+        
+        while total_contacts_ts[i] == 0:
+            i += 1
+            continue
+            
+        num_binding_events += 1
+    
+    return num_binding_events
+
 # This function estimates the number of binding events if provided a timeseries
-def num_binding_events(timeseries):
-    # while there is still data
-    #     while number of contacts > 0
-    #         continue
-    #     
-    #     binding_event += 1
-    #     
-    #     while number of contacts == 0
-    #         continue
-    #         
-    #     binding_event += 1            
-    pass
+def beta_binding_event_estimate(h5file, inositol_ratio, inositol_concentration, system_indices=[]):
+    assert len(system_indices) > 0, "List of system indices should be non-empty."
+    
+    isomerList = ["scyllo", "chiro"]
+    polar_path = "/polar"
+    nonpolar_path = "/nonpolar_residue"
+    csv_header = ["isomer", "sys_idx", "binding_constant", "inos_conc"]
+
+    writer = csv.writer(open(inositol_ratio + '_binding_constants.csv', 'wb'), delimiter=' ')
+    writer.writerow(csv_header)
+
+    for iso in isomerList:
+        for sys in system_indices[iso]:
+            nonpolar_file = os.path.join(nonpolar_path, "%(iso)s_t%(sys)d_per_inositol_contacts.dat" % vars())
+            polar_file = os.path.join(polar_path, "%(iso)s_t%(sys)d_inos_total.dat" % vars())
+            print polar_file, nonpolar_file
+
+            nonpolar_matrix = myh5.getTableAsMatrix(h5file, nonpolar_file, dtype=numpy.float64)
+            polar_matrix = myh5.getTableAsMatrix(h5file, polar_file, dtype=numpy.float64)
+            print iso, sys, _num_binding_events_beta(nonpolar_matrix[:,1:] + polar_matrix[:,1:])
 
 
 def compute_disordered_binding_constant(h5file, inositol_ratio, inositol_concentration, system_indices=[]):
