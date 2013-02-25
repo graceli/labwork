@@ -29,12 +29,16 @@ def compute_inositol_ub_b_cluster_size_histo(h5file, clust_info_path, iso, sys, 
     polar_contacts_file = os.path.join('/polar', "%(iso)s_t%(sys)d_inos_total.dat" % vars())
     nonpolar_contacts_file = os.path.join('/nonpolar_residue', "%(iso)s_t%(sys)d_per_inositol_contacts.dat" % vars())
 
-#/nonpolar_residue_dt1/chiro_t1_per_inositol_contacts.dat
-
     polar_contacts = myh5.getTableAsMatrix(h5file, polar_contacts_file, dtype=numpy.float64)
     nonpolar_contacts = myh5.getTableAsMatrix(h5file, nonpolar_contacts_file, dtype=numpy.float64)
 
-    clust_info_csv = os.path.join(clust_info_path, '%(iso)s_high_conc_t%(sys)d_all_nosol_whole_clust_info.dat' % vars())
+    clust_info_csv = ""
+    if tag == "__high__":
+        clust_info_csv = os.path.join(clust_info_path, '%(iso)s_high_conc_t%(sys)d_all_nosol_whole_clust_info.dat' % vars())
+    else:
+        # for low concentration cluster calculations
+        clust_info_csv = os.path.join(clust_info_path, 't%(sys)d_whole_all_clust_info.dat' % vars())
+        
    
     contacts_matrix = polar_contacts[:,1:] + nonpolar_contacts[:,1:]
 
@@ -55,6 +59,7 @@ def compute_inositol_ub_b_cluster_size_histo(h5file, clust_info_path, iso, sys, 
  
             inositol_indices = _residue_ids_to_indices(inositol_ids)
             try:
+                # print int(time), polar_contacts[int(time) / 2][0]
                 inos_in_cluster_contacts = _contacts_for_indices_in_cluster(contacts_matrix[int(time) / 2], inositol_indices)
             except IndexError:
                 print "index error encountered at time=", time
@@ -80,12 +85,12 @@ def compute_inositol_ub_b_cluster_size_histo(h5file, clust_info_path, iso, sys, 
     print bound_hist
     print unbound_hist
  
-    with open(iso + 'sys' + str(sys) + tag + 'bound_hist.txt', 'w') as results_file:
+    with open(iso + '_sys' + str(sys) + tag + 'bound_hist.txt', 'w') as results_file:
         for size in range(0, bound_hist.size):
             frequency = bound_hist[size] / float(bound_hist.sum()) 
             results_file.write("%d  %0.2f\n" % (size, frequency))
 
-    with open(iso + 'sys' + str(sys) + tag + 'unbound_hist.txt', 'w') as results_file:
+    with open(iso + '_sys' + str(sys) + tag + 'unbound_hist.txt', 'w') as results_file:
         for size in range(0, unbound_hist.size):
             frequency = unbound_hist[size] / float(unbound_hist.sum())
             results_file.write("%d  %0.2f\n" % (size, frequency))

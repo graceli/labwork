@@ -75,12 +75,18 @@ def compute_disordered_binding_constant(h5file, inositol_ratio, inositol_concent
         data = []
         for sys in system_indices[iso]:
             polarFile = os.path.join(polarPath, "%(iso)s_sys%(sys)s_%(inositol_ratio)s_" % vars() + polarName[inositol_ratio])
+            if inositol_ratio == "4to2":
+                polarFile = os.path.join(polarPath, "klvffae_aggr%(sys)s_%(iso)s_nosol.xtc_" % vars() + polarName[inositol_ratio])
+
             print "analyzing", polarFile
 
             polarMatrix = myh5.getTableAsMatrix(h5file, polarFile, dtype=numpy.float64)
             print polarMatrix.shape 
 
             nonpolarFile = os.path.join(nonpolarPath, "%(iso)s_sys%(sys)s_%(inositol_ratio)s_" % vars() + nonpolarName[inositol_ratio])
+            if inositol_ratio == "4to2":
+                nonpolarFile = os.path.join(nonpolarPath, "%(iso)s_sys%(sys)s_per_inositol_contacts.dat" % vars())
+
             print "analyzing", nonpolarFile
             # This is really bad, but for other systems except 4to2 this line was used.  I've changed it 
             if inositol_ratio == "4to2":
@@ -297,7 +303,7 @@ def intersection_disordered(h5file, ratio, system_indices):
     #nasty fix for different table names
     polarName = {'4to2' : 'inos_total.dat', '15to4' : 'whole_nosol_0-200ns_inos_total.dat', '45to4' : 'whole_nosol_0-200_inos_total.dat'}
     nonpolarName = {'4to2' : 'per_inositol_contacts.dat', '15to4' : 'whole_nosol_0-200ns_per_inositol_contacts.dat', '45to4' : 'whole_nosol_0-200_per_inositol_contacts.dat'}
-    
+   # klvffae_aggr0_chiro_nosol.xtc_inos_total.dat 
     isomerList = ["scyllo", "chiro"]
     polarPath = "/polar"
     nonpolarPath = "/nonpolar_residue"
@@ -311,7 +317,7 @@ def intersection_disordered(h5file, ratio, system_indices):
         data = []
         for sys in system_indices[iso]:
             if ratio == "4to2":
-                polarFile = os.path.join(polarPath, "%(iso)s_sys%(sys)s_" % vars() + polarName[ratio])
+                polarFile = os.path.join(polarPath, "klvffae_aggr%(sys)s_%(iso)s_nosol.xtc_" % vars() + polarName[ratio])
             else:
                 polarFile = os.path.join(polarPath, "%(iso)s_sys%(sys)s_%(ratio)s_" % vars() + polarName[ratio])
 
