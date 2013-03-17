@@ -35,6 +35,33 @@ def _num_binding_events_beta(iso, sys, contacts_ts):
     
     return num_binding_events
 
+
+def _num_binding_events(iso, sys, contacts_ts):
+    print contacts_ts[:, 1:]
+ 
+    # total_contacts_ts = numpy.sum(contacts_ts[:,1:], axis=1)
+    # numpy.savetxt(iso + '_' + str(sys) + '.txt', total_contacts_ts, fmt='%d')
+
+    nrows, ncols = contacts_ts.shape
+
+    total_num_binding_events = 0
+    i = 0
+    for col in range(0, ncols):
+	while i < nrows:
+		while i < nrows and contacts_ts[i, col] > 0:
+		    i += 1
+		    continue
+
+		if i < nrows: 
+		    num_events += 1
+
+		while i < nrows and contacts_ts[i, col] == 0:
+		    i += 1
+		    continue
+
+		total_num_binding_events += num_events
+
+
 # This function estimates the number of binding events if provided a timeseries
 def beta_binding_event_estimate(h5file, inositol_ratio, inositol_concentration, system_indices=[]):
     assert len(system_indices) > 0, "List of system indices should be non-empty."
@@ -55,7 +82,7 @@ def beta_binding_event_estimate(h5file, inositol_ratio, inositol_concentration, 
 
             nonpolar_matrix = myh5.getTableAsMatrix(h5file, nonpolar_file, dtype=numpy.float64)
             polar_matrix = myh5.getTableAsMatrix(h5file, polar_file, dtype=numpy.float64)
-            writer.writerow([iso, sys, _num_binding_events_beta(iso, sys, nonpolar_matrix[:,1:] + polar_matrix[:,1:])])
+            writer.writerow([iso, sys, _num_binding_events(iso, sys, nonpolar_matrix[:,1:] + polar_matrix[:,1:])])
 
 
 def compute_disordered_binding_constant(h5file, inositol_ratio, inositol_concentration, system_indices=[]):
