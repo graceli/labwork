@@ -37,30 +37,32 @@ def _num_binding_events_beta(iso, sys, contacts_ts):
 
 
 def _num_binding_events(iso, sys, contacts_ts):
-    print contacts_ts[:, 1:]
- 
     # total_contacts_ts = numpy.sum(contacts_ts[:,1:], axis=1)
     # numpy.savetxt(iso + '_' + str(sys) + '.txt', total_contacts_ts, fmt='%d')
 
     nrows, ncols = contacts_ts.shape
 
+    print nrows, ncols
     total_num_binding_events = 0
-    i = 0
+    
     for col in range(0, ncols):
-	while i < nrows:
-		while i < nrows and contacts_ts[i, col] > 0:
-		    i += 1
-		    continue
+        num_events = 0
+        i = 0
+        while i < nrows:
+            while i < nrows and contacts_ts[i, col] > 0:
+                i += 1
+                continue
 
-		if i < nrows: 
-		    num_events += 1
+            if i < nrows: 
+                num_events += 1
 
-		while i < nrows and contacts_ts[i, col] == 0:
-		    i += 1
-		    continue
+            while i < nrows and contacts_ts[i, col] == 0:
+                i += 1
+                continue
 
-		total_num_binding_events += num_events
+        total_num_binding_events += num_events
 
+    return total_num_binding_events
 
 # This function estimates the number of binding events if provided a timeseries
 def beta_binding_event_estimate(h5file, inositol_ratio, inositol_concentration, system_indices=[]):
@@ -82,7 +84,51 @@ def beta_binding_event_estimate(h5file, inositol_ratio, inositol_concentration, 
 
             nonpolar_matrix = myh5.getTableAsMatrix(h5file, nonpolar_file, dtype=numpy.float64)
             polar_matrix = myh5.getTableAsMatrix(h5file, polar_file, dtype=numpy.float64)
-            writer.writerow([iso, sys, _num_binding_events(iso, sys, nonpolar_matrix[:,1:] + polar_matrix[:,1:])])
+            writer.writerow([iso, sys, _num_binding_events(iso, sys, nonpolar_matrix[:,1:] + polar_matrix[:,1:]), inositol_concentration])
+
+
+# This function estimates the number of binding events if provided a timeseries
+def disordered_binding_event_estimate(h5file, inositol_ratio, inositol_concentration, system_indices=[]):
+    assert len(system_indices) > 0, "List of system indices should be non-empty."
+    
+    polarName = {'4to2' : 'inos_total.dat', '15to4' : 'whole_nosol_0-200ns_inos_total.dat', '45to4' : 'whole_nosol_0-200_inos_total.dat'}
+    nonpolarName = {'4to2' : 'per_inositol_contacts.dat', '15to4' : 'whole_nosol_0-200ns_per_inositol_contacts.dat', '45to4' : 'whole_nosol_0-200_per_inositol_contacts.dat'}
+
+    isomerList = ["scyllo", "chiro"]
+    polarPath = "/polar"
+    nonpolarPath = "/nonpolar_residue"
+    csv_header = ["isomer", "sys_idx", "binding_constant", "inos_conc"]
+    writer = csv.writer(open(inositol_ratio + '_binding_events.csv', 'wb'), delimiter=' ')
+    writer.writerow(csv_header)
+
+    for iso in isomerList:
+        data = []
+        for sys in system_indices[iso]:
+            polarFile = os.path.join(polarPath, "%(iso)s_sys%(sys)s_%(inositol_ratio)s_" % vars() + polarName[inositol_ratio])
+            if inositol_ratio == "4to2":
+                polarFile = os.path.join(polarPath, "klvffae_aggr%(sys)s_%(iso)s_nosol.xtc_" % vars() + polarName[inositol_ratio])
+
+            print "analyzing", polarFile
+
+            polarMatrix = myh5.getTableAsMatrix(h5file, polarFile, dtype=numpy.float64)
+            print polarMatrix.shape 
+
+            nonpolarFile = os.path.join(nonpolarPath, "%(iso)s_sys%(sys)s_%(inositol_ratio)s_" % vars() + nonpolarName[inositol_ratio])
+            if inositol_ratio == "4to2":
+                nonpolarFile = os.path.join(nonpolarPath, "%(iso)s_sys%(sys)s_per_inositol_contacts.dat" % vars())
+
+            print "analyzing", nonpolarFile
+            # This is really bad, but for other systems except 4to2 this line was used.  I've changed it 
+            if inositol_ratio == "4to2":
+                nonpolarMatrix = myh5.getTableAsMatrix(h5file, nonpolarFile, dtype=numpy.float64)[:, :]
+            else:
+                nonpolarMatrix = myh5.getTableAsMatrix(h5file, nonpolarFile, dtype=numpy.float64)[::2, :]
+
+            print nonpolarMatrix.shape
+            
+            num_binding_events = _num_binding_events(iso, sys, nonpolarMatrix[:,1:] + polarMatrix[:,1:])
+            writer.writerow([iso, sys, num_binding_events, inositol_concentration]) 
+
 
 
 def compute_disordered_binding_constant(h5file, inositol_ratio, inositol_concentration, system_indices=[]):

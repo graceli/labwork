@@ -33,7 +33,7 @@ def compute_inositol_ub_b_cluster_size_histo(h5file, clust_info_path, iso, sys, 
     nonpolar_contacts = myh5.getTableAsMatrix(h5file, nonpolar_contacts_file, dtype=numpy.float64)
 
     clust_info_csv = ""
-    if tag == "__high__":
+    if tag == "_high_":
         clust_info_csv = os.path.join(clust_info_path, '%(iso)s_high_conc_t%(sys)d_all_nosol_whole_clust_info.dat' % vars())
     else:
         # for low concentration cluster calculations
@@ -68,6 +68,7 @@ def compute_inositol_ub_b_cluster_size_histo(h5file, clust_info_path, iso, sys, 
             if clustered == "yes":
                 bound = _cluster_bound_to_protein(inos_in_cluster_contacts)
                 if bound:
+                    # print time, inositol_ids 
                     bound_sizes_list.append(len(inositol_indices))
                 else:
                     unbound_sizes_list.append(len(inositol_indices))
