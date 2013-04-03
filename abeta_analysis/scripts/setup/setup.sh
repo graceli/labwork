@@ -1,6 +1,5 @@
 #!/bin/bash
 set -x
-set -e 
 set -u
 
 function debug {
@@ -55,7 +54,7 @@ if [ -z $structure ]; then
 fi
 
 # parameters
-MAX_REPEAT=20
+MAX_REPEAT=10
 base_dir=`pwd`
 #/Users/grace/scratch/abeta_pydr/abeta42.gro
 
@@ -73,7 +72,7 @@ for ratio in 15 64; do
         cd $binder
 
         for ((repeat=1;repeat<=$MAX_REPEAT;repeat+=1)); do
-            mkdir sys${repeat}
+            mkdir ${repeat}
             
             if [ "$binder" == "water" ]; then
                 cp $base_dir/abeta42_${binder}.top abeta42_${binder}_${repeat}.top
@@ -81,17 +80,17 @@ for ratio in 15 64; do
                 cp $base_dir/abeta42_${binder}_${ratio}.top abeta42_${binder}_${ratio}_${repeat}.top
             fi
 
-			cp $base_dir/start.gro  start${repeat}.gro
-		    cp $base_dir/vdwradii.dat .	
-			echo "add_binder start${repeat}.gro $binder $ratio $repeat"
+	    cp $base_dir/start.gro  start${repeat}.gro
+	    cp $base_dir/vdwradii.dat .	
+	    echo "add_binder start${repeat}.gro $binder $ratio $repeat"
             top=`add_binder start${repeat}.gro $binder $ratio $repeat`
 
-			echo "top file $top"
-			echo "add_ions $top $top"
-			add_ions $top $top 
+	    echo "top file $top"
+	    echo "add_ions $top $top"
+	    add_ions $top $top 
 
-            cp *.gro *.top *.mdp *.tpr sys${repeat}
-            rm \#*
+            rm -f \#*
+            mv *.gro *.top *.mdp *.tpr ${repeat}
         done
         cd ../
     done

@@ -47,7 +47,7 @@ class Trajectory:
         # location of the trajectories
         self._files_to_cat = trajs
 
-    def build(self, tpr, index_file, index_group, project_output, temp_output="/dev/shm/grace", center=False):
+    def build(self, tpr, index_file, index_group, project_output, temp_output="/dev/shm/grace", center=False, skip_temp=False):
         # check if the trajectory exists or not before building
         wildcard = os.path.join(project_output, "{0}*".format(self.name))
 
@@ -73,7 +73,8 @@ class Trajectory:
             temp_outfile = os.path.join(temp_output, self.name + "_temp")
 
             # Skip this step if temp file exist
-            if not options.skip_temp_files:
+            print "skip_temp = ", skip_temp
+            if not skip_temp:
                 trjcat = GromacsCommand('trjcat', xtc=files_str, output=temp_outfile, index=index_file, pipe=index_group)
                 trjcat.run()
             else:
@@ -105,7 +106,8 @@ class Trajectory:
 # Represents a simulation project generated using gromacs
 # What do you have to have at the minimum to consider having some data?
 class Project:
-    def __init__(self, name, tpr, output, index="index.ndx", trajectories=[]):
+    def __init__(self, name, tpr, output, skip_temp, index="index.ndx", trajectories=[]):
+	self.skip_temp = skip_temp
         self.project_name = name
         self.tpr = tpr
         
@@ -119,7 +121,7 @@ class Project:
         self._prepare_for_build()
         
         for i in range(len(self.trajectories)):
-            self.trajectories[i].build(self.tpr, self.index_file, index_group, self.project_output, temp_output=temp, center=center)
+            self.trajectories[i].build(self.tpr, self.index_file, index_group, self.project_output, temp_output=temp, center=center, skip_temp=self.skip_temp)
 
     def data_info(self):
         # log a list of trajectories produced and their file sizes
@@ -171,12 +173,12 @@ def main():
         
     # Note that if this option is set and a center_group index group is 
     # not defined in index file, then trjconv will fail
-    parser.add_option("-c", "--center_system", dest="center_system", 
+    parser.add_option("-c", "--center_system", action="store_false", dest="center_system", 
         help="Use a centering group and output by -pbc res mol", default=False)
     parser.add_option("-n", "--component", dest="system_component",
         help="The component of the system (in Gromacs index group language) to extract", default="Protein")
-    parser.add_option("--skip-temp", dest="skip_temp_files",
-        help="If set to true, temp concatenated files are not created. False by default.", default="false")
+    parser.add_option("--skip-temp", action="store_false", dest="skip_temp_files",
+        help="If set to true, temp concatenated files are not created. False by default.", default=False)
 
     (options, args) = parser.parse_args()
     
@@ -202,7 +204,7 @@ def main():
     logging.info("Initializing trjcatting for project")
     logging.info("Ran with options=%s and args=%s", options, args)
 
-    p = Project(project_name, project_name + ".tpr", options.project_output, index=project_name + ".ndx")
+    p = Project(project_name, project_name + ".tpr", options.project_output, options.skip_temp_files, index=project_name + ".ndx")
 
     # Read the project directory and build a list of files to trjcat
     all_dirs_failed = True
