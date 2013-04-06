@@ -99,7 +99,10 @@ def _num_binding_events_state_machine(iso, sys, contacts_ts):
     nrows, ncols = contacts_ts.shape
     total_num_binding_events = 0
 
+    print nrows, ncols
+
     for col in range(0, ncols):
+        print contacts_ts[:, col]
         total_num_binding_events += _count_binding_events_state_machine(contacts_ts[:, col])
 
     return total_num_binding_events
@@ -113,13 +116,9 @@ def _count_binding_events_state_machine(total_contacts_ts):
     i = 1
     state = BoundState.Start
     while i < len(total_contacts_ts):
-        print i, i-1
-
         while i < len(total_contacts_ts) and (total_contacts_ts[i] == total_contacts_ts[i-1]):
             i += 1
             continue
-
-        print "State transition: In state: ", state
 
         # Hit the end of the time series
         if i == len(total_contacts_ts):
@@ -127,10 +126,8 @@ def _count_binding_events_state_machine(total_contacts_ts):
 
         if state == BoundState.Start:
             state = BoundState.Transition
-            print "To state: ", state
         else:
             state = BoundState.Start
-            print "To state: ", state, "New binding event"
             num_binding_events += 1
 
         i += 1
