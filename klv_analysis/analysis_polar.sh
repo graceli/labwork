@@ -2,8 +2,9 @@
 #PBS -l nodes=1:compute-eth:ppn=8,walltime=08:00:00,os=centos53computeA
 #PBS -N analysis
 
-#set -u
-#set -e
+set -u
+set -e
+set -x 
 trap "clean; exit" INT TERM KILL
 
 TEST='-dt 2'
@@ -158,9 +159,11 @@ function do_with_water {
 	wait	
 }
 
-cd $PBS_O_WORKDIR
+# cd $PBS_O_WORKDIR
+SYSTEM=45
 base_dir=`pwd`
 do_inositol $SYSTEM
 rm /dev/shm/analysis/*/\#*
 rm \#*
 clean ${SYSTEM}_polar
+
