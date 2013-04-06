@@ -9,6 +9,20 @@ import tables
 import plot_and_save2hdf5 as myh5
 import utils
 
+class BoundState:
+    # Starting state
+    Start = 1
+    # Moved from one state into another. Transition may be irreversible
+    Transition = 2
+
+class TransitionError(Exception):
+    def __init__(self, value):
+        self.value = value
+    
+    def __str__(self):
+        return repr(self.value)
+
+
 def _binding_constant(polarMatrix, nonpolarMatrix, inositol_concentration):
     total_binding_per_inositol = polarMatrix[:,1:] + nonpolarMatrix[:,1:]
     print "polar matrix nonzero counts", numpy.count_nonzero(numpy.sum(polarMatrix[:, 1:], axis=1))
@@ -41,7 +55,6 @@ def _num_binding_events_beta(iso, sys, contacts_ts):
         while i < len(total_contacts_ts) and total_contacts_ts[i] > 0:
             i += 1
             continue
-
 
         if i < len(total_contacts_ts): 
             num_binding_events += 1
@@ -81,6 +94,50 @@ def _num_binding_events(iso, sys, contacts_ts):
 
     return total_num_binding_events
 
+
+def _num_binding_events_state_machine(iso, sys, contacts_ts):
+    nrows, ncols = contacts_ts.shape
+    total_num_binding_events = 0
+
+    for col in range(0, ncols):
+        total_num_binding_events += _count_binding_events_state_machine(contacts_ts[:, col])
+
+    return total_num_binding_events
+
+
+def _count_binding_events_state_machine(total_contacts_ts):
+    if len(total_contacts_ts) == 1:
+        raise TransitionError("Size of array is one.  No transitions are possible.")
+
+    num_binding_events = 0
+    i = 1
+    state = BoundState.Start
+    while i < len(total_contacts_ts):
+        print i, i-1
+
+        while i < len(total_contacts_ts) and (total_contacts_ts[i] == total_contacts_ts[i-1]):
+            i += 1
+            continue
+
+        print "State transition: In state: ", state
+
+        # Hit the end of the time series
+        if i == len(total_contacts_ts):
+            break
+
+        if state == BoundState.Start:
+            state = BoundState.Transition
+            print "To state: ", state
+        else:
+            state = BoundState.Start
+            print "To state: ", state, "New binding event"
+            num_binding_events += 1
+
+        i += 1
+
+    return num_binding_events
+
+
 # This function estimates the number of binding events if provided a timeseries
 def beta_binding_event_estimate(h5file, inositol_ratio, inositol_concentration, system_indices=[]):
     assert len(system_indices) > 0, "List of system indices should be non-empty."
@@ -101,7 +158,7 @@ def beta_binding_event_estimate(h5file, inositol_ratio, inositol_concentration, 
 
             nonpolar_matrix = myh5.getTableAsMatrix(h5file, nonpolar_file, dtype=numpy.float64)
             polar_matrix = myh5.getTableAsMatrix(h5file, polar_file, dtype=numpy.float64)
-            writer.writerow([iso, sys, _num_binding_events(iso, sys, nonpolar_matrix[:,1:] + polar_matrix[:,1:]), inositol_concentration])
+            writer.writerow([iso, sys, _num_binding_events_state_machine(iso, sys, nonpolar_matrix[:,1:] + polar_matrix[:,1:]), inositol_concentration])
 
 
 # This function estimates the number of binding events if provided a timeseries
@@ -143,7 +200,7 @@ def disordered_binding_event_estimate(h5file, inositol_ratio, inositol_concentra
 
             print nonpolarMatrix.shape
             
-            num_binding_events = _num_binding_events(iso, sys, nonpolarMatrix[:,1:] + polarMatrix[:,1:])
+            num_binding_events = _num_binding_events_state_machine(iso, sys, nonpolarMatrix[:,1:] + polarMatrix[:,1:])
             writer.writerow([iso, sys, num_binding_events, inositol_concentration]) 
 
 
@@ -268,7 +325,7 @@ def compute_beta_low_molar_binding_events(h5file, inositol_ratio, inositol_conce
 
                 print polar_matrix.shape, nonpolar_matrix.shape
             
-                num_binding_events = _num_binding_events(iso, sys, polar_matrix[:, 1:] + nonpolar_matrix[:, 1:])
+                num_binding_events = _num_binding_events_state_machine(iso, sys, polar_matrix[:, 1:] + nonpolar_matrix[:, 1:])
                 writer.writerow([iso, sys, num_binding_events, inositol_concentration])
 
     
@@ -286,7 +343,7 @@ def monomer_2to1_binding_events_estimate(h5file, inositol_concentration):
 
             print polar_matrix.shape
             print nonpolar_matrix.shape
-            num_binding_events = _num_binding_events(iso, sys, nonpolar_matrix[:, 1:] + polar_matrix[:, 1:])
+            num_binding_events = _num_binding_events_state_machine(iso, sys, nonpolar_matrix[:, 1:] + polar_matrix[:, 1:])
             writer.writerow([iso, i, num_binding_events, inositol_concentration])
 
     
@@ -366,7 +423,7 @@ def monomer_15to1_binding_events(h5file, inositol_concentration):
                 else:
                     print "data files (polar and nonpolar) for system", i, "was not found"
             
-            num_binding_events = _num_binding_events(isomer, k, nonpolar_big_matrix[:, 1:] + polar_big_matrix[:, 1:])
+            num_binding_events = _num_binding_events_state_machine(isomer, k, nonpolar_big_matrix[:, 1:] + polar_big_matrix[:, 1:])
             writer.writerow([isomer, "15to1", num_binding_events, inositol_concentration])     
 
 
