@@ -35,8 +35,8 @@ class Analysis(object):
             subprocess.check_call("rm -rf /dev/shm/grace", shell=True)
         except subprocess.CalledProcessError as error:
             # If the subprocess call fails log the error
-            logging.debug("Command {0} finished with retcode={1} and output {2}", 
-                         (error.cmd, error.returncode, error.output))
+            logging.debug("Command %s finished with retcode=%s and output %s", 
+                         error.cmd, error.returncode, error.output)
         except OSError as error:
             print "Command finished with system error errno=", error.errno 
 
@@ -67,10 +67,10 @@ class NonpolarContactAnalysis(Analysis):
                 xtc = str(sys_index) + "_final.xtc"
                 if os.path.exists(xtc):
                     shell_command.format(xtc, sys_index)
-                    logging.debug("Running: " + shell_command)
+                    logging.debug("Running: %s ", shell_command)
                     subprocess.check_call(shell_command, shell=True)
                 else:
-                    logging.debug("The file {0} does not exist", (xtc))
+                    logging.debug("The file %s does not exist", xtc)
 
         except subprocess.CalledProcessError as error:
             # If the subprocess call fails log the error
