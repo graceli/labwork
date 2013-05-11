@@ -5,15 +5,22 @@ import logging
 logging.basicConfig(filename='analysis.log', level=logging.DEBUG)
 
 # TODO: Implement these using configuration. For now leave them as python global variables for convenience
-RATIO = 15
-ISO = "scyllo"
-DATA_BASE_DIR = "{0}/inositol/abeta42/current/{1}/{2}_nonsolvent".format(os.environ['SCRATCH'], RATIO, ISO)
-OUTPUT_BASE_DIR = os.environ['pwd']
-START = 0
-FINISH = 9
 
 class Analysis(object):
-    def _clean(file_tag):
+    RATIO = 15
+    ISO = "scyllo"
+    DATA_BASE_DIR = "{0}/inositol/abeta42/current/{1}/{2}_nonsolvent".format(os.environ['SCRATCH'], RATIO, ISO)
+    OUTPUT_BASE_DIR = os.environ['PWD']
+    START = 0
+    FINISH = 9
+
+    logging.debug("RATIO=%s", RATIO)
+    logging.debug("ISO=%s", ISO)
+    logging.debug("DATA_BASE_DIR=%s", DATA_BASE_DIR)
+    logging.debug("OUTPUT_BASE_DIR=%s", OUTPUT_BASE_DIR)
+    logging.debug("START=%s, FINISH=%s", START, FINISH)
+
+    def _clean(self, file_tag):
         shell_commands = "cd /dev/shm/grace;tar cvfz analysis_%(file_tag)s.tgz *;cp analysis_%(file_tag)s.tgz %(BASE_DIR)s;rm -rf /dev/shm/grace" % vars()
 
         for cmd in shell_commands.split(";"):
@@ -34,7 +41,10 @@ class Analysis(object):
             print "Command finished with system error errno=", error.errno 
 
 class NonpolarContactAnalysis(Analysis):
+
     def analyze_contact_by_inositol(self, iso, ratio, num_ligands, output_dir, testing=False):
+        logging.debug("Analyzing nonpolar contact for each inositol")
+
         # Index of the first protein chain
         chain_first = 0
         # Index of the second protein chain
@@ -44,17 +54,18 @@ class NonpolarContactAnalysis(Analysis):
         insgrp_first = 1
         # Index of the second inositol group
         insgrp_last = 2
+        
+        data_dir = self.DATA_BASE_DIR
 
-        shell_command = "seq %(chain_first)s %(chain_last)s | parallel -j 16 \"seq %(insgrp_first)s %(insgrp_last)s | g_inositol_residue_nonpolar_v2 -f %(DATA)s/{0} -s %(iso)s_%(ratio)s_nosol.tpr -n ab_%(ratio)s_%(iso)s_nonpolar_revised.ndx -per_residue_contacts %(output_dir)s/{1}_chain{}_residue_np_contact.dat -per_inositol_contacts %(output_dir)s/{1}_chain{}_inositol_np_contact.dat -per_residue_table %(output_dir)s/{1}_chain{}_table.dat -num_inositols %(num_ligands)s\"" % vars()
+        shell_command = "seq %(chain_first)s %(chain_last)s | parallel -j 16 \"seq %(insgrp_first)s %(insgrp_last)s | g_inositol_residue_nonpolar_v2 -f %(data_dir)s/{0} -s %(iso)s_%(ratio)s_nosol.tpr -n ab_%(ratio)s_%(iso)s_nonpolar_revised.ndx -per_residue_contacts %(output_dir)s/{1}_chain{}_residue_np_contact.dat -per_inositol_contacts %(output_dir)s/{1}_chain{}_inositol_np_contact.dat -per_residue_table %(output_dir)s/{1}_chain{}_table.dat -num_inositols %(num_ligands)s\"" % vars()
 
         if testing:
             logging.debug("Running command as a test")
-            shell_command += " -dt 0 100"
 
         try:
-            for sys_index in range(START, FINISH):
-                xtc = sys_index + "_final"
-                if os.exists(xtc):
+            for sys_index in range(self.START, self.FINISH):
+                xtc = str(sys_index) + "_final.xtc"
+                if os.path.exists(xtc):
                     shell_command.format(xtc, sys_index)
                     logging.debug("Running: " + shell_command)
                     subprocess.check_call(shell_command, shell=True)
@@ -67,7 +78,7 @@ class NonpolarContactAnalysis(Analysis):
         except OSError as error:
             print "Command finished with system error errno=", error.errno
 
-        _clean("hbonds_by_inositol")
+        self._clean("hbonds_by_inositol")
 
 #   function nonpolar_revised {
 #     iso=$1
@@ -87,7 +98,9 @@ class NonpolarContactAnalysis(Analysis):
 #     clean "${iso}_${ratio}_nonpolar"
 # }
 
-def __main__():
+if __name__ == "__main__":
     analysis = NonpolarContactAnalysis()
-    analysis.analyze_contact_by_inositol(ISO, RATIO, RATIO, OUTPUT_BASE_DIR + "/test", 
+    print "starting nonpolar analysis"
+    analysis.analyze_contact_by_inositol(Analysis.ISO, Analysis.RATIO, Analysis.RATIO, Analysis.OUTPUT_BASE_DIR + "/test", 
         testing=True)
+
