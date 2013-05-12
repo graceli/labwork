@@ -18,7 +18,7 @@ function add_binder {
         cmd="mv $protein abeta42_${binder}_${repeat}.gro"
         return="abeta42_${binder}_${repeat}"
     else
-        cmd="genbox -cp $protein -ci /home/grace/gro/${binder}_em.gro -nmol ${maxsol} -o abeta42_${binder}_${maxsol}_${repeat}.gro"
+        cmd="genbox -cp $protein -ci $HOME/systems/gro/${binder}_em.gro -nmol ${maxsol} -o abeta42_${binder}_${maxsol}_${repeat}.gro"
         return="abeta42_${binder}_${ratio}_${repeat}"
     fi
 
@@ -32,8 +32,8 @@ function add_ions {
 	protein=$2
 
 	# resolvate and add ions
-	echo "genbox -cp $protein -cs /home/grace/gro/tip3.gro -p $top -o out1.gro"
-	genbox -cp $protein -cs /home/grace/gro/tip3.gro -p $top -o out1.gro 2>> $ERROR >&2
+	echo "genbox -cp $protein -cs $HOME/systems/gro/tip3.gro -p $top -o out1.gro"
+	genbox -cp $protein -cs $HOME/systems/gro/tip3.gro -p $top -o out1.gro 2>> $ERROR >&2
 	touch empty.mdp
 	
 	echo "grompp -f empty.mdp -c out1.gro -p $top -o out1.tpr"
@@ -59,12 +59,12 @@ base_dir=`pwd`
 #/Users/grace/scratch/abeta_pydr/abeta42.gro
 
 editconf -f $structure -o start.gro -box 8 8 8 
-for ratio in 15 64; do 
+for ratio in 15; do 
     if [ ! -e $ratio ]; then
         mkdir $ratio
     fi
     cd $ratio
-    for binder in epi; do
+    for binder in glucose; do
         if [ ! -e $binder ]; then
             mkdir $binder
         fi
@@ -80,14 +80,14 @@ for ratio in 15 64; do
                 cp $base_dir/abeta42_${binder}_${ratio}.top abeta42_${binder}_${ratio}_${repeat}.top
             fi
 
-	    cp $base_dir/start.gro  start${repeat}.gro
-	    cp $base_dir/vdwradii.dat .	
-	    echo "add_binder start${repeat}.gro $binder $ratio $repeat"
-            top=`add_binder start${repeat}.gro $binder $ratio $repeat`
+    	    cp $base_dir/start.gro  start${repeat}.gro
+    	    cp $base_dir/vdwradii.dat .	
+    	    echo "add_binder start${repeat}.gro $binder $ratio $repeat"
+                top=`add_binder start${repeat}.gro $binder $ratio $repeat`
 
-	    echo "top file $top"
-	    echo "add_ions $top $top"
-	    add_ions $top $top 
+    	    echo "top file $top"
+    	    echo "add_ions $top $top"
+    	    add_ions $top $top 
 
             rm -f \#*
             mv *.gro *.top *.mdp *.tpr ${repeat}
@@ -96,4 +96,3 @@ for ratio in 15 64; do
     done
     cd ../
 done
-
