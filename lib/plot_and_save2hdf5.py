@@ -120,7 +120,7 @@ def main():
 	file = sys.argv[1]
 	groupName = sys.argv[2]
 	tableName = sys.argv[3]
-	data = numpy.genfromtxt(file, dtype=numpy.int32, comments="#")
+	data = numpy.genfromtxt(file, dtype=numpy.float64, comments="#")
 
 	nrows, ncols = data.shape
 
@@ -129,7 +129,7 @@ def main():
 	analysis_fname = sys.argv[4]
 
 	h5file = initialize(analysis_fname, groupName)
-	table_descr = create_description("col", ncols, format=tables.Float32Col(dflt=0.0))
+	table_descr = create_description("col", ncols, format='float')
 	save(h5file, data, os.path.join('/'+groupName, tableName), table_descr)
 	
 	# example of how you would read the pytable assuming that you have a table
