@@ -29,7 +29,7 @@ class Analysis(object):
     # This is the equivalent of performing teardown. But it might be better to perform this clean up action
     # when the analysis object is destroyed
     def _clean(self, file_tag):
-        shell_command = "cd /dev/shm/grace; tar cvfz analysis_{0}.tgz *;cp analysis_{0}.tgz {1}; rm -rf /dev/shm/grace".format(file_tag, self.OUTPUT_BASE_DIR)
+        shell_command = "cd /dev/shm/grace; tar cvfz analysis_{0}.tgz * --remove-files; cp analysis_{0}.tgz {1}; rm /dev/shm/grace/analysis_{0}.tgz".format(file_tag, self.OUTPUT_BASE_DIR)
         logging.debug("Cleaning up ...")
         for cmd in shell_command.split(";"):
             logging.debug(cmd)
@@ -226,9 +226,15 @@ class HBondContactAnalysis(Analysis):
 
 
 if __name__ == "__main__":
-    analysis = HBondContactAnalysis()
+    hbonds = HBondContactAnalysis()
     print "starting nonpolar analysis"
     scratch = Analysis.OUTPUT_BASE_DIR + "/test"
     temp = '/dev/shm/grace'
-    analysis.analyze_contact_by_ligand(Analysis.ISO, Analysis.RATIO, Analysis.RATIO, temp, testing=True)
+    hbonds.analyze_contact_by_ligand(Analysis.ISO, Analysis.RATIO, Analysis.RATIO, temp, testing=True)
+    hbonds.analyze_contact_by_residue(Analysis.ISO, Analysis.RATIO, Analysis.RATIO, temp, testing=True)
+
+    nonpolar = NonpolarContactAnalysis()
+    nonpolar.analyze_contact_by_ligand(Analysis.ISO, Analysis.RATIO, Analysis.RATIO, temp, testing=True)
+    
+
 
