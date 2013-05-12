@@ -26,8 +26,10 @@ class GromacsCommand:
         files_str = self.gromacs_args["xtc"]
         temp_name = self.gromacs_args["output"]
         index_file = self.gromacs_args["index"]
-            
-        command = "%s -f %s -o %s -n %s" % (self.gromacs_exe, files_str, temp_name, index_file)
+       
+	command = "%s -f %s -o %s" % (self.gromacs_exe, files_str, temp_name)    
+	if index_file is not None: 
+		command = "%s -f %s -o %s -n %s" % (self.gromacs_exe, files_str, temp_name, index_file)
         
         if "custom" in self.gromacs_args:
             command = command + " " + self.gromacs_args["custom"]
@@ -81,12 +83,12 @@ class Trajectory:
             
             final_output = os.path.join(project_output, self.name)
             custom_command = "-pbc whole"
-            pipe_command = index_group
+            pipe_command = "System"
             if center:
                 custom_command = "-pbc res -center"
                 pipe_command = "{0} {1}".format("center_group", index_group)
             
-            trjconv = GromacsCommand('trjconv', xtc=temp_outfile, tpr="-s " + os.path.join(self.project_path, tpr), output=final_output, index=index_file, custom=custom_command, pipe=pipe_command)
+            trjconv = GromacsCommand('trjconv', xtc=temp_outfile, tpr="-s " + os.path.join(self.project_path, tpr), output=final_output, index=None, custom=custom_command, pipe=pipe_command)
             trjconv.run()
         
             # Remove temp files to avoid overflow if writing to /dev/shm
@@ -176,8 +178,9 @@ def main():
     parser.add_option("-n", "--component", dest="system_component",
         help="The component of the system (in Gromacs index group language) to extract", default="Protein")
     parser.add_option("--skip-temp", dest="skip_temp_files",
-        help="If set to true, temp concatenated files are not created. False by default.", default="false")
-
+        help="If set to true, temp concatenated files are not created. False by default.", default=False)
+   
+    global options
     (options, args) = parser.parse_args()
     
     # TODO error handling for add_option -- look into how to properly do this 
@@ -191,7 +194,7 @@ def main():
     end_idx = int(args[2])
 
     if not os.path.exists(project_name):
-        print "project {0} does not exist".format(project_name)
+        print "Project {0} does not exist".format(project_name)
         sys.exit(1)
 
     # Setup logging
