@@ -3,7 +3,7 @@ import subprocess
 import logging
 import string
 
-logging.basicConfig(filename=os.path.join(os.environ['PWD'], 'analysis.log'), level=logging.DEBUG)
+logging.basicConfig(filename=os.path.join(os.environ['PWD'], 'analysis_' + str(os.environ['PBS_JOBID']) + '.log'), level=logging.DEBUG)
 
 # TODO: Implement these using configuration. For now leave them as python global variables for convenience
 
@@ -59,7 +59,7 @@ class NonpolarContactAnalysis(Analysis):
 
     def _command(self, insgrp_first, insgrp_last, xtc_filename, system_index, testing=False):
         insgroups = ' '.join([str(i) for i in range(insgrp_first, insgrp_last+1)])
-        test_command = ''
+        test_command = '-b 0 -e 250000'
         if testing:
             test_command = '-b 0 -e 1000'
  
@@ -118,7 +118,7 @@ class HBondContactAnalysis(Analysis):
             os.makedirs(self.output_abs_path)
 
     def _command_by_ligand(self, xtc_filename, system_index, testing=False):
-        test_command = ''
+        test_command = '-b 0 -e 250000'
         if testing:
             test_command = '-b 0 -e 100'
  
@@ -131,7 +131,7 @@ class HBondContactAnalysis(Analysis):
         res_end=129
         ligand_grp=130
 
-        test_command = ''
+        test_command = '-b 0 -e 250000'
         if testing:
             test_command = '-b 0 -e 100'
  
