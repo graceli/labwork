@@ -34,11 +34,11 @@ class DataMatrix:
         # Each item in list is a row vector, stack them vertically and transpose into a matrix 
         # Dim of matrix = Time by Nresidues.  Residues can be inositol or protein residues.
         
-        print "Saving data from", files, "into", h5file.root, table_name
+        print "Saving data into", self.h5file.root, table_name
 
         atom = tables.Atom.from_dtype(data_matrix.dtype)
         filters = tables.Filters(complib='zlib', complevel=5)
-        h5_carray = h5file.createCArray(h5file.root, table_name, atom, data_matrix.shape, filters=filters)
+        h5_carray = self.h5file.createCArray(self.h5file.root, table_name, atom, data_matrix.shape, filters=filters)
         h5_carray[:] = data_matrix
         h5_carray.flush()
 
@@ -59,9 +59,9 @@ class DataMatrixFromColumnsBuilder:
 
 
 # Defines an analysis base class which represents a specific analysis for a system
-class Analysis:
-    def __init__(self, analysis_id, isomer, ratio, num_systems):
-        self.analysis_id = analysis_id
+class Analysis(object):
+    def __init__(self, name, isomer, ratio, num_systems):
+        self.name = name
         self.isomer = isomer
         self.ratio = ratio
         self.num_systems = num_systems
@@ -71,23 +71,23 @@ class Analysis:
 
 
 class HBondAnalysisLigand(Analysis):
-    def __init__(self, analysis_id, isomer, ratio, num_systems, num_ligands):
-        super(HBondAnalysisLigand, self).__init__(analysis_id, isomer, ratio, num_systems)
+    def __init__(self, name, isomer, ratio, num_systems, num_ligands):
+        super(HBondAnalysisLigand, self).__init__(name, isomer, ratio, num_systems)
         self.num_ligands = num_ligands
 
     def get_file_names(self, system_id):
-        data_path = os.path.join(self.analysis_name, str(system_id))
+        data_path = os.path.join(self.name, str(system_id))
         files = [ os.path.join(data_path, str(i) + '.xvg') for i in range(1, self.num_ligands + 1) ]
         return files
 
 
 class HBondAnalysisResidue(Analysis):
-    def __init__(self, analysis_id, isomer, ratio, num_systems, num_residues):
-        super(HBondAnalysisResidue, self).__init__(analysis_id, isomer, ratio, num_systems)
+    def __init__(self, name, isomer, ratio, num_systems, num_residues):
+        super(HBondAnalysisResidue, self).__init__(name, isomer, ratio, num_systems)
         self.num_residues = num_residues
 
     def get_file_names(self, system_id):    
-        data_path = os.path.join(self.analysis_name, str(system_id))
+        data_path = os.path.join(self.name, str(system_id))
 
         # Each file here represents either a single inositol molecule or residue and the number of hbonds it froms with the aggregate
         # Form a matrix with column ordering of 1 ... 64 and store this matrix for which will be used for further post-processing
@@ -96,31 +96,38 @@ class HBondAnalysisResidue(Analysis):
 
 
 class NonpolarAnalysisLigand(Analysis):
-    def __init__(self, analysis_id, isomer, ratio, num_systems, num_ligands):
-        super(HBondAnalysisLigand, self).__init__(analysis_id, isomer, ratio, num_systems)
+    def __init__(self, name, isomer, ratio, num_systems, num_ligands):
+        super(NonpolarAnalysisLigand, self).__init__(name, isomer, ratio, num_systems)
         self.num_ligands = num_ligands
 
     def get_file_names(self):
-        data_path = os.path.join(self.analysis_name, str(system_id))
-        files = [ os.path.join(data_path, str(i) + '.xvg') for i in range(1, self.num_ligands + 1) ]
+        file_prefix = 'ab_' + self.isomer + '_' + str(self.ratio) + '_'
+
+        # Each file here represents either a single inositol molecule or residue and the number of hbonds it froms with the aggregate
+        # Form a matrix with column ordering of 1 ... 64 and store this matrix for which will be used for further post-processing
+        files = [ file_prefix + str(i) + '_inositol_np_contact' + '.dat' for i in range(0, self.num_systems + 1) ]
+        print files
+
         return files
 
 
 class NonpolarAnalysisResidue(Analysis):
-    def __init__(self, analysis_id, isomer, ratio, num_systems, num_residues):
-        super(HBondAnalysisResidue, self).__init__(analysis_id, isomer, ratio, num_systems)
+    def __init__(self, name, isomer, ratio, num_systems, num_residues):
+        super(NonpolarAnalysisResidue, self).__init__(name, isomer, ratio, num_systems)
         self.num_residues = num_residues
 
     def get_file_names(self):
-        data_path = os.path.join(self.analysis_name, str(system_id))
+        file_prefix = 'ab_' + self.isomer + '_' + str(self.ratio) + '_'
 
         # Each file here represents either a single inositol molecule or residue and the number of hbonds it froms with the aggregate
         # Form a matrix with column ordering of 1 ... 64 and store this matrix for which will be used for further post-processing
-        files = [ os.path.join(data_path, str(i) + '.xvg') for i in range(0, self.num_residues) ]
+        files = [ file_prefix + str(i) + '_residue_np_contact' + '.dat' for i in range(0, self.num_systems + 1) ]
+        print files
+
         return files
 
 
-class Datastore:
+class Datastore(object):
     def __init__(self, analysis, h5file):
         self.h5file = h5file
         self.analysis = analysis
@@ -153,16 +160,22 @@ class Datastore:
 
             try:
                 file_data = numpy.genfromtxt(tar_obj.extractfile(f), skip_header=skip_header)
+                data = DataMatrix(self.h5file)
+                table_name = self._get_table_name(f)
+                data.save(file_data, table_name)
+                logging.debug("Storing file %s into table %s", f, table_name)
             except KeyError as e:
-                print "Couldn't find", f, "in archive. Stopping read."
-                return
+                print "Couldn't find", f, "in archive. Skipping"
+                # Assumption: Files containing data matrices are self-contained because they are stored in a table of its own.
+                # return
 
-            data = DataMatrix(self.h5file)
-            data.save(file_data, self._get_table_name())
+    def _get_table_name(self, analysis_file_name):
+        name, ext = os.path.splitext(analysis_file_name)
+        return name
 
 
-    def _get_table_name(self, sys_idx):
-        return self.isomer + '_' + str(self.analysis.ratio) + '_' + self.analysis.name + '_' + str(self.analysis.system_id)
+    # def _get_table_name(self, f):
+    #     return self.isomer + '_' + str(self.analysis.ratio) + '_' + self.analysis.name + '_' + str(self.analysis.system_id)
 
     def _get_tar_file_name(self):
         return "analysis_{0}_{1}_{2}.tgz".format(self.analysis.name, self.analysis.isomer, self.analysis.ratio)
@@ -172,20 +185,19 @@ class Datastore:
         tar_file_path = os.path.join(config.data_source, tar_file_name)
 
         if not os.path.exists(tar_file_path):
-            logging.debug("copying %s to %s", tar_file_name, config.data_source)
-            subprocess.check_call("cp {0} {1}".format(tar_file_name, config.data_source), shell=True)
-        else:
+            # logging.debug("copying %s to %s", tar_file_name, config.data_source)
+            # subprocess.check_call("cp {0} {1}".format(tar_file_name, config.data_source), shell=True)
             logging.debug("%s was not found", tar_file_path)
-            return
 
         try:
-            tar_obj = tarfile.open(tar_file_path)
-        except CompressError:
+            logging.debug("Open tarfile %s", tar_file_path)
+            return tarfile.open(tar_file_path)
+        except tarfile.CompressionError:
             logging.error("Problem reading tar file %s", tar_file_name)
-            return
-        except ReadError:
+        except tarfile.ReadError:
             logging.error("Problem reading tar file %s", tar_file_name)
-            return
+        
+        return None
 
     def _get_data_column_with_time(self, data):
         return [data[:, 0], data[:, 1]]
@@ -201,9 +213,7 @@ class HBondDatastore(Datastore):
     def store_hbond_data(self):
         print "Munging files for", self.analysis.name
         tar_obj = self._get_tar_obj()
-
-        for sys_idx in range(num_systems):
-            self.store_columnar_files_in_tar_to_h5(tar_obj, self.analysis.get_file_names(sys_idx), skip_header=100)
+        self.store_columnar_files_in_tar_to_h5(tar_obj, self.analysis.get_file_names(), skip_header=100)
 
 
 class NonpolarDataStore(Datastore):
@@ -213,25 +223,28 @@ class NonpolarDataStore(Datastore):
     def store_nonpolar_data(self):
         print "Munging files for", self.analysis.name
         tar_obj = self._get_tar_obj()
-        for sys_idx in range(num_systems):
-            self.store_file_as_data_matrix(tar_obj, self.analysis.get_file_names(sys_idx), skip_header=100)
+        self.store_file_as_data_matrix(tar_obj, self.analysis.get_file_names(), skip_header=100)
 
 
 def main():
     index = 0
-    ratio = 15
+    ratio = 64
     isomer = "scyllo"
     num_systems = 10
-    num_ligands = 15
+    num_ligands = 64
+    num_residues = 130
     analysis_name = "nonpolar_contacts"
     # analysis_nonpolar_contacts_scyllo_64.tgz
     h5file = tables.openFile(analysis_name + "_" + str(isomer) + "_" + str(ratio) + ".h5", 'a')
-    for sys_id in range(num_systems):
-        print sys_id
-        nonpolar_analysis = NonpolarAnalysisLigand(analysis_name, isomer, ratio, num_systems, num_ligands)
-        nonpolar = NonpolarDataStore(nonpolar_analysis, h5file)
-        nonpolar.store_nonpolar_data()
 
+    np_ligand = NonpolarAnalysisLigand(analysis_name, isomer, ratio, num_systems, num_ligands)
+    np_ligand_store = NonpolarDataStore(np_ligand, h5file)
+    np_ligand_store.store_nonpolar_data()
 
-def '__name__' == '__main__':
+    np_residue = NonpolarAnalysisResidue(analysis_name, isomer, ratio, num_systems, num_residues)
+    np_residue_store = NonpolarDataStore(np_residue, h5file)
+    np_residue_store.store_nonpolar_data()
+
+if __name__ == '__main__':
+    main()
 
