@@ -47,14 +47,15 @@ class DataMatrixFromColumnsBuilder:
     def __init__(self):
         self.column_stack = []
 
+    def clear(self):
+        self.column_stack = []
+
     def append(self, array):
         # Appends a column to the data matrix
         self.column_stack.append(array)
 
     def get_data_as_numpy_matrix(self):
         # Return the numpy representation of the matrix in memory
-        if self.data is not None:
-            return self.data
         return numpy.transpose(numpy.vstack(self.column_stack))
 
 
@@ -97,9 +98,9 @@ class HBondAnalysisResidue(Analysis):
     def _get_tar_file_name(self):
         return "analysis_{0}_{1}_{2}_by_residue.tgz".format(self.name, self.isomer, self.ratio)
 
-    def get_file_names(self, system_id):    
+    def get_file_names(self):    
         files = [ 'ab_' + self.isomer + '_' + str(self.ratio) + '_' + str(idx) + '_residue' + str(lig) + '.xvg' 
-        for idx in range(1, self.num_systems+1) for lig in range(0, self.num_residues + 1) ]
+        for idx in range(1, self.num_systems+1) for lig in range(0, self.num_residues) ]
         print files
         return files
 
@@ -161,8 +162,11 @@ class Datastore(object):
                 # Need to save when all of the residues (i.e. Nresidue number of files) are added to the
                 # matrix
                 if count == self.analysis.num_residues:
-                    data_matrix = DataMatrix()
-                    data_matrix.save(data_builder.get_data_as_matrix(), self._get_table_name())
+                    data_matrix = DataMatrix(self.h5file)
+                    data_matrix.save(data_builder.get_data_as_numpy_matrix(), self._get_table_name(f))
+                    count = 0
+                    data_builder.clear()
+
         except KeyError as e:
             print "Couldn't find", f, "in archive. Stopping read."
             return
@@ -250,13 +254,13 @@ def main():
     # analysis_nonpolar_contacts_scyllo_64.tgz
     h5file = tables.openFile(analysis_name + "_" + str(isomer) + "_" + str(ratio) + ".h5", 'a')
 
-    hb_ligand = HBondAnalysisLigand(analysis_name, isomer, ratio, num_systems, num_ligands)
-    hb_ligand_store = HBondDatastore(hb_ligand, h5file)
-    hb_ligand_store.store_hbond_data()
+    # hb_ligand = HBondAnalysisLigand(analysis_name, isomer, ratio, num_systems, num_ligands)
+    # hb_ligand_store = HBondDatastore(hb_ligand, h5file)
+    # hb_ligand_store.store_hbond_data()
 
-    # hb_residue = HBondAnalysisResidue(analysis_name, isomer, ratio, num_systems, num_ligands)
-    # hb_residue_store = HBondDatastore(hb_residue, h5file)
-    # hb_residue_store.store_hbond_data()
+    hb_residue = HBondAnalysisResidue(analysis_name, isomer, ratio, num_systems, num_residues)
+    hb_residue_store = HBondDatastore(hb_residue, h5file)
+    hb_residue_store.store_hbond_data()
 
     # np_ligand = NonpolarAnalysisLigand(analysis_name, isomer, ratio, num_systems, num_ligands)
     # np_ligand_store = NonpolarDataStore(np_ligand, h5file)
