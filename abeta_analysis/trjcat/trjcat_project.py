@@ -84,12 +84,12 @@ class Trajectory:
             
             final_output = os.path.join(project_output, self.name)
             custom_command = "-pbc whole"
-            pipe_command = "System"
+            pipe_command = index_group 
             if center:
                 custom_command = "-pbc res -center"
                 pipe_command = "{0} {1}".format("center_group", index_group)
             
-            trjconv = GromacsCommand('trjconv', xtc=temp_outfile, tpr="-s " + os.path.join(self.project_path, tpr), output=final_output, index=None, custom=custom_command, pipe=pipe_command)
+            trjconv = GromacsCommand('trjconv', xtc=temp_outfile, tpr="-s " + os.path.join(self.project_path, tpr), output=final_output, index=index_file, custom=custom_command, pipe=pipe_command)
             trjconv.run()
         
             # Remove temp files to avoid overflow if writing to /dev/shm
