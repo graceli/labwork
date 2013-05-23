@@ -14,7 +14,7 @@ class Analysis(object):
         self.ratio = ratio
         self.DATA_BASE_DIR = "{0}/inositol/abeta42/current/{1}/{2}_nonsolvent".format(os.environ['SCRATCH'], ratio, iso)
         self.START = 0
-        self.FINISH = 9
+        self.FINISH = 10
         self.TEMP_DIR = '/dev/shm/grace'
 
         logging.debug("RATIO=%s", ratio)
@@ -49,9 +49,10 @@ class Analysis(object):
             print "Command finished with system error errno=", error.errno 
 
 class NonpolarContactAnalysis(Analysis):
-    def __init__(self, iso, ratio, abs_path):
+    def __init__(self, iso, ratio, num_atoms, abs_path):
         super(NonpolarContactAnalysis, self).__init__(iso, ratio)
         self.output_abs_path = abs_path
+        self.num_atoms = num_atoms
         logging.debug("Analysis results will be outputted to %s", self.output_abs_path) 
         if not os.path.exists(self.output_abs_path):
             logging.debug("%s does not exist. Creating ...", self.output_abs_path)
@@ -63,7 +64,7 @@ class NonpolarContactAnalysis(Analysis):
         if testing:
             test_command = '-b 0 -e 1000'
  
-        shell_command = string.Template("seq 0 ${insgrp_last} | g_inositol_residue_nonpolar_v2 -f $data_dir/$xtc_name -s ${iso}_${ratio}_nosol.tpr -n nonpolar_${iso}_${ratio}.ndx -per_residue_contacts $output_dir/ab_${iso}_${ratio}_${sys_index}_residue_np_contact.dat -per_inositol_contacts $output_dir/ab_${iso}_${ratio}_${sys_index}_inositol_np_contact.dat -per_residue_table $output_dir/ab_${iso}_${ratio}_${sys_index}_table.dat -num_inositols $num_ligands $testing").substitute(insgrp_last=insgrp_last, data_dir=self.DATA_BASE_DIR, xtc_name=xtc_filename, iso=self.iso, ratio=self.ratio, output_dir='/dev/shm/grace', sys_index=system_index, num_ligands=self.ratio, index_groups=insgroups, testing=test_command)
+        shell_command = string.Template("seq 0 ${insgrp_last} | g_inositol_residue_nonpolar_v2 -f $data_dir/$xtc_name -s ${iso}_${ratio}_nosol.tpr -n nonpolar_${iso}_${ratio}.ndx -per_residue_contacts $output_dir/ab_${iso}_${ratio}_${sys_index}_residue_np_contact.dat -per_inositol_contacts $output_dir/ab_${iso}_${ratio}_${sys_index}_inositol_np_contact.dat -per_residue_table $output_dir/ab_${iso}_${ratio}_${sys_index}_table.dat -num_inositols $num_ligands -num_atoms $num_atoms $testing").substitute(insgrp_last=insgrp_last, data_dir=self.DATA_BASE_DIR, xtc_name=xtc_filename, iso=self.iso, ratio=self.ratio, num_atoms=self.num_atoms, output_dir='/dev/shm/grace', sys_index=system_index, num_ligands=self.ratio, index_groups=insgroups, testing=test_command)
 
         return shell_command
  

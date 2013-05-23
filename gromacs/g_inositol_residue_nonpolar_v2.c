@@ -241,6 +241,7 @@ int main(int argc,char *argv[]) {
     static int bComputeFirstCOM = 0;
     static int bOutputDists = 0;
     static int numInositols = 0;
+    static int numAtoms = 0;
     const char  *leg[4] = { "|d|","d\\sx\\N","d\\sy\\N","d\\sz\\N" };
 
     static t_pargs pa[] = {
@@ -272,7 +273,10 @@ int main(int argc,char *argv[]) {
 		"file name to print to"},
 
         {"-num_inositols", FALSE, etINT, {&numInositols},
-		"number of inositols to read in from index"}
+		"number of inositols to read in from index"},
+
+        {"-num_atoms", FALSE, etINT, {&numAtoms},
+        "number of carbon atoms"}
     };
 
     #define NPA asize(pa)
@@ -379,7 +383,7 @@ int main(int argc,char *argv[]) {
                  * conceptually at this point given that I'm in a hurry.
                  *
                  */
-				for(int ins_atom_num = 0; ins_atom_num < 6; ins_atom_num++) {
+				for(int ins_atom_num = 0; ins_atom_num < numAtoms; ins_atom_num++) {
 					if(is_in_contact(&pbc, x[protein_atom_idx], x[index[ins_group_num][ins_atom_num]], 0.45, calculated_dist)) {
                     #ifdef DEBUG
                         cout << "CONTACT protein index:" << protein_atom_idx << " " << residue_name << residue_id << " inositol group:" << ins_group_num << " index:" << index[ins_group_num][ins_atom_num] << " dist:" << calculated_dist << endl;

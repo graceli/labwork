@@ -89,7 +89,7 @@ class HBondAnalysisLigand(Analysis):
     def _get_table_name(self, file_name):
         m = re.search("([a-zA-Z_]*)(\d+)([a-zA-Z_]*)(\d+)", file_name)
         # Get the matching string at the 3rd position
-        system_id = int(m.group(2))
+        system_id = int(m.group(4))
 
         return self.isomer + '_' + str(self.ratio) + '_inositol_' + self.name + '_' + str(system_id)
 
@@ -112,7 +112,7 @@ class HBondAnalysisResidue(Analysis):
     def _get_table_name(self, file_name):
         m = re.search("([a-zA-Z_]*)(\d+)([a-zA-Z_]*)(\d+)", file_name)
         # Get the matching string at the 3rd position
-        system_id = int(m.group(2))
+        system_id = int(m.group(4))
 
         return self.isomer + '_' + str(self.ratio) + '_residue_' + self.name + '_' + str(system_id)
 
@@ -196,7 +196,7 @@ class Datastore(object):
                 # matrix
                 if count == self.analysis.num_residues:
                     data_matrix = DataMatrix(self.h5file)
-                    data_matrix.save(data_builder.get_data_as_numpy_matrix(), os.path.join(self.analysis.name, self.analysis._get_table_name(f)))
+                    data_matrix.save(data_builder.get_data_as_numpy_matrix(), self.analysis._get_table_name(f))
                     # TODO: Basically the count is a way to detect whether we've changed system indices. We have a System object where it is a collection of N systems with the same properties. I think the most appropriate / error free way to do this is to refactor it into objects which is iterated through by the number of systems, and returns all the file names mapping to that system
                     count = 0
                     first_file = True
@@ -226,7 +226,7 @@ class Datastore(object):
 
     def _get_tar_obj(self):
         tar_file_name = self.analysis._get_tar_file_name()
-        tar_file_path = os.path.join(config.data_source, tar_file_name)
+        tar_file_path = os.path.join(os.environ['PWD'] + '/' + self.analysis.name, tar_file_name)
 
         if not os.path.exists(tar_file_path):
             # logging.debug("copying %s to %s", tar_file_name, config.data_source)
