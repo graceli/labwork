@@ -34,7 +34,7 @@ class DataMatrix:
         # Each item in list is a row vector, stack them vertically and transpose into a matrix 
         # Dim of matrix = Time by Nresidues.  Residues can be inositol or protein residues.
         
-        print "Saving data into", self.h5file.root, table_name
+        print "Saving data into", self.h5file.root, table_name, data_matrix.dtype
 
         atom = tables.Atom.from_dtype(data_matrix.dtype)
         filters = tables.Filters(complib='zlib', complevel=5)
@@ -100,8 +100,6 @@ class HBondAnalysisLigand(Analysis):
         files = [ 'ab_' + self.isomer + '_' + str(self.ratio) + '_' + str(idx) + '_ins' + str(lig) + '.xvg' 
         for idx in range(1, self.num_systems) for lig in range(1, self.num_residues + 1) ]
 
-        print files
-        
         return files
 
 
@@ -122,7 +120,6 @@ class HBondAnalysisResidue(Analysis):
     def get_file_names(self):    
         files = [ 'ab_' + self.isomer + '_' + str(self.ratio) + '_' + str(idx) + '_residue' + str(lig) + '.xvg' 
         for idx in range(1, self.num_systems+1) for lig in range(0, self.num_residues) ]
-        print files
         return files
 
 
@@ -143,8 +140,6 @@ class NonpolarAnalysisLigand(Analysis):
         # Each file here represents either a single inositol molecule or residue and the number of hbonds it froms with the aggregate
         # Form a matrix with column ordering of 1 ... 64 and store this matrix for which will be used for further post-processing
         files = [ file_prefix + str(i) + '_inositol_np_contact' + '.dat' for i in range(0, self.num_systems + 1) ]
-        print files
-
         return files
 
 
@@ -162,8 +157,6 @@ class NonpolarAnalysisResidue(Analysis):
     def get_file_names(self):
         file_prefix = 'ab_' + self.isomer + '_' + str(self.ratio) + '_'
         files = [ file_prefix + str(i) + '_residue_np_contact' + '.dat' for i in range(0, self.num_systems + 1) ]
-        print files
-
         return files
 
 
@@ -180,9 +173,10 @@ class Datastore(object):
             for f in file_names:
                 print "Storing file", f
                 # TODO: Figure out the number of lines to skip
-                file_data = numpy.genfromtxt(tar_obj.extractfile(f), skip_header=skip_header)
+                file_data = numpy.genfromtxt(tar_obj.extractfile(f), dtype=numpy.float64, skip_header=skip_header)
         
                 print file_data.shape
+ 
 
                 if first_file:
                     data_builder.append(self._get_data_column_with_time(file_data))
@@ -208,9 +202,10 @@ class Datastore(object):
 
     def store_file_as_data_matrix(self, tar_obj, file_names, skip_header=0):
         for f in file_names:
-            logging.debug("Storing file %s", f)
+            print "Storing file %s", f
             try:
-                file_data = numpy.genfromtxt(tar_obj.extractfile(f), skip_header=skip_header)
+                file_data = numpy.genfromtxt(tar_obj.extractfile(f))
+                print numpy.sum(file_data, axis=0)
                 data = DataMatrix(self.h5file)
                 table_name = self.analysis._get_table_name(f)
                 data.save(file_data, table_name)
@@ -235,6 +230,7 @@ class Datastore(object):
 
         try:
             logging.debug("Open tarfile %s", tar_file_path)
+            print "Open tarfile %s", tar_file_path
             return tarfile.open(tar_file_path)
         except tarfile.CompressionError:
             logging.error("Problem reading tar file %s", tar_file_name)
