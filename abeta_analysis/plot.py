@@ -120,7 +120,7 @@ def compute_hbond_matrices():
 			m_total = numpy.zeros((5, 22))
 
 			for i in range(10):
-				m = HBondContactMatrix(h5file, "%(isomer)s_%(ratio)s_residue_nonpolar_contacts_%(i)d" % vars())
+				m = HBondContactMatrix(h5file, "%(isomer)s_%(ratio)s_residue_hbonds_%(i)d" % vars())
 				matrix = m.compute_contact_matrix()
 				m_total += m.compute_contact_matrix()
 
@@ -132,4 +132,4 @@ def compute_hbond_matrices():
 
 
 if __name__ == '__main__':
-	main()
+	compute_hbond_matrices()

@@ -98,7 +98,7 @@ class HBondAnalysisLigand(Analysis):
 
     def get_file_names(self):
         files = [ 'ab_' + self.isomer + '_' + str(self.ratio) + '_' + str(idx) + '_ins' + str(lig) + '.xvg' 
-        for idx in range(1, self.num_systems) for lig in range(1, self.num_residues + 1) ]
+        for idx in range(0, self.num_systems) for lig in range(1, self.num_residues + 1) ]
 
         return files
 
@@ -119,7 +119,7 @@ class HBondAnalysisResidue(Analysis):
 
     def get_file_names(self):    
         files = [ 'ab_' + self.isomer + '_' + str(self.ratio) + '_' + str(idx) + '_residue' + str(lig) + '.xvg' 
-        for idx in range(1, self.num_systems+1) for lig in range(0, self.num_residues) ]
+        for idx in range(0, self.num_systems+1) for lig in range(0, self.num_residues) ]
         return files
 
 
