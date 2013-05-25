@@ -129,8 +129,8 @@ class HBondContactAnalysis(Analysis):
 
     def _command_by_residue(self, xtc_filename, system_index, testing=False):
         res_start=0
-        res_end=129
-        ligand_grp=130
+        res_end=134
+        ligand_grp=135
 
         test_command = '-b 0 -e 250000'
         if testing:
