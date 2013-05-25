@@ -41,7 +41,7 @@ class NonpolarContactMatrix(ContactMatrix):
 		# print self.contact_matrix_as_dict
 
 	def _compact_matrix(self, matrix):
-		# TODO: Compacts the matrix. i.e. folds the matrix such that its dimensions are (rows=num_chains, column=num_residues)
+		# Compacts the matrix. i.e. folds the matrix such that its dimensions are (rows=num_chains, column=num_residues)
 		row_size = len(self.data_table[0]) / 5
 		return matrix.view(dtype=numpy.float64).reshape(-1, row_size)
 
@@ -73,7 +73,21 @@ class NonpolarContactMatrix(ContactMatrix):
 		return self.histogram
 
 
-def main():
+class HBondContactMatrix(ContactMatrix):
+	def __init__(self, h5file, table_name):
+		self.h5file = h5file
+		self.table_name = table_name
+		self.data_table = self.h5file.getNode('/' + self.table_name).read().view(dtype=numpy.float64)
+		self.contact_histogram = None
+		self.contact_matrix = None
+
+	def compute_contact_matrix(self):
+		row_size = len(self.data_table[0]) / 5
+		matrix = self.data_table[:, 1:]
+		return matrix.view(dtype=numpy.float64).reshape(-1, row_size)
+
+
+def compute_nonpolar_matrices():
 	nonpolar_analysis = "nonpolar_contacts"
 	ratio_list = [15, 64]
 	isomer_list = ["scyllo", "chiro", "glycerol"]
@@ -93,6 +107,29 @@ def main():
 			numpy.savetxt("%(isomer)s_%(ratio)s_contact_matrix.txt" % vars(), m_total, fmt="%.2f", delimiter=' ')
 			histogram = numpy.average(m_total, axis=0)
 			numpy.savetxt("%(isomer)s_%(ratio)s_histogram.txt" % vars(), histogram, fmt="%.2f", delimiter=' ')
+
+
+def compute_hbond_matrices():
+	analysis = "hbonds"
+	ratio_list = [15, 64]
+	isomer_list = ["scyllo", "chiro", "glycerol"]
+
+	for ratio in ratio_list:
+		for isomer in isomer_list:
+			h5file = tables.openFile(analysis + "_" + str(isomer) + "_" + str(ratio) + ".h5", 'a')
+			m_total = numpy.zeros((5, 22))
+
+			for i in range(10):
+				m = HBondContactMatrix(h5file, "%(isomer)s_%(ratio)s_residue_nonpolar_contacts_%(i)d" % vars())
+				matrix = m.compute_contact_matrix()
+				m_total += m.compute_contact_matrix()
+
+			m_total = m_total / 10.0
+			print "calculating for", isomer, ratio
+			numpy.savetxt("%(isomer)s_%(ratio)s_contact_matrix.txt" % vars(), m_total, fmt="%.2f", delimiter=' ')
+			histogram = numpy.average(m_total, axis=0)
+			numpy.savetxt("%(isomer)s_%(ratio)s_histogram.txt" % vars(), histogram, fmt="%.2f", delimiter=' ')
+
 
 if __name__ == '__main__':
 	main()
