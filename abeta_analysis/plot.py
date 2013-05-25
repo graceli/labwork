@@ -78,13 +78,14 @@ class HBondContactMatrix(ContactMatrix):
 		self.h5file = h5file
 		self.table_name = table_name
 		self.data_table = self.h5file.getNode('/' + self.table_name).read().view(dtype=numpy.float64)
+		self.data_table_sum = None
 		self.contact_histogram = None
 		self.contact_matrix = None
 
 	def compute_contact_matrix(self):
-		row_size = len(self.data_table[0]) / 5
-		matrix = self.data_table[:, 1:]
-		return matrix.view(dtype=numpy.float64).reshape(-1, row_size)
+		self.data_table_sum = numpy.average(self.data_table[:,1:], axis=0)
+		row_size = len(self.data_table_sum[0]) / 5
+		return self.data_table_sum.view(dtype=numpy.float64).reshape(-1, row_size)
 
 
 def compute_nonpolar_matrices():
@@ -117,7 +118,7 @@ def compute_hbond_matrices():
 	for ratio in ratio_list:
 		for isomer in isomer_list:
 			h5file = tables.openFile(analysis + "_" + str(isomer) + "_" + str(ratio) + ".h5", 'a')
-			m_total = numpy.zeros((5, 22))
+			m_total = numpy.zeros((5, 26))
 
 			for i in range(10):
 				m = HBondContactMatrix(h5file, "%(isomer)s_%(ratio)s_residue_hbonds_%(i)d" % vars())
