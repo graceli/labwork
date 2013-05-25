@@ -89,6 +89,7 @@ def main():
 				m_total += m.compute_contact_matrix()
 
 			m_total = m_total / 10.0
+			print "calculating for", isomer, ratio
 			numpy.savetxt("%(isomer)s_%(ratio)s_contact_matrix.txt" % vars(), m_total, fmt="%.2f", delimiter=' ')
 			histogram = numpy.average(m_total, axis=0)
 			numpy.savetxt("%(isomer)s_%(ratio)s_histogram.txt" % vars(), histogram, fmt="%.2f", delimiter=' ')
