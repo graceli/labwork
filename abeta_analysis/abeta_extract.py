@@ -136,7 +136,7 @@ class HBondContactAnalysis(Analysis):
         if testing:
             test_command = '-b 0 -e 100'
  
-        shell_command = string.Template("seq $res_start $res_end | parallel -j 8 \"echo {} $ligand_grp | g_hbond -f $data_dir/$xtc_name -s ${iso}_${ratio}_nosol.tpr -n g_hbond_${ratio}_${iso}_by_residue.ndx -nonitacc -nomerge -num $output_dir/ab_${iso}_${ratio}_${sys_index}_residue{} $testing > /dev/null 2>&1\"").substitute(res_start=res_start, res_end=res_end, ligand_grp=ligand_grp, data_dir=self.DATA_BASE_DIR, xtc_name=xtc_filename, iso=self.iso, ratio=self.ratio, output_dir='/dev/shm/grace', sys_index=system_index, testing=test_command)
+        shell_command = string.Template("seq $res_start $res_end | parallel -j 16 \"echo {} $ligand_grp | g_hbond -f $data_dir/$xtc_name -s ${iso}_${ratio}_nosol.tpr -n g_hbond_${ratio}_${iso}_by_residue.ndx -nonitacc -nomerge -num $output_dir/ab_${iso}_${ratio}_${sys_index}_residue{} $testing > /dev/null 2>&1\"").substitute(res_start=res_start, res_end=res_end, ligand_grp=ligand_grp, data_dir=self.DATA_BASE_DIR, xtc_name=xtc_filename, iso=self.iso, ratio=self.ratio, output_dir='/dev/shm/grace', sys_index=system_index, testing=test_command)
 
         return shell_command
 
