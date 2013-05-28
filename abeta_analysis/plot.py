@@ -83,9 +83,10 @@ class HBondContactMatrix(ContactMatrix):
         self.contact_matrix = None
 
     def compute_contact_matrix(self):
-        self.data_table_sum = numpy.average(self.data_table[:,1:], axis=0)
-        print self.data_table_sum
+        self.data_table_sum = numpy.average(self.data_table[:, 1:], axis=0)
+        print self.data_table_sum, len(self.data_table_sum)
         row_size = self.data_table_sum.size / 5
+        print row_size
         return self.data_table_sum.view(dtype=numpy.float64).reshape(-1, row_size)
 
 
@@ -121,7 +122,7 @@ def compute_hbond_matrices():
             h5file_name = analysis + "_" + str(isomer) + "_" + str(ratio) + ".h5"
             print h5file_name
             h5file = tables.openFile(h5file_name, 'a')
-            m_total = numpy.zeros((5, 26))
+            m_total = numpy.zeros((5, 27))
 
             for i in range(10):
                 m = HBondContactMatrix(h5file, "%(isomer)s_%(ratio)s_residue_hbonds_%(i)d" % vars())
@@ -130,9 +131,9 @@ def compute_hbond_matrices():
 
             m_total = m_total / 10.0
             print "calculating for", isomer, ratio
-            numpy.savetxt("%(isomer)s_%(ratio)s_contact_matrix.txt" % vars(), m_total, fmt="%.2f", delimiter=' ')
+            numpy.savetxt("%(isomer)s_%(ratio)s_hbonds_contact_matrix.txt" % vars(), m_total, fmt="%.2f", delimiter=' ')
             histogram = numpy.average(m_total, axis=0)
-            numpy.savetxt("%(isomer)s_%(ratio)s_histogram.txt" % vars(), histogram, fmt="%.2f", delimiter=' ')
+            numpy.savetxt("%(isomer)s_%(ratio)s_hbonds_histogram.txt" % vars(), histogram, fmt="%.2f", delimiter=' ')
 
 
 if __name__ == '__main__':

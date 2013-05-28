@@ -119,7 +119,7 @@ class HBondAnalysisResidue(Analysis):
 
     def get_file_names(self):    
         files = [ 'ab_' + self.isomer + '_' + str(self.ratio) + '_' + str(idx) + '_residue' + str(lig) + '.xvg' 
-        for idx in range(0, self.num_systems+1) for lig in range(0, self.num_residues) ]
+        for idx in range(0, self.num_systems + 1) for lig in range(0, self.num_residues) ]
         return files
 
 
@@ -274,7 +274,7 @@ def main():
     isomer = "scyllo"
     num_systems = 10
     num_ligands = 64
-    num_residues = 130
+    num_residues = 135
     analysis_name = "hbonds"
     nonpolar_analysis_name = "nonpolar_contacts"
     # analysis_nonpolar_contacts_scyllo_64.tgz
@@ -284,17 +284,17 @@ def main():
     # hb_ligand_store = HBondDatastore(hb_ligand, h5file)
     # hb_ligand_store.store_hbond_data(skip_header=20)
 
-    # hb_residue = HBondAnalysisResidue(analysis_name, isomer, ratio, num_systems, num_residues)
-    # hb_residue_store = HBondDatastore(hb_residue, h5file)
-    # hb_residue_store.store_hbond_data(skip_header=20)
+    hb_residue = HBondAnalysisResidue(analysis_name, isomer, ratio, num_systems, num_residues)
+    hb_residue_store = HBondDatastore(hb_residue, h5file)
+    hb_residue_store.store_hbond_data(skip_header=20)
 
-    np_ligand = NonpolarAnalysisLigand(nonpolar_analysis_name, isomer, ratio, num_systems, num_ligands)
-    np_ligand_store = NonpolarDataStore(np_ligand, h5file)
-    np_ligand_store.store_nonpolar_data()
+    #np_ligand = NonpolarAnalysisLigand(nonpolar_analysis_name, isomer, ratio, num_systems, num_ligands)
+    #np_ligand_store = NonpolarDataStore(np_ligand, h5file)
+    #np_ligand_store.store_nonpolar_data()
 
-    np_residue = NonpolarAnalysisResidue(nonpolar_analysis_name, isomer, ratio, num_systems, num_residues)
-    np_residue_store = NonpolarDataStore(np_residue, h5file)
-    np_residue_store.store_nonpolar_data()
+    #np_residue = NonpolarAnalysisResidue(nonpolar_analysis_name, isomer, ratio, num_systems, num_residues)
+    #np_residue_store = NonpolarDataStore(np_residue, h5file)
+    #np_residue_store.store_nonpolar_data()
 
 if __name__ == '__main__':
     main()

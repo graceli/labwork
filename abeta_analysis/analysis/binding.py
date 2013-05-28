@@ -1,44 +1,48 @@
-def intersect(nonpolar, polar):
+import tables
+import numpy
+import csv
+
+def intersect(sys, nonpolar, polar):
     # get polar matrix
-	nrows, ncols = nonpolar.shape
+    nrows, ncols = nonpolar.shape
 
-	print "computing the intersecting"
-	print "nonpolar has dimensions ", nonpolar.shape
-	print nonpolar
+    p_and_np_count  = 0
+    nonpolar_count = 0
+    polar_count = 0
+    total_inositol = 0
 
-	print "polar has dimensions", polar.shape
-	print nonpolar
-	print polar
-	print "polar ", polar[0], polar[0][0]
+    counts = {'sys' : sys, 'polar_only' : 0, 'nonpolar_only' : 0, 'polar_nonpolar' : 0}
+    for r in range(0, nrows):
+        for i in range(0, ncols):
+            if nonpolar[r][i] > 0.0 and polar[r][i] > 0.0:
+                counts['polar_nonpolar'] += 1
+            elif nonpolar[r][i] > 0.0 and polar[r][i] == 0.0:
+                counts['polar_only'] += 1
+            elif nonpolar[r][i] == 0.0 and polar[r][i] > 0.0:
+                counts['nonpolar_only'] += 1
+            total_inositol += 1
 
-	p_and_np_count  = 0
-	nonpolar_count = 0
-	polar_count = 0
-	total_inositol = 0
-	for r in range(0, nrows):
-		for i in range(0, ncols):
-			# print nonpolar_new[r][i], polar[r][i]
-			if nonpolar[r][i] > 0.0 and polar[r][i] > 0.0:
-				p_and_np_count += 1
-			elif nonpolar[r][i] > 0.0 and polar[r][i] == 0.0:
-				nonpolar_count += 1
-			elif nonpolar[r][i] == 0.0 and polar[r][i] > 0.0:
-				polar_count += 1
-			total_inositol += 1
+    total = counts['polar_nonpolar'] + counts['polar_only'] + counts['nonpolar_only']
+    counts['polar_nonpolar'] = counts['polar_nonpolar'] / float(total)
+    counts['polar_only'] = counts['polar_only'] / float(total)
+    counts['nonpolar_only'] = counts['nonpolar_only'] / float(total)
 
-	print "system", sys, polar_count, nonpolar_count, p_and_np_count, total_inositol
+    return counts
 
 
 if __name__ == '__main__':
-    for ratio in config.ratio_list:
-        for isomer in config.isomer_list:
+    for ratio in [64]:
+        for isomer in ["glycerol", "glucose"]:
             nonpolar_h5file = tables.openFile("nonpolar_contacts_" + str(isomer) + "_" + str(ratio) + ".h5", 'a')
             polar_h5file = tables.openFile("hbonds_" + str(isomer) + "_" + str(ratio) + ".h5", 'a')
+
+            writer = csv.DictWriter(open('intersection_%(ratio)s_%(isomer)s.csv' % vars(), 'wb'), ["sys", "polar_only", "nonpolar_only", "polar_nonpolar"])
             for sys in range(10):
-                nonpolar_name = isomer + '_' + str(ratio) + '_' + 'inositol_nonpolar' + '_' + str(sys)
+                nonpolar_name = isomer + '_' + str(ratio) + '_' + 'inositol_nonpolar_contacts' + '_' + str(sys)
                 polar_name = isomer + '_' + str(ratio) + '_' + 'inositol_hbonds' + '_' + str(sys)
                 
                 # get nonpolar matrix
-                nonpolar = nonpolar_h5file.root.nonpolar_name
-                polar = polar_h5file.root.polar_name
-                intersect(nonpolar, polar)
+                nonpolar = nonpolar_h5file.getNode('/' + nonpolar_name).read().view(dtype=numpy.float64)
+                polar = polar_h5file.getNode('/' + polar_name).read().view(dtype=numpy.float64)
+                counts = intersect(sys, nonpolar, polar)
+                writer.writerow(counts)
