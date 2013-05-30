@@ -32,7 +32,7 @@ def intersect(sys, nonpolar, polar):
 
 if __name__ == '__main__':
     for ratio in [64]:
-        for isomer in ["glycerol", "glucose"]:
+        for isomer in ["glucose"]:
             nonpolar_h5file = tables.openFile("nonpolar_contacts_" + str(isomer) + "_" + str(ratio) + ".h5", 'a')
             polar_h5file = tables.openFile("hbonds_" + str(isomer) + "_" + str(ratio) + ".h5", 'a')
 
