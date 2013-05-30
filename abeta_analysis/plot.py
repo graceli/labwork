@@ -93,7 +93,7 @@ class HBondContactMatrix(ContactMatrix):
 def compute_nonpolar_matrices():
     nonpolar_analysis = "nonpolar_contacts"
     ratio_list = [15, 64]
-    isomer_list = ["scyllo", "chiro", "glycerol"]
+    isomer_list = ["scyllo", "chiro", "glycerol", "glucose"]
 
     for ratio in ratio_list:
         for isomer in isomer_list:
@@ -107,15 +107,15 @@ def compute_nonpolar_matrices():
 
             m_total = m_total / 10.0
             print "calculating for", isomer, ratio
-            numpy.savetxt("%(isomer)s_%(ratio)s_contact_matrix.txt" % vars(), m_total, fmt="%.2f", delimiter=' ')
+            numpy.savetxt("%(isomer)s_%(ratio)s_nonpolar_contact_matrix.txt" % vars(), m_total, fmt="%.2f", delimiter=' ')
             histogram = numpy.average(m_total, axis=0)
-            numpy.savetxt("%(isomer)s_%(ratio)s_histogram.txt" % vars(), histogram, fmt="%.2f", delimiter=' ')
+            numpy.savetxt("%(isomer)s_%(ratio)s_nonpolar_histogram.txt" % vars(), histogram, fmt="%.2f", delimiter=' ')
 
 
 def compute_hbond_matrices():
     analysis = "hbonds"
-    ratio_list = [15, 64]
-    isomer_list = ["scyllo", "chiro", "glycerol"]
+    ratio_list = [64]
+    isomer_list = ["glucose"]
 
     for ratio in ratio_list:
         for isomer in isomer_list:
@@ -137,4 +137,5 @@ def compute_hbond_matrices():
 
 
 if __name__ == '__main__':
+    #compute_nonpolar_matrices()
     compute_hbond_matrices()
