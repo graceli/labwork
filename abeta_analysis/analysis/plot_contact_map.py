@@ -16,7 +16,7 @@ def plot_contact_map(data, data_axis, from_name, to_name):
     xlabels = tuple(data_axis)
     pylab.xticks(x, xlabels)
 
-    y = numpy.arange(0, len(data[:,0]))
+    y = numpy.arange(0, len(data[:, 0]))
     ylabels = tuple( ["chain 1", "chain 2", "chain 3", "chain 4", "chain 5"] )
     pylab.yticks(y, ylabels)
 
