@@ -1,5 +1,5 @@
 #!/bin/sh
-#PBS -l nodes=1:ppn=8,walltime=8:00:00
+#PBS -l nodes=1:ppn=8,walltime=12:00:00
 #PBS -N volmap_full
 
 set -x
