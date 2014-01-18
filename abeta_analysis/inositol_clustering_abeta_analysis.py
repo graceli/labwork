@@ -26,20 +26,14 @@ def _cluster_bound_to_protein(inositol_in_cluster_contacts):
 #      for sys in system_indices[iso]:
 
 def compute_inositol_ub_b_cluster_size_histo(h5file, clust_info_path, iso, sys, tag=""):
-    polar_contacts_file = os.path.join('/polar', "%(iso)s_t%(sys)d_inos_total.dat" % vars())
-    nonpolar_contacts_file = os.path.join('/nonpolar_residue', "%(iso)s_t%(sys)d_per_inositol_contacts.dat" % vars())
+    # Path names to the text files saved in the h5 file
+    nonpolar_contacts_file = "%(iso)s_64_inositol_nonpolar_contacts_%(sys)s" % vars()
+    polar_contacts_file = "%(iso)s_64_inositol_hbonds_%(sys)s" % vars()
 
-    polar_contacts = myh5.getTableAsMatrix(h5file, polar_contacts_file, dtype=numpy.float64)
     nonpolar_contacts = myh5.getTableAsMatrix(h5file, nonpolar_contacts_file, dtype=numpy.float64)
-
-    clust_info_csv = ""
-    if tag == "_high_":
-        clust_info_csv = os.path.join(clust_info_path, '%(iso)s_high_conc_t%(sys)d_all_nosol_whole_clust_info.dat' % vars())
-    else:
-        # for low concentration cluster calculations
-        clust_info_csv = os.path.join(clust_info_path, 't%(sys)d_whole_all_clust_info.dat' % vars())
-        
-   
+    polar_contacts = myh5.getTableAsMatrix(h5file, polar_contacts_file, dtype=numpy.float64)
+    
+    clust_info_csv = os.path.join(clust_info_path, '%(iso)s_64_clust_0.35.dat' % vars())
     contacts_matrix = polar_contacts[:,1:] + nonpolar_contacts[:,1:]
 
     print contacts_matrix.shape
