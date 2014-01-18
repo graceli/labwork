@@ -30,8 +30,8 @@ def compute_inositol_ub_b_cluster_size_histo(nonpolar_h5file, polar_h5file, clus
     nonpolar_contacts_file = "/%(iso)s_64_inositol_nonpolar_contacts_%(sys)s" % vars()
     polar_contacts_file = "/%(iso)s_64_inositol_hbonds_%(sys)s" % vars()
 
-    nonpolar_contacts = myh5.getTableAsMatrix(h5file, nonpolar_contacts_file, dtype=numpy.float64)
-    polar_contacts = myh5.getTableAsMatrix(h5file, polar_contacts_file, dtype=numpy.float64)
+    nonpolar_contacts = myh5.getTableAsMatrix(nonpolar_h5file, nonpolar_contacts_file, dtype=numpy.float64)
+    polar_contacts = myh5.getTableAsMatrix(polar_h5file, polar_contacts_file, dtype=numpy.float64)
     
     clust_info_csv = os.path.join(clust_info_path, '%(iso)s_64_clust_0.35.dat' % vars())
     contacts_matrix = polar_contacts[:,1:] + nonpolar_contacts[:,1:]
