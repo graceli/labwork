@@ -10,7 +10,7 @@ import plot_and_save2hdf5 as myh5
 def _residue_ids_to_indices(inositol_residue_ids):
     # The offset is the starting residue id of inositol molecules in the trajectory - eg. 145 for beta in the gro file (144 is the id of the first inositol molecule in the gromacs analysis framework). The indices in the inositol contacts data file is indexed by the column number. ie. 0th column is the 0th inositol corresponding to inositol residue id of 144.
     # TODO: For now hardcode this offset to the value for the beta system
-    offset = 144
+    offset = 136 
     inositol_cluster_indices = [int(x) - offset for x in inositol_residue_ids]
     return inositol_cluster_indices
 
@@ -33,7 +33,7 @@ def compute_inositol_ub_b_cluster_size_histo(nonpolar_h5file, polar_h5file, clus
     nonpolar_contacts = myh5.getTableAsMatrix(nonpolar_h5file, nonpolar_contacts_file, dtype=numpy.float64)
     polar_contacts = myh5.getTableAsMatrix(polar_h5file, polar_contacts_file, dtype=numpy.float64)
     
-    clust_info_csv = os.path.join(clust_info_path, '%(iso)s_64_clust_0.35.dat' % vars())
+    clust_info_csv = os.path.join(clust_info_path, '%(sys)d_final_clust_info.dat' % vars())
     contacts_matrix = polar_contacts[:,1:] + nonpolar_contacts[:,1:]
 
     print contacts_matrix.shape
