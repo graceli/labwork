@@ -25,7 +25,7 @@ def _cluster_bound_to_protein(inositol_in_cluster_contacts):
 # for iso in isomerList:
 #      for sys in system_indices[iso]:
 
-def compute_inositol_ub_b_cluster_size_histo(h5file, clust_info_path, iso, sys, tag=""):
+def compute_inositol_ub_b_cluster_size_histo(nonpolar_h5file, polar_h5file, clust_info_path, iso, sys, tag=""):
     # Path names to the text files saved in the h5 file
     nonpolar_contacts_file = "%(iso)s_64_inositol_nonpolar_contacts_%(sys)s" % vars()
     polar_contacts_file = "%(iso)s_64_inositol_hbonds_%(sys)s" % vars()
