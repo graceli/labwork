@@ -27,6 +27,16 @@ def configure_plot():
     # pylab.subplots_adjust(left=0, bottom=0, right=0.001, top=0.001, wspace=0, hspace=0)
 	pylab.rcParams['figure.figsize'] = [3.5,2.5]
 
+
+def configure_plot_for_publication():
+	print "set publication plot configuration"
+	pylab.rcParams['text.usetex'] = False
+	pylab.rcParams['font.size'] = 14
+	pylab.rcParams['font.family'] = 'Arial'
+	pylab.rcParams['legend.fontsize'] = 10
+	pylab.rcParams['figure.figsize'] = [4,3]
+
+
 def configure_large_plot():
 	print "set large plot configuration"
 	pylab.rcParams['text.usetex'] = False

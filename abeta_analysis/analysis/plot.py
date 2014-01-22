@@ -37,7 +37,7 @@ def plot_rmsd_with_std_err(iso, ratio):
     ax=fig.add_subplot(111)
     fig.subplots_adjust(bottom=0.05, top=0.95, left=0.05, right=0.95, wspace=0.4, hspace=0.4)
     ax.set_ylim(0, 0.6)
-    ax.set_xlim(20, 200)
+    ax.set_xlim(20, 140)
     x = mean_data[:,0]/1000.0
     y = mean_data[:,1]
     yerror = std_error[:,1]
@@ -120,14 +120,14 @@ def matshow_axis_polar():
 	return residue_map
             	            
 def main():
-    config_plot.configure_plot()
+    config_plot.configure_plot_for_publication()
     
     print "Plotting"
-    # plot_all_rmsd()
+    plot_all_rmsd()
     # plot_all_rmsf()
     
-    config_plot.configure_large_plot()
-    plot_rmsf("water", 64)
+    #config_plot.configure_large_plot()
+    #plot_rmsf("water", 64)
     
 
     
