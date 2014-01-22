@@ -15,7 +15,7 @@ binwidth = float(sys.argv[2])
 norm = sys.argv[3]
 
 histogram = {}
-linenum=0
+linenum = 0
 for line in fp:
 	if line.find("#") == 0:
 		continue	
@@ -28,26 +28,26 @@ for line in fp:
 
 
 	#map data to bin number
-	binnum = int(math.floor(datapoint/binwidth))
+	binnum = int(math.floor(datapoint / binwidth))
 	if binnum in histogram:
-		histogram[binnum]+=1
+		histogram[binnum] += 1
 	else:
-		histogram[binnum]=1
+		histogram[binnum] = 1
 
-	linenum+=1
+	linenum += 1
 
+total = 1
 if norm == "-norm":
-	doNormalize = linenum
-else:
-	doNormalize = 1
+    for i in histogram:
+        total += histogram[i]
 
 print "# binwidth", binwidth
 print "# norm ", norm
 #print "# unit ", unit
 for i in range(0, 20):
-	binnum = i+1
-	datacenter = (binnum*binwidth+(binnum-1)*binwidth)/2
+	binnum = i + 1
+	datacenter = (binnum * binwidth + (binnum - 1) * binwidth) / 2
 	if i in histogram:
-		print datacenter, float(histogram[i])/doNormalize	 	
+		print datacenter, float(histogram[i]) / total
 	else:
 		print datacenter, 0.0
